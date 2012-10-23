@@ -171,9 +171,9 @@ public class Game extends Context{
         double maxRadius = 50;
         int minPoints = 3;
         int maxPoints = 9;
-        int padding = 50;
+        int padding = 0;
         int rows = 2;
-        int columns = 2;
+        int columns = 6;
         double borderX = (width - columns * (maxRadius * 2 + padding)) / 2;
         double borderY = (height - rows * (maxRadius * 2 + padding)) / 2;
         double offsetX = borderX + maxRadius;

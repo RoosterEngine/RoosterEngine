@@ -97,11 +97,11 @@ public abstract class Shape {
         if(!a.isUsingBoundingBox() && !b.isUsingBoundingBox()){
             return willBoundingCircleCircleCollide(a, b, maxTime);
         }else if(!a.isUsingBoundingBox() && b.isUsingBoundingBox()){
-//            return willBoundingCircleBoxCollide(a, b, maxTime);
+            return willBoundingCircleBoxCollide(a, b, maxTime);
         }else if(a.isUsingBoundingBox() && !b.isUsingBoundingBox()){
-//            return willBoundingCircleBoxCollide(b, a, maxTime);
+            return willBoundingCircleBoxCollide(b, a, maxTime);
         }else if(a.isUsingBoundingBox() && a.isUsingBoundingBox()){
-//            return willBoundingBoxBoxCollide(a, b, maxTime);
+            return willBoundingBoxBoxCollide(a, b, maxTime);
         }
         return false;
     }
@@ -140,93 +140,50 @@ public abstract class Shape {
      */
     private static boolean willBoundingCircleBoxCollide(Polygon a, Polygon b, double maxTime){
         double relativeVelX = a.dx - b.dx, relativeVelY = a.dy - b.dy;
-        double maxTimeToCollision;
-        
-        double timeToCollide = getTimeToCollisionPlanePlane(b.x + b.getMinX(), a.x + a.radius, relativeVelX);
-        if(timeToCollide < 0){
+        double maxOverlapTime = getBoxOverlapTime(a.x, a.y, a.radius, a.radius, b.x, b.y, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY);
+        if(maxOverlapTime == NO_COLLISION){
             return false;
         }
-        maxTimeToCollision = timeToCollide;
-        
-        timeToCollide = getTimeToCollisionPlanePlane(b.y + b.getMinY(), a.y + a.radius, relativeVelY);
-        if(timeToCollide < 0){
-            return false;
-        }
-        maxTimeToCollision = Math.max(timeToCollide, maxTimeToCollision);
-        
-        timeToCollide = getTimeToCollisionPlanePlane(b.x + b.getMaxX(), a.x - a.radius, relativeVelX);
-        if(timeToCollide < 0){
-            return false;
-        }
-        maxTimeToCollision = Math.max(timeToCollide, maxTimeToCollision);
-        
-        timeToCollide = getTimeToCollisionPlanePlane(b.y + b.getMaxY(), a.y - a.radius, relativeVelY);
-        if(timeToCollide < 0){
-            return false;
-        }
-        maxTimeToCollision = Math.max(timeToCollide, maxTimeToCollision);
         
         //checking collision with points
         relativeVelX *= -1;
         relativeVelY *= -1;
         double radiusSquared = a.radius * a.radius;
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMinX(), b.getMinY(), relativeVelX, relativeVelY), maxTimeToCollision);
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMaxX(), b.getMinY(), relativeVelX, relativeVelY), maxTimeToCollision);
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY), maxTimeToCollision);
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMinX(), b.getMaxY(), relativeVelX, relativeVelY), maxTimeToCollision);
-        return maxTimeToCollision <= maxTime;
+        maxOverlapTime = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMinX(), b.getMinY(), relativeVelX, relativeVelY), maxOverlapTime);
+        maxOverlapTime = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMaxX(), b.getMinY(), relativeVelX, relativeVelY), maxOverlapTime);
+        maxOverlapTime = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY), maxOverlapTime);
+        maxOverlapTime = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.getMinX(), b.getMaxY(), relativeVelX, relativeVelY), maxOverlapTime);
+        return maxOverlapTime <= maxTime;
     }
     
     private static boolean willBoundingBoxBoxCollide(Polygon a, Polygon b, double maxTime){
         double relativeVelX = a.dx - b.dx, relativeVelY = a.dy - b.dy;
-        double maxTimeToCollision = -Double.MAX_VALUE;
-        
+        double maxOverlapTime = getBoxOverlapTime(a.x, a.y, a.getMaxX(), a.getMaxY(), b.x, b.y, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY);
+        return maxOverlapTime < maxTime;
+    }
+    
+    private static double getBoxOverlapTime(double aX, double aY, double aHalfX, double aHalfY, double bX, double bY, double bHalfX, double bHalfY, double relativeVelX, double relativeVelY){
+        double overlapTime;
         if(relativeVelX > 0){
-            double actualBX = b.x + b.getMinX(), actualAX = a.x + a.getMaxX();
-            double timeToCollision= getTimeToCollisionPlanePlane(actualBX, actualAX, relativeVelX);
-            if(timeToCollision < 0){
-                return false;
-            }
-            maxTimeToCollision = timeToCollision;
+            overlapTime = getOverlapTime(bX - bHalfX, aX + aHalfX, relativeVelX);
         }else if(relativeVelX < 0){
-            double actualBX = b.x + b.getMaxX(), actualAX = a.x + a.getMinX();
-            double timeToCollision= getTimeToCollisionPlanePlane(actualBX, actualAX, relativeVelX);
-            if(timeToCollision < 0){
-                return false;
-            }
-            maxTimeToCollision = timeToCollision;
+            overlapTime = getOverlapTime(bX + bHalfX, aX - aHalfX, relativeVelX);
         }else{
-            double minA = a.x + a.getMinX(), maxA = a.x + a.getMaxX();
-            double minB = b.x + b.getMinX(), maxB = b.x + b.getMaxX();
-            if(minA > maxB || maxA < minB){
-                return false;
+            if(aX - aHalfX > bX + bHalfX || aX + aHalfX < bX - bHalfX){
+                return NO_COLLISION;
             }
-            maxTimeToCollision = 0;
+            overlapTime = 0;
         }
-        
         if(relativeVelY > 0){
-            double actualBY = b.y + b.getMinY(), actualAY = a.y + a.getMaxY();
-            double timeToCollision = getTimeToCollisionPlanePlane(actualBY, actualAY, relativeVelY);
-            if(timeToCollision < 0){
-                return false;
-            }
-            maxTimeToCollision = Math.max(timeToCollision, maxTimeToCollision);
+            overlapTime = Math.max(getOverlapTime(bY - bHalfY, aY + aHalfY, relativeVelY), overlapTime);
         }else if(relativeVelY < 0){
-            double actualBY = b.y + b.getMaxY(), actualAY = a.y + a.getMinY();
-            double timeToCollision = getTimeToCollisionPlanePlane(actualBY, actualAY, relativeVelY);
-            if(timeToCollision < 0){
-                return false;
-            }
-            maxTimeToCollision = Math.max(timeToCollision, maxTimeToCollision);
+            overlapTime = Math.max(getOverlapTime(bY + bHalfY, aY - aHalfY, relativeVelY), overlapTime);
         }else{
-            double minA = a.y + a.getMinY(), maxA = a.y + a.getMaxY();
-            double minB = b.y + b.getMinY(), maxB = b.y + b.getMaxY();
-            if(minA > maxB || maxA < minB){
-                return false;
+            if(aY - aHalfY > bY + bHalfY || aY + aHalfY < bY - bHalfY){
+                return NO_COLLISION;
             }
         }
-        
-        return maxTimeToCollision < maxTime;
+        return overlapTime;
     }
     
     private static  double getTimeToCollisionPointAndCircle(double circleX, double circleY, double radiusSquared, double pointX, double pointY, double pointVelX, double pointVelY){
@@ -242,14 +199,14 @@ public abstract class Shape {
         return -Double.MAX_VALUE;
     }
     
-    private static double getTimeToCollisionPlanePlane(double actualBPos, double actualAPos, double relativeVel){
+    private static double getOverlapTime(double actualBPos, double actualAPos, double relativeVel){
         double dist = actualBPos - actualAPos;
-        if(relativeVel == 0){
-            if(dist < 0){
-                return 0;
-            }
-            return -Double.MAX_VALUE;
-        }
+//        if(relativeVel == 0){
+//            if(dist < 0){
+//                return 0;
+//            }
+//            return -Double.MAX_VALUE;
+//        }
         return dist / relativeVel;
     }
     

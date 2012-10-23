@@ -9,9 +9,7 @@ import gameengine.input.InputCode;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.geom.Point2D;
 import java.util.ArrayList;
-import java.util.Scanner;
 
 /**
  *
@@ -21,8 +19,8 @@ public class Game extends Context{
     private int mouseX = 0, mouseY = 0;
     private int realMouseX = 0, realMouseY = 0;
     private CollisionDetector collisionDetector = new CollisionDetector(3);
-    private ArrayList<CircleEntity> circles;
-    private ArrayList<CircleShape> circleShapes;
+    private ArrayList<CircleEntity> circles = new ArrayList<CircleEntity>();
+    private ArrayList<PolygonEntity> polygons = new ArrayList<PolygonEntity>();
     private Entity mouseItem;
     
     //Physics junk
@@ -47,8 +45,6 @@ public class Game extends Context{
     
     public Game(GameController controller){
         super(controller, ContextType.GAME, false, true);
-        circles = new ArrayList<CircleEntity>();
-        circleShapes = new ArrayList<CircleShape>();
         load();
         setupInput();
     }
@@ -101,6 +97,13 @@ public class Game extends Context{
     
     private void updatePositions(double elapsedTime){
             updateCircles(elapsedTime);
+            updatePolygons(elapsedTime);
+    }
+    
+    private void updatePolygons(double elapsedTime){
+        for(PolygonEntity polygon: polygons){
+            polygon.update(elapsedTime);
+        }
     }
     
     private void updateCircles(double elapsedTime){
@@ -120,6 +123,9 @@ public class Game extends Context{
         g.scale(scale, scale);
         for(CircleEntity circle: circles){
             circle.draw(g);
+        }
+        for(PolygonEntity polygon: polygons){
+            polygon.draw(g);
         }
         if(rulerMode){
             g.setColor(Color.WHITE);
@@ -153,10 +159,35 @@ public class Game extends Context{
     private void load(){
         Polygon.setRandomSeed(seed);
         circles.clear();
-        circleShapes.clear();
+        polygons.clear();
         collisionDetector.clearCollisions();
-        ballMode();
+//        ballMode();
+        polygonMode();
         collisionDetector.setCollisionPair(0, 0);
+    }
+    
+    private void polygonMode(){
+        double minRadius = 30;
+        double maxRadius = 50;
+        int minPoints = 3;
+        int maxPoints = 9;
+        int padding = 50;
+        int rows = 2;
+        int columns = 2;
+        double borderX = (width - columns * (maxRadius * 2 + padding)) / 2;
+        double borderY = (height - rows * (maxRadius * 2 + padding)) / 2;
+        double offsetX = borderX + maxRadius;
+        double offsetY = borderY + maxRadius;
+        for(int y = 0; y < rows; y++){
+            for(int x = 0; x < columns; x++){
+                double xPos = x * (maxRadius * 2 + padding) + offsetX;
+                double yPos = y * (maxRadius * 2 + padding) + offsetY;
+                PolygonEntity polygon = new PolygonEntity(this, xPos, yPos, minRadius, maxRadius, minPoints, maxPoints, 0);
+                polygons.add(polygon);
+                collisionDetector.addShape(polygon.getPolygonShape(), 0);
+            }
+        }
+        mouseItem = polygons.get(0);
     }
     
     private void ballMode(){
@@ -175,7 +206,6 @@ public class Game extends Context{
                 CircleEntity circle = new CircleEntity(this, xPos, yPos, radius);
                 circles.add(circle);
                 CircleShape circleShape = new CircleShape(xPos, yPos, 0, 0, radius, circle);
-                circleShapes.add(circleShape);
                 collisionDetector.addShape(circleShape, 0);
             }
         }

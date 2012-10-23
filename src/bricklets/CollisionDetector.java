@@ -148,6 +148,8 @@ public class CollisionDetector {
     private void getTimeToCollision(Shape a, Shape b, double maxTime, Collision result){
         if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_CIRCLE){
             Shape.collideCircleCircle(a, b, maxTime, result);
+        }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_POLYGON){
+            Shape.collidePolyPoly((Polygon) a, (Polygon) b, maxTime, result);
         }
     }
 }

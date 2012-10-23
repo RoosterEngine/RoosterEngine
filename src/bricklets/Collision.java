@@ -5,7 +5,7 @@ package bricklets;
  * @author davidrusu
  */
 public class Collision {
-    public static final Collision NO_COLLISION = new Collision(Shape.NO_COLLISION, new Vector2D(), null, null);
+    public static final Collision NO_COLLISION = new Collision();
     private Vector2D collisionNormal;
     private Shape a, b;
     private double timeToCollision;
@@ -18,7 +18,10 @@ public class Collision {
     }
     
     public Collision(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b){
-        set(timeToCollision, collisionNormal, a, b);
+        this.timeToCollision = timeToCollision;
+        this.collisionNormal = collisionNormal;
+        this.a = a;
+        this.b = b;
     }
     
     public void set(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b){

@@ -97,11 +97,11 @@ public abstract class Shape {
         if(!a.isUsingBoundingBox() && !b.isUsingBoundingBox()){
             return willBoundingCircleCircleCollide(a, b, maxTime);
         }else if(!a.isUsingBoundingBox() && b.isUsingBoundingBox()){
-            return willBoundingCircleBoxCollide(a, b, maxTime);
+//            return willBoundingCircleBoxCollide(a, b, maxTime);
         }else if(a.isUsingBoundingBox() && !b.isUsingBoundingBox()){
-            return willBoundingCircleBoxCollide(b, a, maxTime);
+//            return willBoundingCircleBoxCollide(b, a, maxTime);
         }else if(a.isUsingBoundingBox() && a.isUsingBoundingBox()){
-            return willBoundingBoxBoxCollide(a, b, maxTime);
+//            return willBoundingBoxBoxCollide(a, b, maxTime);
         }
         return false;
     }
@@ -109,20 +109,24 @@ public abstract class Shape {
     private static boolean willBoundingCircleCircleCollide(Polygon a, Polygon b, double maxTime){
         double combinedVelX = b.dx - a.dx;
         double combinedVelY = b.dy - a.dy;
+        if(combinedVelX == 0 && combinedVelY == 0){
+            // the speed relative to each other is 0;
+            return false;
+        }
         double distToLineSquared = Vector2D.distToLineSquared(a.x, a.y, b.x, b.y, b.x + combinedVelX, b.y + combinedVelY);
         double radiiSum = a.radius + b.radius;
         if(distToLineSquared > radiiSum * radiiSum){
+            // not in the path of the combined velocity
             return false;
         }
-
-        double deltaX = b.x - a.x;
-        double deltaY = b.y - a.y;
+        double deltaX = a.x - b.x;
+        double deltaY = a.y - b.y;
         double distBetween = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         double projVel = Vector2D.scalarProject(combinedVelX, combinedVelY, deltaX, deltaY, distBetween);
         if(projVel < 0){
+            // travelling away from each other
             return false;
         }
-
         distBetween -= radiiSum;
         double travelTime = distBetween / projVel;
         return travelTime <= maxTime;
@@ -249,12 +253,140 @@ public abstract class Shape {
         return dist / relativeVel;
     }
     
-    public static void colliderPolyPoly(Polygon a, Polygon b, double maxTime, Collision result){
+    public static void collidePolyPoly(Polygon a, Polygon b, double maxTime, Collision result){
+        if(!willBoundingCollide(a, b, maxTime)){
+            result.set(Collision.NO_COLLISION);
+            return;
+        }
+        Vector2D collisionNormal = result.getCollisionNormal().clear();
+        double combinedVelocityX = b.dx - a.dx, combinedVelocityY = b.dy - a.dy;
+        double maxEntryTime = -Double.MAX_VALUE, minLeaveTime = Double.MAX_VALUE;
         
+        for(int i = 0; i < b.getNormals().length; i++){
+            Vector2D normal = b.getNormals()[i];
+            double aMin = Double.MAX_VALUE;
+            double aMax = -Double.MAX_VALUE;
+            for(Vector2D point: a.getPoints()){
+                double dist = point.unitScalarProject(normal);
+                if(dist < aMin){
+                    aMin = dist;
+                }
+                if(dist > aMax){
+                    aMax = dist;
+                }
+            }
+            double centerA = Vector2D.unitScalarProject(a.x, a.y, normal);
+            double centerB = Vector2D.unitScalarProject(b.x, b.y, normal);
+            aMin += centerA;
+            aMax += centerA;
+            double bMin = b.getNormalMins()[i] + centerB;
+            double bMax = b.getNormalMaxs()[i] + centerB;
+            double projVel = Vector2D.unitScalarProject(combinedVelocityX, combinedVelocityY, normal);
+            if(aMax <= bMin){
+                if(projVel < 0){
+                    double timeToOverlap = (aMax - bMin) / projVel;
+                    if(timeToOverlap > maxEntryTime){
+                        maxEntryTime = timeToOverlap;
+                        collisionNormal.set(normal);
+                    }
+                }else{
+                    // not travelling away from each other
+                    //TODO should have an early return here
+                    maxEntryTime = NO_COLLISION;
+                }
+            }else if(bMax <= aMin){
+                if(projVel > 0){
+                    double timeToOverlap = (aMin - bMax) / projVel;
+                    if(timeToOverlap > maxEntryTime){
+                        maxEntryTime = timeToOverlap;
+                        collisionNormal.set(normal);
+                    }
+                }else{
+                    // not travelling away from each other
+                    //TODO should have an early return here
+                    maxEntryTime = NO_COLLISION;
+                }
+            }
+            
+            if(bMax > aMin && projVel < 0){
+                double timeToLeave = (aMin - bMax) / projVel;
+                if(timeToLeave < minLeaveTime){
+                    minLeaveTime = timeToLeave;
+                }
+            }else if(aMax > bMin && projVel > 0){
+                double timeToLeave = (aMax - bMin) / projVel;
+                if(timeToLeave < minLeaveTime){
+                    minLeaveTime = timeToLeave;
+                }
+            }
+        }
+        
+        Vector2D[] bPoints = b.getPoints();
+        for(int i = 0; i < a.getNormals().length; i++){
+            Vector2D normal = a.getNormals()[i];
+            double bMin = Double.MAX_VALUE;
+            double bMax = -Double.MAX_VALUE;
+            for(Vector2D point: bPoints){
+                double dist = point.unitScalarProject(normal);
+                if(dist < bMin){
+                    bMin = dist;
+                }
+                if(dist > bMax){
+                    bMax = dist;
+                }
+            }
+            double centerA = Vector2D.unitScalarProject(a.x, a.y, normal);
+            double centerB = Vector2D.unitScalarProject(b.x, b.y, normal);
+            bMin += centerB;
+            bMax += centerB;
+            double aMin = a.getNormalMins()[i] + centerA;
+            double aMax = a.getNormalMaxs()[i] + centerA;
+            double projVel = -Vector2D.unitScalarProject(combinedVelocityX, combinedVelocityY, normal);
+            if(bMax <= aMin){
+                if(projVel < 0){
+                    double timeToOverlap = (bMax - aMin) / projVel;
+                    if(timeToOverlap > maxEntryTime){
+                        maxEntryTime = timeToOverlap;
+                        collisionNormal.set(normal);
+                    }
+                }else{
+                    // not travelling towards each other
+                    //TODO should have an early return here
+                    maxEntryTime = NO_COLLISION;
+                }
+            }else if(aMax <= bMin){
+                if(projVel > 0){
+                    double timeToOverlap = (bMin - aMax) / projVel;
+                    if(timeToOverlap > maxEntryTime){
+                        maxEntryTime = timeToOverlap;
+                        collisionNormal.set(normal);
+                    }
+                }else{
+                    // not travelling towards each other
+                    //TODO should have an early return here
+                    maxEntryTime = NO_COLLISION;
+                }
+            }
+            
+            if(aMax > bMin && projVel < 0){
+                double timeToLeave = (bMin - aMax) / projVel;
+                if(timeToLeave < minLeaveTime){
+                    minLeaveTime = timeToLeave;
+                }
+            }else if(bMax > aMin && projVel > 0){
+                double timeToLeave = (bMax - aMin) / projVel;
+                if(timeToLeave < minLeaveTime){
+                    minLeaveTime = timeToLeave;
+                }
+            }
+        }
+        if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > minLeaveTime){
+            maxEntryTime = NO_COLLISION;
+        }
+        result.set(maxEntryTime, collisionNormal, b, a);
     }
     
     public abstract int getShapeType();
     
     public abstract void draw(Graphics2D g, Color color);
-
 }

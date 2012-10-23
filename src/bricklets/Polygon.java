@@ -530,6 +530,7 @@ public class Polygon extends Shape{
         return true;
     }
     
+    @Override
     public void draw(Graphics2D g, Color color){
         for(int i = 0; i < numPoints; i++){
             xInts[i] = (int)(points[i].getX() + x);
@@ -537,7 +538,7 @@ public class Polygon extends Shape{
         }
         g.setColor(color);
         g.fillPolygon(xInts, yInts, numPoints);
-//        drawBounding(g);
+        drawBounding(g);
     }
     
     private void drawBounding(Graphics2D g){

@@ -13,7 +13,7 @@ public class Polygon extends Shape{
     private Vector2D[] normals, points; // points are relative to the center
     private double[] normalMins, normalMaxs;
     private int[] xInts, yInts;
-    private double width, height, minShadowX, maxShadowX, minShadowY, maxShadowY;
+    private double width, height, minX, maxX, minY, maxY;
     private int numPoints;
     private boolean usingBoundingBox = true;
     
@@ -104,6 +104,7 @@ public class Polygon extends Shape{
     public double[] getNormalMins(){
         return normalMins;
     }
+    
     public double[] getNormalMaxs(){
         return normalMaxs;
     }
@@ -114,6 +115,22 @@ public class Polygon extends Shape{
     
     public double getHeight(){
         return height;
+    }
+    
+    public double getMinX(){
+        return minX;
+    }
+    
+    public double getMaxX(){
+        return maxX;
+    }
+    
+    public double getMinY(){
+        return minY;
+    }
+    
+    public double getMaxY(){
+        return maxY;
     }
     
     public boolean isUsingBoundingBox(){
@@ -185,7 +202,6 @@ public class Polygon extends Shape{
     }
         
     /**
-     * 
      * @param a the polygon with a bounding circle
      * @param b the polygon with a bounding box
      * @param maxTime
@@ -195,25 +211,25 @@ public class Polygon extends Shape{
         double relativeVelX = a.dx - b.dx, relativeVelY = a.dy - b.dy;
         double maxTimeToCollision;
         
-        double timeToCollide = getTimeToCollisionPlanePlane(b.x + b.minShadowX, a.x + a.radius, relativeVelX);
+        double timeToCollide = getTimeToCollisionPlanePlane(b.x + b.minX, a.x + a.radius, relativeVelX);
         if(timeToCollide < 0){
             return false;
         }
         maxTimeToCollision = timeToCollide;
         
-        timeToCollide = getTimeToCollisionPlanePlane(b.y + b.minShadowY, a.y + a.radius, relativeVelY);
+        timeToCollide = getTimeToCollisionPlanePlane(b.y + b.minY, a.y + a.radius, relativeVelY);
         if(timeToCollide < 0){
             return false;
         }
         maxTimeToCollision = Math.max(timeToCollide, maxTimeToCollision);
         
-        timeToCollide = getTimeToCollisionPlanePlane(b.x + b.maxShadowX, a.x - a.radius, relativeVelX);
+        timeToCollide = getTimeToCollisionPlanePlane(b.x + b.maxX, a.x - a.radius, relativeVelX);
         if(timeToCollide < 0){
             return false;
         }
         maxTimeToCollision = Math.max(timeToCollide, maxTimeToCollision);
         
-        timeToCollide = getTimeToCollisionPlanePlane(b.y + b.maxShadowY, a.y - a.radius, relativeVelY);
+        timeToCollide = getTimeToCollisionPlanePlane(b.y + b.maxY, a.y - a.radius, relativeVelY);
         if(timeToCollide < 0){
             return false;
         }
@@ -223,10 +239,10 @@ public class Polygon extends Shape{
         relativeVelX *= -1;
         relativeVelY *= -1;
         double radiusSquared = a.radius * a.radius;
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.minShadowX, b.minShadowY, relativeVelX, relativeVelY), maxTimeToCollision);
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.maxShadowX, b.minShadowY, relativeVelX, relativeVelY), maxTimeToCollision);
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.maxShadowX, b.maxShadowY, relativeVelX, relativeVelY), maxTimeToCollision);
-        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.minShadowX, b.maxShadowY, relativeVelX, relativeVelY), maxTimeToCollision);
+        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.minX, b.minY, relativeVelX, relativeVelY), maxTimeToCollision);
+        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.maxX, b.minY, relativeVelX, relativeVelY), maxTimeToCollision);
+        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.maxX, b.maxY, relativeVelX, relativeVelY), maxTimeToCollision);
+        maxTimeToCollision = Math.max(getTimeToCollisionPointAndCircle(a.x, a.y, radiusSquared, b.minX, b.maxY, relativeVelX, relativeVelY), maxTimeToCollision);
         return maxTimeToCollision <= maxTime;
     }
     
@@ -235,22 +251,22 @@ public class Polygon extends Shape{
         double maxTimeToCollision = -Double.MAX_VALUE;
         
         if(relativeVelX > 0){
-            double actualBX = b.x + b.minShadowX, actualAX = x + maxShadowX;
+            double actualBX = b.x + b.minX, actualAX = x + maxX;
             double timeToCollision= getTimeToCollisionPlanePlane(actualBX, actualAX, relativeVelX);
             if(timeToCollision < 0){
                 return false;
             }
             maxTimeToCollision = timeToCollision;
         }else if(relativeVelX < 0){
-            double actualBX = b.x + b.maxShadowX, actualAX = x + minShadowX;
+            double actualBX = b.x + b.maxX, actualAX = x + minX;
             double timeToCollision= getTimeToCollisionPlanePlane(actualBX, actualAX, relativeVelX);
             if(timeToCollision < 0){
                 return false;
             }
             maxTimeToCollision = timeToCollision;
         }else{
-            double minA = x + minShadowX, maxA = x + maxShadowX;
-            double minB = b.x + b.minShadowX, maxB = b.x + b.maxShadowX;
+            double minA = x + minX, maxA = x + maxX;
+            double minB = b.x + b.minX, maxB = b.x + b.maxX;
             if(minA > maxB || maxA < minB){
                 return false;
             }
@@ -258,22 +274,22 @@ public class Polygon extends Shape{
         }
         
         if(relativeVelY > 0){
-            double actualBY = b.y + minShadowY, actualAY = y + maxShadowY;
+            double actualBY = b.y + minY, actualAY = y + maxY;
             double timeToCollision = getTimeToCollisionPlanePlane(actualBY, actualAY, relativeVelY);
             if(timeToCollision < 0){
                 return false;
             }
             maxTimeToCollision = Math.max(timeToCollision, maxTimeToCollision);
         }else if(relativeVelY < 0){
-            double actualBY = b.y + b.maxShadowY, actualAY = y + minShadowY;
+            double actualBY = b.y + b.maxY, actualAY = y + minY;
             double timeToCollision = getTimeToCollisionPlanePlane(actualBY, actualAY, relativeVelY);
             if(timeToCollision < 0){
                 return false;
             }
             maxTimeToCollision = Math.max(timeToCollision, maxTimeToCollision);
         }else{
-            double minA = y + minShadowY, maxA = y + maxShadowY;
-            double minB = b.y + b.minShadowY, maxB = b.y + b.maxShadowY;
+            double minA = y + minY, maxA = y + maxY;
+            double minB = b.y + b.minY, maxB = b.y + b.maxY;
             if(minA > maxB || maxA < minB){
                 return false;
             }
@@ -447,18 +463,18 @@ public class Polygon extends Shape{
     public boolean isIntersectingBounding(Polygon polygon){
         if(usingBoundingBox){
             if(polygon.usingBoundingBox){
-                if((maxShadowX < polygon.minShadowX || minShadowX > polygon.maxShadowX) && (maxShadowY < polygon.minShadowY || minShadowY > polygon.maxShadowY)){
+                if((maxX < polygon.minX || minX > polygon.maxX) && (maxY < polygon.minY || minY > polygon.maxY)){
                     return false;
                 }
             }else{ // polygon is using bounding circle
-                if((polygon.x + polygon.radius < minShadowX || polygon.x - polygon.radius > maxShadowX) && (polygon.y + polygon.radius < minShadowY || polygon.y - polygon.radius > maxShadowY)){
+                if((polygon.x + polygon.radius < minX || polygon.x - polygon.radius > maxX) && (polygon.y + polygon.radius < minY || polygon.y - polygon.radius > maxY)){
                     return false;
                 }
             }
         }else{
             if(polygon.usingBoundingBox){
                 // not accurate circle is treated as a square
-                if((x + radius < polygon.minShadowX || x - radius > polygon.maxShadowX) && (y + radius < polygon.minShadowY || y - radius > polygon.maxShadowY)){
+                if((x + radius < polygon.minX || x - radius > polygon.maxX) && (y + radius < polygon.minY || y - radius > polygon.maxY)){
                     return false;
                 }
             }else{ // both polygons are using bounding circle
@@ -527,7 +543,7 @@ public class Polygon extends Shape{
     private void drawBounding(Graphics2D g){
         g.setColor(Color.ORANGE);
         if(usingBoundingBox){
-            g.drawRect((int)(x + minShadowX), (int)(y + minShadowY), (int)(width), (int)(height));
+            g.drawRect((int)(x + minX), (int)(y + minY), (int)(width), (int)(height));
         }else{
             g.drawOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
         }
@@ -546,28 +562,28 @@ public class Polygon extends Shape{
     }
     
     private void setupMaxMin(){
-        minShadowX = Double.MAX_VALUE;
-        maxShadowX = -Double.MAX_VALUE;
-        minShadowY = Double.MAX_VALUE;
-        maxShadowY = -Double.MAX_VALUE;
+        minX = Double.MAX_VALUE;
+        maxX = -Double.MAX_VALUE;
+        minY = Double.MAX_VALUE;
+        maxY = -Double.MAX_VALUE;
         for(Vector2D point: points){
             double x = point.getX();
             double y = point.getY();
-            if(x < minShadowX){
-                minShadowX = x;
+            if(x < minX){
+                minX = x;
             }
-            if(x > maxShadowX){
-                maxShadowX = x;
+            if(x > maxX){
+                maxX = x;
             }
-            if(y < minShadowY){
-                minShadowY = y;
+            if(y < minY){
+                minY = y;
             }
-            if(y > maxShadowY){
-                maxShadowY = y;
+            if(y > maxY){
+                maxY = y;
             }
         }
-        width = maxShadowX - minShadowX;
-        height = maxShadowY - minShadowY;
+        width = maxX - minX;
+        height = maxY - minY;
     }
     
     private void setupNormalsAndShadows(){

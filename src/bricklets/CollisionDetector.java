@@ -8,15 +8,9 @@ import java.util.ArrayList;
  * @author davidrusu
  */
 public class CollisionDetector {
-    
-    private ArrayList<Collider> collidables = new ArrayList<Collider>();
-    private ArrayList<Collider> moveables = new ArrayList<Collider>();
     public static final int MAX_COLLISION_CATEGORIES = 10;
-    private double shortestTimeTillNextCollision;
-    private Collider collidingA = null, collidingB = null;
-    private ArrayList<Collider>[] categories;
+    private ArrayList<Shape>[] categories;
     private ArrayList<CollisionCategoryPair> collisionPairs = new ArrayList<CollisionCategoryPair>();
-    private Vector2D collisionNormal = new Vector2D();
     
     /**
      * Constructs a CollisionDetector with the specified number of
@@ -47,14 +41,14 @@ public class CollisionDetector {
         }
     }
     
-    public void addCollidable(Collidable collidable, int collisionCategory){
-        categories[collisionCategory].add(new Collider(collidable));
+    public void addShape(Shape shape, int collisionCategory){
+        categories[collisionCategory].add(shape);
     }
     
-    public boolean removeCollidable(Collidable collidable, int collisionCategory){
-        for(Collider collider: categories[collisionCategory]){
-            if(collider.getCollidable() == collidable){
-                return categories[collisionCategory].remove(collider);
+    public boolean removeShape(Shape shape, int collisionCategory){
+        for(Shape testShape: categories[collisionCategory]){
+            if(testShape == shape){
+                return categories[collisionCategory].remove(shape);
             }
         }
         return false;
@@ -67,11 +61,12 @@ public class CollisionDetector {
             CollisionCategoryPair pair = collisionPairs.get(i);
             if((pair.getA() == collisionCategoryA && pair.getB() == collisionCategoryB) || (pair.getB() == collisionCategoryA && pair.getA() == collisionCategoryB)){
                 foundDuplicate = true;
-                collisionPairs.remove(pair);
             }
             i++;
         }
-        collisionPairs.add(new CollisionCategoryPair(collisionCategoryA, collisionCategoryB));
+        if(!foundDuplicate){
+            collisionPairs.add(new CollisionCategoryPair(collisionCategoryA, collisionCategoryB));
+        }
     }
     
     public boolean removeCollisionPair(int collisionCategoryA, int collisionCategoryB){
@@ -99,12 +94,12 @@ public class CollisionDetector {
     
     public Collision getNextCollision(double maxTime){
         Collision nextCollision = new Collision();
-        shortestTimeTillNextCollision = Collider.NO_COLLISION;
+        double shortestTimeTillNextCollision = Shape.NO_COLLISION;
         for(CollisionCategoryPair pair: collisionPairs){
-            ArrayList<Collider> listA = categories[pair.getA()];
-            ArrayList<Collider> listB = categories[pair.getB()];
+            ArrayList<Shape> listA = categories[pair.getA()];
+            ArrayList<Shape> listB = categories[pair.getB()];
             
-            for(Collider b: listB){
+            for(Shape b: listB){
                 b.update();
             }
             
@@ -117,14 +112,14 @@ public class CollisionDetector {
         return nextCollision;
     }
     
-    private void checkCollisionsInSingleList(ArrayList<Collider> list, double maxTime, Collision result){
-        double shortestTimeTillNextCollision = Double.MAX_VALUE;
-        Collision testCollision = new Collision();
+    private void checkCollisionsInSingleList(ArrayList<Shape> list, double maxTime, Collision result){
+        double shortestTimeTillNextCollision = Shape.NO_COLLISION;
+        Collision testCollision = new Collision(); //TODO can be moved to the calling method and passed as an argument to save object creation
         for(int i = 0; i < list.size(); i++){
-            Collider a = list.get(i);
+            Shape a = list.get(i);
             for(int j = i + 1; j < list.size(); j++){
-                Collider b = list.get(j);
-                a.getTimeToCollision(b, maxTime, testCollision);
+                Shape b = list.get(j);
+                getTimeToCollision(a, b, maxTime, testCollision);
                 if(testCollision.getTimeToCollision() < shortestTimeTillNextCollision){
                     shortestTimeTillNextCollision = testCollision.getTimeToCollision();
                     result.set(testCollision);
@@ -133,14 +128,14 @@ public class CollisionDetector {
         }
     }
     
-    private void checkCollisionsInLists(ArrayList<Collider> listA, ArrayList<Collider> listB, double maxTime, Collision result){
+    private void checkCollisionsInLists(ArrayList<Shape> listA, ArrayList<Shape> listB, double maxTime, Collision result){
         double shortestTimeTillNextCollision = Double.MAX_VALUE;
-        Collision testCollision = new Collision();
-        for(Collider a: listA){
+        Collision testCollision = new Collision(); //TODO can be moved to the calling method and passed as an argument to save object creation
+        for(Shape a: listA){
             a.update();
-            for(Collider b: listB){
+            for(Shape b: listB){
                 if(a != b){
-                    a.getTimeToCollision(b, maxTime, testCollision);
+                    getTimeToCollision(a, b, maxTime, testCollision);
                     if(testCollision.getTimeToCollision() < shortestTimeTillNextCollision){
                         shortestTimeTillNextCollision = testCollision.getTimeToCollision();
                         result.set(testCollision);
@@ -151,6 +146,8 @@ public class CollisionDetector {
     }
     
     private void getTimeToCollision(Shape a, Shape b, double maxTime, Collision result){
-        if(a.)
+        if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_CIRCLE){
+            Shape.collideCircleCircle(a, b, maxTime, result);
+        }
     }
 }

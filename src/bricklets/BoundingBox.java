@@ -8,49 +8,9 @@ import java.awt.Graphics2D;
  *
  * @author david
  */
-public class BoundingBox extends Collidable {
-    private double halfWidth, halfHeight;
+public class BoundingBox{
     private Polygon polygon;
-    private String debugString = "";
-    
-    public BoundingBox(Context context, double x, double y, double width, double height){
-        this(context, x, y, width, height, false, false);
-    }
-    
-    public BoundingBox(Context context, double x, double y, double width, double height, boolean isFixated, boolean useRandomShape){
-        super(context, new Vector2D(x, y), new Vector2D(), new Vector2D(), 1, width, height, new Color((int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255)));
-        halfWidth = width / 2;
-        halfHeight = height / 2;
-        if(!useRandomShape){
-            double[] xPoints = {x - halfWidth, x - halfWidth, x + halfWidth, x + halfWidth};
-            double[] yPoints = {y - halfHeight, y + halfHeight, y + halfHeight, y - halfHeight};
-//            polygon = new Polygon(xPoints, yPoints);
-        }else{
-//            polygon = Polygon.getRandomConvexPolygon(10, 30, 3, 9, 0);
-            polygon.updatePosition(x, y);
-        }
-        mass = 0.1;
-        this.isFixated = isFixated;
-    }
-    
-    public void setMass(double mass){
-        this.mass = mass;
-    }
-
-    @Override
-    public Polygon getPolygon() {
-        return polygon;
-    }
-
-    @Override
-    public boolean isCircular() {
-        return false;
-    }
-
-    @Override
-    public boolean isPolygonal() {
-        return true;
-    }
+    private Vector2D velocity;
     
     public void getTimeToCollision(BoundingBox b, double maxTime, Collision result){
         Vector2D[] aNormals = polygon.getNormals();
@@ -182,50 +142,10 @@ public class BoundingBox extends Collidable {
 //                }
 //            }
         }
-        debugString = maxEntryTime + " " + minLeaveTime;
         double velProj = combinedVelocity.unitScalarProject(collisionNormal);
         if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > minLeaveTime){
-            maxEntryTime = Collider.NO_COLLISION;
+            maxEntryTime = Shape.NO_COLLISION;
         }
 //        result.set(maxEntryTime, collisionNormal, b, this);
     }
-    
-    @Override
-    public void update(double elapsedTime) {
-        position.add(new Vector2D(velocity).scale(elapsedTime));
-        polygon.updatePosition(position.getX(), position.getY());
-        if(!isFixated){
-            acceleration.add(0, g * elapsedTime);
-        }
-        velocity.add(acceleration.getX() * elapsedTime, acceleration.getY() * elapsedTime);
-        acceleration.clear();
-    }
-
-    @Override
-    public void draw(Graphics2D g) {
-//        g.setColor(color);
-//        g.fillRect((int)(position.getX() - halfWidth), (int)(position.getY() - halfHeight), (int)width, (int)height);
-        polygon.setColor(color);
-        polygon.draw(g);
-        
-//        int scale = 100;
-//        int vX = (int)(velocity.getX() * scale + position.getX());
-//        int vY = (int)(velocity.getY() * scale + position.getY());
-//        int centerX = (int)(position.getX());
-//        int centerY = (int)(position.getY());
-//        g.setColor(Color.CYAN);
-//        g.drawLine(centerX, centerY, vX, vY);
-        
-//        scale = 50;
-//        vX = (int)(debugVector.getX() * scale + position.getX());
-//        vY = (int)(debugVector.getY() * scale + position.getY());
-//        centerX = (int)(position.getX());
-//        centerY = (int)(position.getY());
-//        g.setColor(Color.ORANGE);
-//        g.drawLine(centerX, centerY, vX, vY);
-//        g.setColor(Color.GREEN);
-//        g.drawString(debugString, centerX, centerY);
-//        color = Color.WHITE;
-    }
-    
 }

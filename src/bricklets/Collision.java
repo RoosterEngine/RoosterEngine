@@ -5,13 +5,13 @@ package bricklets;
  * @author davidrusu
  */
 public class Collision {
-    public static final Collision NO_COLLISION = new Collision(Double.MAX_VALUE, new Vector2D(), null, null);
+    public static final Collision NO_COLLISION = new Collision(Shape.NO_COLLISION, new Vector2D(), null, null);
     private Vector2D collisionNormal;
     private Shape a, b;
     private double timeToCollision;
     
     public Collision(){
-        timeToCollision = 0;
+        timeToCollision = Shape.NO_COLLISION;
         collisionNormal = new Vector2D();
         a = null;
         b = null;
@@ -30,7 +30,7 @@ public class Collision {
 
     public void set(Collision collision) {
         timeToCollision = collision.timeToCollision;
-        collisionNormal = collision.collisionNormal;
+        collisionNormal.set(collision.collisionNormal);
         a = collision.a;
         b = collision.b;
     }

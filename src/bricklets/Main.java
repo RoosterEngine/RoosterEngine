@@ -12,7 +12,6 @@ import java.awt.Color;
 public class Main implements ButtonHandler{
     
     private GameController controller;
-    private BasicButton collisionButton = new BasicButton("Collision");
     private BasicButton physicsButton = new BasicButton("Physics");
     private BasicButton seedButton = new BasicButton("Change Seed");
     private BasicButton testingButton = new BasicButton("Testing");
@@ -20,14 +19,13 @@ public class Main implements ButtonHandler{
     private BasicButton optionsButton = new BasicButton("Options");
     private BasicButton controlsButton = new BasicButton("Controls");
     private Game game;
-    private Context collisionTest, testing;
+    private Context testing;
     
     public Main(GameController controller){
         this.controller = controller;
         game = new Game(controller);
-        collisionTest = new TestingSeperateAxisCollision(controller);
         testing = new Testing(controller);
-        BasicButton[] buttons = {collisionButton, physicsButton, seedButton, testingButton, optionsButton, controlsButton, exitButton};
+        BasicButton[] buttons = {physicsButton, seedButton, testingButton, optionsButton, controlsButton, exitButton};
         BasicMenu menu = new BasicMenu(controller, ContextType.MENU, buttons, this, new SolidColorGraphic(new Color(232,221,203), controller.getWidth(), controller.getHeight()));
         controller.enterContext(menu);
     }
@@ -48,11 +46,7 @@ public class Main implements ButtonHandler{
     
     @Override
     public void buttonActivated(BasicButton button) {
-        if(button == collisionButton){
-            System.out.println("Entering game");
-//            controller.enterContext(game);
-            controller.enterContext(collisionTest);
-        }else if(button == physicsButton){
+        if(button == physicsButton){
             controller.enterContext(game);
         }else if(button == seedButton){
             game.setSeed((long)(Math.random() * 100));

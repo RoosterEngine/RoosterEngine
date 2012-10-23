@@ -26,8 +26,8 @@ public class Polygon extends Shape{
      * @param xPoints
      * @param yPoints 
      */
-    public Polygon(double x, double y, double dx, double dy, double[] xPoints, double[] yPoints){
-        super(x, y, dx, dy, getRadius(xPoints, yPoints));
+    public Polygon(double x, double y, double dx, double dy, double[] xPoints, double[] yPoints, Entity parentEntity){
+        super(x, y, dx, dy, getRadius(xPoints, yPoints), parentEntity);
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
         normals = new Vector2D[numPoints];
@@ -49,13 +49,13 @@ public class Polygon extends Shape{
         }
     }
     
-    public static Polygon getRectanglePolygon(double x, double y, double width, double height){
+    public static Polygon getRectanglePolygon(double x, double y, double width, double height, Entity parentEntity){
         double[] xPoints = {0, width, width, 0};
         double[] yPoints = {0, 0, height, height};
-        return new Polygon(x, y, 0, 0, xPoints, yPoints);
+        return new Polygon(x, y, 0, 0, xPoints, yPoints, parentEntity);
     }
     
-    public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, long seed){
+    public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, long seed, Entity parentEntity){
         if(rand == null){
             rand = new Random(seed);
         }
@@ -73,7 +73,7 @@ public class Polygon extends Shape{
             xPoints[p] = pX;
             yPoints[p] = pY;
         }
-        return new Polygon(x, y, 0, 0, xPoints, yPoints);
+        return new Polygon(x, y, 0, 0, xPoints, yPoints, parentEntity);
     }
     
     private static double getRadius(double[] xPoints, double[] yPoints){
@@ -144,8 +144,6 @@ public class Polygon extends Shape{
         }
         return Math.abs(sum * 0.5);
     }
-    
-    public 
     
     public void setColor(Color color){
         this.color = color;
@@ -352,7 +350,7 @@ public class Polygon extends Shape{
                 }else{
                     // not travelling away from each other
                     //TODO should have an early return here
-                    maxEntryTime = Collider.NO_COLLISION;
+                    maxEntryTime = NO_COLLISION;
                 }
             }else if(bMax <= aMin){
                 if(projVel > 0){
@@ -364,7 +362,7 @@ public class Polygon extends Shape{
                 }else{
                     // not travelling away from each other
                     //TODO should have an early return here
-                    maxEntryTime = Collider.NO_COLLISION;
+                    maxEntryTime = NO_COLLISION;
                 }
             }
             
@@ -412,7 +410,7 @@ public class Polygon extends Shape{
                 }else{
                     // not travelling towards each other
                     //TODO should have an early return here
-                    maxEntryTime = Collider.NO_COLLISION;
+                    maxEntryTime = NO_COLLISION;
                 }
             }else if(aMax <= bMin){
                 if(projVel > 0){
@@ -424,7 +422,7 @@ public class Polygon extends Shape{
                 }else{
                     // not travelling towards each other
                     //TODO should have an early return here
-                    maxEntryTime = Collider.NO_COLLISION;
+                    maxEntryTime = NO_COLLISION;
                 }
             }
             
@@ -441,7 +439,7 @@ public class Polygon extends Shape{
             }
         }
         if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > minLeaveTime){
-            maxEntryTime = Collider.NO_COLLISION;
+            maxEntryTime = NO_COLLISION;
         }
         result.set(maxEntryTime, collisionNormal, b, this);
     }
@@ -516,7 +514,7 @@ public class Polygon extends Shape{
         return true;
     }
     
-    public void draw(Graphics2D g){
+    public void draw(Graphics2D g, Color color){
         for(int i = 0; i < numPoints; i++){
             xInts[i] = (int)(points[i].getX() + x);
             yInts[i] = (int)(points[i].getY() + y);

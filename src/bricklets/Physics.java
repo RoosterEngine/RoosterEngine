@@ -20,32 +20,22 @@ public class Physics {
         return displacement * k;
     }
     
-    public static void performElasiticCollision(Collidable a, Collidable b, double collisionsPerMilli, Vector2D collisionNormal){
-        performCollision(a, b, 1, collisionsPerMilli, collisionNormal);
-    }
-    
-    private static void performCircleCircleCollision(Collidable a, Collidable b, double restitution, double collisionRate){
-        unitY.set(a.getX() - b.getX(), a.getY() - b.getY()).unit();
-        performCollisionAlongNormal(a, b, restitution, collisionRate, unitY);
-    }
-    
-    private static void performPolyPolyCollision(Collidable a, Collidable b, double restitution, double collisionRate, Vector2D collisionNormal){
-        performCollisionAlongNormal(b, a, restitution, collisionRate, collisionNormal);
-    }
-    
-    private static void performCollisionAlongNormal(Collidable a, Collidable b, double restitution, double collisionRate, Vector2D normalUnit){
-        unitY.set(normalUnit);
+    public static void performCollision(Collision collision, double restitution, double collisionRate){
+        unitY.set(collision.getCollisionNormal());
         unitX.set(-unitY.getY(), unitY.getX());
-        double xLengthA = a.getVelocity().unitScalarProject(unitX);
-        double yLengthA = a.getVelocity().unitScalarProject(unitY);
-        double xLengthB = b.getVelocity().unitScalarProject(unitX);
-        double yLengthB = b.getVelocity().unitScalarProject(unitY);
+        Entity a = collision.getA().getParentEntity();
+        Entity b = collision.getB().getParentEntity();
+        
+        double xLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitX);
+        double yLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitY);
+        double xLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitX);
+        double yLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitY);
         
         double velDiff = yLengthB - yLengthA;
-//        double collisionsThresh = 0.1;
-//        if(collisionRate > collisionsThresh && Math.abs(velDiff) < 0.3){
-//            restitution *= 1 + collisionRate / 2;
-//        }
+        double collisionsThresh = 0.1;
+        if(collisionRate > collisionsThresh && Math.abs(velDiff) < 0.3){
+            restitution *= 1 + collisionRate / 2;
+        }
         double combinedMomentum = yLengthB * b.getMass() + yLengthA * a.getMass();
         double combinedMass = b.getMass() + a.getMass();
         double yFinalA = (restitution * b.getMass() * velDiff + combinedMomentum) / combinedMass;
@@ -59,14 +49,5 @@ public class Physics {
         a.setVelocity(xA, yA);
         b.setVelocity(xB, yB);
         
-    }
-    
-    public static void performCollision(Collidable a, Collidable b, double restitution, double collisionRate, Vector2D collisionNormal){
-        if(a.isCircular() && b.isCircular()){
-            performCircleCircleCollision(a, b, restitution, collisionRate);
-        }else if(a.isPolygonal() && b.isPolygonal()){
-            
-            performPolyPolyCollision(a, b, restitution, collisionRate, collisionNormal);
-        }
     }
 }

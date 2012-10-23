@@ -166,6 +166,10 @@ public class Vector2D {
         return (x * onTo.x + y * onTo.y) / onToLength;
     }
     
+    public double scalarProject(double ontoX, double ontoY, double ontoLength){
+        return (x * ontoX + y * ontoY) / ontoLength;
+    }
+    
     public static double scalarProject(double x, double y, double ontoX, double ontoY, double ontoLength){
         return (x * ontoX + y * ontoY) / ontoLength;
     }
@@ -211,6 +215,12 @@ public class Vector2D {
     
     public Vector2D unit(){
         double length = length();
+        this.x /= length;
+        this.y /= length;
+        return this;
+    }
+    
+    public Vector2D unit(double length){
         this.x /= length;
         this.y /= length;
         return this;

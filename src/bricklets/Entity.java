@@ -11,39 +11,53 @@ import java.awt.Graphics2D;
  */
 public abstract class Entity {
     
-    protected static double air = 1, g = 0.0001;
+    protected static double air = 1, g = 0;
     protected Context context;
-    protected Vector2D position, velocity, acceleration;
+    protected double x, y, dx, dy, ddx, ddy;
     protected double restitution, mass = 1;
     protected Color color;
     
     public Entity(Context context, double x, double y, Color color){
-        this(context, x, y, 1, color);
+        this(context, x, y, 0, 0, color);
     }
     
-    public Entity(Context context, double x, double y, double restitution, Color color){
-        this(context, new Vector2D(x, y), restitution, color);
-    }
-    
-    public Entity(Context context, Vector2D pos, double restitution, Color color){
-        this(context, pos, new Vector2D(), restitution, color);
-    }
-    
-    public Entity(Context context, double x, double y, double dx, double dy, double restitution, Color color){
-        this(context, new Vector2D(x, y), new Vector2D(dx, dy), restitution, color);
-    }
-    
-    public Entity(Context context, Vector2D pos, Vector2D vel, double restitution, Color color){
-        this(context, pos, vel, new Vector2D(), restitution, color);
-    }
-    
-    public Entity(Context context, Vector2D pos, Vector2D vel, Vector2D accel, double restitution, Color color){
+    public Entity(Context context, double x, double y, double dx, double dy, Color color){
         this.context = context;
-        this.position = pos;
-        this.velocity = vel;
-        this.acceleration = accel;
-        this.restitution = restitution;
+        this.x = x;
+        this.y = y;
+        this.dx = dx;
+        this.dy = dy;
         this.color = color;
+    }
+    
+    public double getX() {
+        return x;
+    }
+    
+    public double getY(){
+        return y;
+    }
+    
+    public double getDX(){
+        return dx;
+    }
+    
+    public double getDY(){
+        return dy;
+    }
+    
+    public double getMass(){
+        return mass;
+    }
+    
+    public void setVelocity(double x, double y){
+        dx = x;
+        dy = y;
+    }
+    
+    public void addForce(double x, double y){
+        ddx += x;
+        ddy += y;
     }
     
     public void setColor(Color color){

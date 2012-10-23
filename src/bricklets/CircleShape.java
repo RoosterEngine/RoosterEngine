@@ -11,9 +11,9 @@ import java.awt.Graphics2D;
  *
  * @author david
  */
-public class Circle extends Shape{
+public class CircleShape extends Shape{
     
-    public Circle(double x, double y, double dx, double dy, double radius, Entity parentEntity){
+    public CircleShape(double x, double y, double dx, double dy, double radius, Entity parentEntity){
         super(x, y, dx, dy, radius, parentEntity);
     }
     

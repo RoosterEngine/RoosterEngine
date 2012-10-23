@@ -22,7 +22,7 @@ public class Game extends Context{
     private int realMouseX = 0, realMouseY = 0;
     private CollisionDetector collisionDetector = new CollisionDetector(3);
     private ArrayList<CircleEntity> circles;
-    private ArrayList<Circle> circleShapes;
+    private ArrayList<CircleShape> circleShapes;
     private Entity mouseItem;
     
     //Physics junk
@@ -48,7 +48,7 @@ public class Game extends Context{
     public Game(GameController controller){
         super(controller, ContextType.GAME, false, true);
         circles = new ArrayList<CircleEntity>();
-        circleShapes = new ArrayList<Circle>();
+        circleShapes = new ArrayList<CircleShape>();
         load();
         setupInput();
     }
@@ -174,7 +174,7 @@ public class Game extends Context{
                 double yPos = y * (radius * 2 + padding) + offsetY;
                 CircleEntity circle = new CircleEntity(this, xPos, yPos, radius);
                 circles.add(circle);
-                Circle circleShape = new Circle(xPos, yPos, 0, 0, radius, circle);
+                CircleShape circleShape = new CircleShape(xPos, yPos, 0, 0, radius, circle);
                 circleShapes.add(circleShape);
                 collisionDetector.addShape(circleShape, 0);
             }

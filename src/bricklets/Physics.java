@@ -32,10 +32,10 @@ public class Physics {
         double yLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitY);
         
         double velDiff = yLengthB - yLengthA;
-        double collisionsThresh = 0.1;
-        if(collisionRate > collisionsThresh && Math.abs(velDiff) < 0.3){
-            restitution *= 1 + collisionRate / 2;
-        }
+//        double collisionsThresh = 0.1;
+//        if(collisionRate > collisionsThresh && Math.abs(velDiff) < 0.3){
+//            restitution *= 1 + collisionRate / 2;
+//        }
         double combinedMomentum = yLengthB * b.getMass() + yLengthA * a.getMass();
         double combinedMass = b.getMass() + a.getMass();
         double yFinalA = (restitution * b.getMass() * velDiff + combinedMomentum) / combinedMass;

@@ -8,14 +8,14 @@ import java.awt.Graphics2D;
  *
  * @author david
  */
-public class BoundingBoxShape extends Shape{
+public class AABBShape extends Shape{
     private double width, height, halfWidth, halfHeight;
     
     private static double calcRadius(double halfWidth, double halfHeight){
         return Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight);
     }
     
-    public BoundingBoxShape(double x, double y, double width, double height, Entity parentEntity){
+    public AABBShape(double x, double y, double width, double height, Entity parentEntity){
         super(x, y, 0, 0, calcRadius(width / 2, height / 2), parentEntity);
         this.width = width;
         this.height = height;

@@ -169,7 +169,7 @@ public abstract class Shape {
                     return;
                 }
             }
-            
+            //TODO rethink this bit should probably be an else if to start and also what happens when they are travelling towards each other
             if(aMax > bMin && projVel < 0){
                 double timeToLeave = (bMin - aMax) / projVel;
                 if(timeToLeave < minLeaveTime){
@@ -265,31 +265,6 @@ public abstract class Shape {
         }
     }
     
-    private static boolean checkCirclePointCollide(double cx, double cy, double radius, double px, double py, double pVelX, double pVelY, double velLength, double maxEntryTime, Collision result, Shape a, Shape b){
-        double distToVelRaySquared = Vector2D.distToLineSquared(cx, cy, px, py, px + pVelX, py + pVelY);
-        double radiusSquared = radius * radius;
-        if(distToVelRaySquared <= radiusSquared){
-            // in the path of the velocity ray
-            double projLength = Vector2D.scalarProject(cx - px, cy - py, pVelX, pVelY, velLength);
-            if(projLength >= 0){
-                // travelling towards each other
-                System.out.println("test");
-                double subLength = Math.sqrt(radiusSquared - distToVelRaySquared);
-                double travelDist = projLength - subLength;
-                double travelTime = travelDist / velLength;
-                if(travelTime < maxEntryTime){
-                    System.out.println("pass " + travelTime);
-                    double distOverVel = travelDist / velLength;
-                    result.getCollisionNormal().set(cx - px - pVelX * distOverVel, cy - py - pVelY * distOverVel).unit();
-                    result.set(travelTime, result.getCollisionNormal(), a, b);
-                    return true;
-                }
-            }
-        }
-        return false;
-        
-    }
-    
     public static void collideCircleCircle(Shape a, Shape b, double maxTime, Collision result){
         double combinedVelX = b.dx - a.dx;
         double combinedVelY = b.dy - a.dy;
@@ -328,6 +303,115 @@ public abstract class Shape {
         result.set(travelTime, velocity, a, b);
     }
     
+    public static void collideAABBAABB(AABBShape a, AABBShape b, double maxTime, Collision result){
+        // check x axis
+        double relativeVelX = a.dx - b.dx, relativeVelY = a.dy - b.dy;
+        double maxEntryTime = -Double.MAX_VALUE, minLeaveTime = Double.MAX_VALUE;
+        double aMaxX = a.x + a.getHalfWidth(), aMinX = a.x - a.getHalfWidth();
+        double aMaxY = a.y + a.getHalfHeight(), aMinY = a.y - a.getHalfHeight();
+        double bMaxX = b.x + b.getHalfWidth(), bMinX = b.x - b.getHalfWidth();
+        double bMaxY = b.y + b.getHalfHeight(), bMinY = b.y - b.getHalfHeight();
+        Vector2D collisionNormal = result.getCollisionNormal();
+        if(aMaxX <= bMinX){
+            if(relativeVelX <= 0){
+                result.set(Collision.NO_COLLISION);
+                return;
+            }
+            double dist = bMinX - aMaxX;
+            maxEntryTime = dist / relativeVelX;
+            collisionNormal.set(1, 0);
+        }else if(aMinX >= bMaxX){
+            if(relativeVelX >= 0){
+                result.set(Collision.NO_COLLISION);
+                return;
+            }
+            double dist = aMinX - bMaxX;
+            maxEntryTime = dist / -relativeVelX;
+            collisionNormal.set(1, 0);
+        }else{
+            if(relativeVelX == 0){
+                maxEntryTime = 0;
+                collisionNormal.set(1, 0);
+            }else if(aMaxX > bMinX && relativeVelX < 0){
+                double dist = aMaxX - bMinX;
+                minLeaveTime = dist / -relativeVelX;
+            }else if(bMaxX > aMinX && relativeVelX > 0){
+                double dist = bMaxX - aMinX;
+                minLeaveTime = dist / relativeVelX;
+            }
+        }
+        
+        if(aMaxY <= bMinY){
+            if(relativeVelY <= 0){
+                result.set(Collision.NO_COLLISION);
+                return;
+            }
+            double dist = bMinY - aMaxY;
+            double travelTime = dist / relativeVelY;
+            if(travelTime > maxEntryTime){
+                maxEntryTime = travelTime;
+                collisionNormal.set(0, 1);
+            }
+        }else if(aMinY >= bMaxY){
+            if(relativeVelY >= 0){
+                result.set(Collision.NO_COLLISION);
+                return;
+            }
+            double dist = aMinY - bMaxY;
+            double travelTime = dist / -relativeVelY;
+            if(travelTime > maxEntryTime){
+                maxEntryTime = travelTime;
+                collisionNormal.set(0, 1);
+            }
+        }else{
+            if(relativeVelY == 0 && maxEntryTime < 0){
+                maxEntryTime = 0;
+                collisionNormal.set(0, 1);
+            }else if(aMaxY > bMinY && relativeVelY < 0){
+                double dist = aMaxY - bMinY;
+                double travelTime = dist / -relativeVelY;
+                if(travelTime < minLeaveTime){
+                    minLeaveTime = travelTime;
+                }
+            }else if(bMaxY > aMinY && relativeVelY > 0){
+                double dist = bMaxY - aMinY;
+                double travelTime = dist / relativeVelY;
+                if(travelTime < minLeaveTime){
+                    minLeaveTime = travelTime;
+                }
+            }
+        }
+        if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > minLeaveTime){
+            result.set(Collision.NO_COLLISION);
+            return;
+        }
+        result.set(maxEntryTime, result.getCollisionNormal(), a, b);
+    }
+    
+    private static boolean checkCirclePointCollide(double cx, double cy, double radius, double px, double py, double pVelX, double pVelY, double velLength, double maxEntryTime, Collision result, Shape a, Shape b){
+        double distToVelRaySquared = Vector2D.distToLineSquared(cx, cy, px, py, px + pVelX, py + pVelY);
+        double radiusSquared = radius * radius;
+        if(distToVelRaySquared <= radiusSquared){
+            // in the path of the velocity ray
+            double projLength = Vector2D.scalarProject(cx - px, cy - py, pVelX, pVelY, velLength);
+            if(projLength >= 0){
+                // travelling towards each other
+                System.out.println("test");
+                double subLength = Math.sqrt(radiusSquared - distToVelRaySquared);
+                double travelDist = projLength - subLength;
+                double travelTime = travelDist / velLength;
+                if(travelTime < maxEntryTime){
+                    System.out.println("pass " + travelTime);
+                    double distOverVel = travelDist / velLength;
+                    result.getCollisionNormal().set(cx - px - pVelX * distOverVel, cy - py - pVelY * distOverVel).unit();
+                    result.set(travelTime, result.getCollisionNormal(), a, b);
+                    return true;
+                }
+            }
+        }
+        return false;
+        
+    }
     
     private static boolean willBoundingCollide(Polygon a, Polygon b, double maxTime){
         if(!a.isUsingBoundingBox() && !b.isUsingBoundingBox()){

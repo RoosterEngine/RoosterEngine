@@ -21,6 +21,7 @@ public class Game extends Context{
     private CollisionDetector collisionDetector = new CollisionDetector(3);
     private ArrayList<CircleEntity> circles = new ArrayList<CircleEntity>();
     private ArrayList<PolygonEntity> polygons = new ArrayList<PolygonEntity>();
+    private ArrayList<AABBEntity> aabBoxs = new ArrayList<AABBEntity>();
     private Entity mouseItem;
     
     //Physics junk
@@ -71,7 +72,7 @@ public class Game extends Context{
     @Override
     public void update(double elapsedTime) {
         double timeLeft = elapsedTime * timeScale;
-        while(timeLeft > 0 && !paused){
+//        while(timeLeft > 0 && !paused){
             Collision collision = collisionDetector.getNextCollision(timeLeft);
             timeToCollision = collision.getTimeToCollision(); // used for display purposes only
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
@@ -88,16 +89,22 @@ public class Game extends Context{
                 collisionRate = collisionTimes.length / dt;
                 handleCollision(collision, collisionRate);
 //                paused = true;
-                
                 numCollision++;
             }
             timeLeft -= updateTime;
-        }
+//        }
     }
     
     private void updatePositions(double elapsedTime){
             updateCircles(elapsedTime);
             updatePolygons(elapsedTime);
+            updateBoxes(elapsedTime);
+    }
+    
+    private void updateBoxes(double elapsedTime){
+        for(AABBEntity box: aabBoxs){
+            box.update(elapsedTime);
+        }
     }
     
     private void updatePolygons(double elapsedTime){
@@ -112,7 +119,7 @@ public class Game extends Context{
         }
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 0.01, collisionsPerMilli);
+        Physics.performCollision(collision, 1, collisionsPerMilli);
     }
 
     @Override
@@ -126,6 +133,9 @@ public class Game extends Context{
         }
         for(PolygonEntity polygon: polygons){
             polygon.draw(g);
+        }
+        for(AABBEntity box: aabBoxs){
+            box.draw(g);
         }
         if(rulerMode){
             g.setColor(Color.WHITE);
@@ -160,10 +170,36 @@ public class Game extends Context{
         Polygon.setRandomSeed(seed);
         circles.clear();
         polygons.clear();
+        aabBoxs.clear();
         collisionDetector.clearCollisions();
-        polygonMode();
+        AABBMode();
+//        polygonMode();
 //        ballMode();
         collisionDetector.setCollisionPair(0, 0);
+    }
+    
+    private void AABBMode(){
+        double width = 16;
+        double height = 10;
+        double padding = 5;
+        int rows = 10;
+        int columns = 10;
+        double borderX = (this.width - columns * (width + padding)) / 2;
+        double borderY = (this.height - rows * (height + padding)) / 2;
+        double  offsetX = width/2 + borderX;
+        double offsetY = height/2 + borderY;
+        for(int y = 0; y < rows; y++){
+            for(int x = 0; x < columns; x++){
+                double xPos = x * (width + padding) + offsetX;
+                double yPos = y * (height + padding) + offsetY;
+                AABBEntity box = new AABBEntity(this, xPos, yPos, width, height);
+                aabBoxs.add(box);
+                AABBShape aabb = new AABBShape(xPos, yPos, width, height, box);
+                collisionDetector.addShape(aabb, 0);
+            }
+        }
+        mouseItem = aabBoxs.get(0);
+        mouseItem.setMass(0.01);
     }
     
     private void polygonMode(){
@@ -308,6 +344,7 @@ public class Game extends Context{
             @Override
             public void stopAction(int inputCode) {
                 load();
+                paused = false;
             }
         });
         

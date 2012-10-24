@@ -8,7 +8,7 @@ import java.util.Random;
  * @author davidrusu
  */
 public class Polygon extends Shape{
-    private static Random rand = null;
+    private static Random rand = new Random(0);
     private Color color = Color.orange;
     private Vector2D[] normals, points; // points are relative to the center
     private double[] normalMins, normalMaxs;
@@ -55,18 +55,15 @@ public class Polygon extends Shape{
         return new Polygon(x, y, 0, 0, xPoints, yPoints, parentEntity);
     }
     
-    public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, long seed, Entity parentEntity){
-        if(rand == null){
-            rand = new Random(seed);
-        }
+    public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, Entity parentEntity){
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
         int numPoints = (int)(rand.nextDouble() * (numPointsMax - numPointsMin)) + numPointsMin;
         double[] xPoints = new double[numPoints];
         double[] yPoints = new double[numPoints];
         double angle = 2 * Math.PI / numPoints;
-        double initAngle = rand.nextDouble() * 2 * Math.PI;
+        double initAngle = 0; //rand.nextDouble() * 2 * Math.PI;
         for(int p = 0; p < numPoints; p++){
-            double radomAngle = rand.nextDouble() * angle / 2 - angle;
+            double radomAngle = 0; //rand.nextDouble() * angle / 2 - angle;
             double angleFluctuated = angle * p + radomAngle + initAngle;
             double pX = Math.cos(angleFluctuated) * radius;
             double pY = Math.sin(angleFluctuated) * radius;
@@ -538,7 +535,7 @@ public class Polygon extends Shape{
         }
         g.setColor(color);
         g.fillPolygon(xInts, yInts, numPoints);
-//        drawBounding(g);
+        drawBounding(g);
     }
     
     private void drawBounding(Graphics2D g){

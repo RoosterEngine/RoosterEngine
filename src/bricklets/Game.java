@@ -71,7 +71,7 @@ public class Game extends Context{
     @Override
     public void update(double elapsedTime) {
         double timeLeft = elapsedTime * timeScale;
-//        while(timeLeft > 0 && !paused){
+        while(timeLeft > 0 && !paused){
             Collision collision = collisionDetector.getNextCollision(timeLeft);
             timeToCollision = collision.getTimeToCollision(); // used for display purposes only
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
@@ -92,7 +92,7 @@ public class Game extends Context{
                 numCollision++;
             }
             timeLeft -= updateTime;
-//        }
+        }
     }
     
     private void updatePositions(double elapsedTime){
@@ -112,7 +112,7 @@ public class Game extends Context{
         }
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 1, collisionsPerMilli);
+        Physics.performCollision(collision, 0.01, collisionsPerMilli);
     }
 
     @Override
@@ -162,32 +162,34 @@ public class Game extends Context{
         polygons.clear();
         collisionDetector.clearCollisions();
         polygonMode();
-        ballMode();
+//        ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
     
     private void polygonMode(){
-        double minRadius = 30;
+        double minRadius = 50;
         double maxRadius = 50;
         int minPoints = 3;
-        int maxPoints = 9;
-        int padding = 0;
+        int maxPoints = 5;
+        int padding = 5;
         int rows = 2;
-        int columns = 2;
+        int columns = 1;
         double borderX = (width - columns * (maxRadius * 2 + padding)) / 2;
         double borderY = (height - rows * (maxRadius * 2 + padding)) / 2;
         double offsetX = borderX + maxRadius;
         double offsetY = borderY + maxRadius;
+        Polygon.setRandomSeed(104523);
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
                 double xPos = x * (maxRadius * 2 + padding) + offsetX;
                 double yPos = y * (maxRadius * 2 + padding) + offsetY;
-                PolygonEntity polygon = new PolygonEntity(this, xPos, yPos, minRadius, maxRadius, minPoints, maxPoints, 0);
+                PolygonEntity polygon = new PolygonEntity(this, xPos, yPos, minRadius, maxRadius, minPoints, maxPoints);
                 polygons.add(polygon);
                 collisionDetector.addShape(polygon.getPolygonShape(), 0);
             }
         }
         mouseItem = polygons.get(0);
+        mouseItem.setMass(0.001);
     }
     
     private void ballMode(){

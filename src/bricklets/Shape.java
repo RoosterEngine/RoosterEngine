@@ -93,8 +93,8 @@ public abstract class Shape {
                     }
                 }else{
                     // not travelling away from each other
-                    //TODO should have an early return here
-                    maxEntryTime = NO_COLLISION;
+                    result.set(Collision.NO_COLLISION);
+                    return;
                 }
             }else if(bMax <= aMin){
                 if(projVel > 0){
@@ -105,8 +105,8 @@ public abstract class Shape {
                     }
                 }else{
                     // not travelling away from each other
-                    //TODO should have an early return here
-                    maxEntryTime = NO_COLLISION;
+                    result.set(Collision.NO_COLLISION);
+                    return;
                 }
             }
             
@@ -153,8 +153,8 @@ public abstract class Shape {
                     }
                 }else{
                     // not travelling towards each other
-                    //TODO should have an early return here
-                    maxEntryTime = NO_COLLISION;
+                    result.set(Collision.NO_COLLISION);
+                    return;
                 }
             }else if(aMax <= bMin){
                 if(projVel > 0){
@@ -165,8 +165,8 @@ public abstract class Shape {
                     }
                 }else{
                     // not travelling towards each other
-                    //TODO should have an early return here
-                    maxEntryTime = NO_COLLISION;
+                    result.set(Collision.NO_COLLISION);
+                    return;
                 }
             }
             
@@ -183,7 +183,8 @@ public abstract class Shape {
             }
         }
         if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > minLeaveTime){
-            maxEntryTime = NO_COLLISION;
+            result.set(Collision.NO_COLLISION);
+            return;
         }
         result.set(maxEntryTime, collisionNormal, b, a);
     }
@@ -384,10 +385,10 @@ public abstract class Shape {
         relativeVelX *= -1;
         relativeVelY *= -1;
         double radiusSquared = a.radius * a.radius;
-        maxOverlapTime = Math.max(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMinX(), b.getMinY(), relativeVelX, relativeVelY), maxOverlapTime);
-        maxOverlapTime = Math.max(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMaxX(), b.getMinY(), relativeVelX, relativeVelY), maxOverlapTime);
-        maxOverlapTime = Math.max(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY), maxOverlapTime);
-        maxOverlapTime = Math.max(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMinX(), b.getMaxY(), relativeVelX, relativeVelY), maxOverlapTime);
+        maxOverlapTime = Math.min(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMinX(), b.getMinY(), relativeVelX, relativeVelY), maxOverlapTime);
+        maxOverlapTime = Math.min(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMaxX(), b.getMinY(), relativeVelX, relativeVelY), maxOverlapTime);
+        maxOverlapTime = Math.min(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY), maxOverlapTime);
+        maxOverlapTime = Math.min(getTOICirclePoint(a.x, a.y, radiusSquared, b.getMinX(), b.getMaxY(), relativeVelX, relativeVelY), maxOverlapTime);
         return maxOverlapTime <= maxTime;
     }
     

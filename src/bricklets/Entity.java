@@ -76,4 +76,8 @@ public abstract class Entity {
     public abstract void update(double elapsedTime);
     
     public abstract void draw(Graphics2D g);
+
+    void setMass(double mass) {
+        this.mass = mass;
+    }
 }

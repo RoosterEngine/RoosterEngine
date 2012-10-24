@@ -150,6 +150,10 @@ public class CollisionDetector {
             Shape.collideCircleCircle(a, b, maxTime, result);
         }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_POLYGON){
             Shape.collidePolyPoly((Polygon) a, (Polygon) b, maxTime, result);
+        }else if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_POLYGON){
+            Shape.collideCirclePoly(a, (Polygon) b, maxTime, result);
+        }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_CIRCLE){
+            Shape.collideCirclePoly(b, (Polygon) a, maxTime, result);
         }
     }
 }

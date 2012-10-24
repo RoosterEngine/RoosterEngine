@@ -16,6 +16,7 @@ public abstract class Entity {
     protected double x, y, dx, dy, ddx, ddy;
     protected double restitution, mass = 1;
     protected Color color;
+    protected Vector2D debugVector = new Vector2D();
     
     public Entity(Context context, double x, double y, Color color){
         this(context, x, y, 0, 0, color);
@@ -28,6 +29,10 @@ public abstract class Entity {
         this.dx = dx;
         this.dy = dy;
         this.color = color;
+    }
+    
+    public void setDebugVector(Vector2D debugVector){
+        this.debugVector.set(debugVector);
     }
     
     public double getX() {

@@ -538,7 +538,7 @@ public class Polygon extends Shape{
         }
         g.setColor(color);
         g.fillPolygon(xInts, yInts, numPoints);
-        drawBounding(g);
+//        drawBounding(g);
     }
     
     private void drawBounding(Graphics2D g){

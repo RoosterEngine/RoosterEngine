@@ -71,7 +71,7 @@ public class Game extends Context{
     @Override
     public void update(double elapsedTime) {
         double timeLeft = elapsedTime * timeScale;
-        while(timeLeft > 0 && !paused){
+//        while(timeLeft > 0 && !paused){
             Collision collision = collisionDetector.getNextCollision(timeLeft);
             timeToCollision = collision.getTimeToCollision(); // used for display purposes only
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
@@ -92,7 +92,7 @@ public class Game extends Context{
                 numCollision++;
             }
             timeLeft -= updateTime;
-        }
+//        }
     }
     
     private void updatePositions(double elapsedTime){
@@ -161,8 +161,8 @@ public class Game extends Context{
         circles.clear();
         polygons.clear();
         collisionDetector.clearCollisions();
-//        ballMode();
         polygonMode();
+        ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
     
@@ -173,7 +173,7 @@ public class Game extends Context{
         int maxPoints = 9;
         int padding = 0;
         int rows = 2;
-        int columns = 6;
+        int columns = 2;
         double borderX = (width - columns * (maxRadius * 2 + padding)) / 2;
         double borderY = (height - rows * (maxRadius * 2 + padding)) / 2;
         double offsetX = borderX + maxRadius;
@@ -193,12 +193,12 @@ public class Game extends Context{
     private void ballMode(){
         int radius = 10;
         int padding = 50;
-        int rows = 20;
-        int columns = 20;
+        int rows = 1;
+        int columns = 2;
         int borderX = (width - columns * (radius * 2 + padding)) / 2;
-        int borderY = 50;
-        double offsetX = borderX + radius * 2 / 2.0;
-        double offsetY = borderY + radius * 2 / 2.0;
+        int borderY = 300;
+        double offsetX = borderX + radius;
+        double offsetY = borderY + radius;
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
                 double xPos = x * (radius * 2 + padding) + offsetX;

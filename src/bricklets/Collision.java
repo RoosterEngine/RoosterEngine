@@ -29,6 +29,8 @@ public class Collision {
         this.collisionNormal = collisionNormal;
         this.a = a;
         this.b = b;
+        a.getParentEntity().setDebugVector(collisionNormal);
+        b.getParentEntity().setDebugVector(collisionNormal);
     }
 
     public void set(Collision collision) {
@@ -36,6 +38,7 @@ public class Collision {
         collisionNormal.set(collision.collisionNormal);
         a = collision.a;
         b = collision.b;
+        
     }
     
     public double getTimeToCollision(){

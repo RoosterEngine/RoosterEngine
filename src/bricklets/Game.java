@@ -174,13 +174,13 @@ public class Game extends Context{
         collisionDetector.clearCollisions();
         AABBMode();
 //        polygonMode();
-//        ballMode();
+        ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
     
     private void AABBMode(){
-        double width = 16;
-        double height = 10;
+        double width = 50;
+        double height = 40;
         double padding = 5;
         int rows = 10;
         int columns = 10;
@@ -229,12 +229,12 @@ public class Game extends Context{
     }
     
     private void ballMode(){
-        int radius = 10;
+        int radius = 50;
         int padding = 50;
         int rows = 1;
-        int columns = 2;
+        int columns = 1;
         int borderX = (width - columns * (radius * 2 + padding)) / 2;
-        int borderY = 300;
+        int borderY = 100;
         double offsetX = borderX + radius;
         double offsetY = borderY + radius;
         for(int y = 0; y < rows; y++){

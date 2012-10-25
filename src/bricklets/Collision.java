@@ -33,8 +33,8 @@ public class Collision {
         this.b = b;
         a.getParentEntity().setDebugVector(collisionNormal);
         b.getParentEntity().setDebugVector(collisionNormal);
-        a.getParentEntity().setColor(Color.BLUE);
-        b.getParentEntity().setColor(Color.RED);
+//        a.getParentEntity().setColor(Color.BLUE);
+//        b.getParentEntity().setColor(Color.RED);
     }
 
     public void set(Collision collision) {

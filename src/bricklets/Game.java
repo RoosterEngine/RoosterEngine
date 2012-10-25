@@ -177,7 +177,7 @@ public class Game extends Context{
         collisionDetector.clearCollisions();
         AABBMode();
 //        polygonMode();
-//        ballMode();
+        ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
     

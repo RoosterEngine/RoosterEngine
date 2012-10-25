@@ -72,7 +72,7 @@ public class Game extends Context{
     @Override
     public void update(double elapsedTime) {
         double timeLeft = elapsedTime * timeScale;
-//        while(timeLeft > 0 && !paused){
+        while(timeLeft > 0 && !paused){
             Collision collision = collisionDetector.getNextCollision(timeLeft);
             timeToCollision = collision.getTimeToCollision(); // used for display purposes only
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
@@ -92,7 +92,7 @@ public class Game extends Context{
                 numCollision++;
             }
             timeLeft -= updateTime;
-//        }
+        }
     }
     
     private void updatePositions(double elapsedTime){
@@ -103,6 +103,7 @@ public class Game extends Context{
     
     private void updateBoxes(double elapsedTime){
         for(AABBEntity box: aabBoxs){
+            box.setColor(Color.BLACK);
             box.update(elapsedTime);
         }
     }
@@ -120,6 +121,8 @@ public class Game extends Context{
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
         Physics.performCollision(collision, 1, collisionsPerMilli);
+        collision.getA().getParentEntity().setColor(Color.BLUE);
+        collision.getB().getParentEntity().setColor(Color.RED);
     }
 
     @Override
@@ -174,14 +177,14 @@ public class Game extends Context{
         collisionDetector.clearCollisions();
         AABBMode();
 //        polygonMode();
-        ballMode();
+//        ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
     
     private void AABBMode(){
         double width = 50;
         double height = 40;
-        double padding = 5;
+        double padding = 0.3;
         int rows = 10;
         int columns = 10;
         double borderX = (this.width - columns * (width + padding)) / 2;
@@ -199,7 +202,6 @@ public class Game extends Context{
             }
         }
         mouseItem = aabBoxs.get(0);
-        mouseItem.setMass(0.01);
     }
     
     private void polygonMode(){

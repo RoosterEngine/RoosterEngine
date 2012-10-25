@@ -330,8 +330,8 @@ public abstract class Shape {
             collisionNormal.set(1, 0);
         }else{
             if(relativeVelX == 0){
-                maxEntryTime = 0;
-                collisionNormal.set(1, 0);
+//                maxEntryTime = 0;
+//                collisionNormal.set(1, 0);
             }else if(aMaxX > bMinX && relativeVelX < 0){
                 double dist = aMaxX - bMinX;
                 minLeaveTime = dist / -relativeVelX;
@@ -365,8 +365,8 @@ public abstract class Shape {
             }
         }else{
             if(relativeVelY == 0 && maxEntryTime < 0){
-                maxEntryTime = 0;
-                collisionNormal.set(0, 1);
+//                maxEntryTime = 0;
+//                collisionNormal.set(0, 1);
             }else if(aMaxY > bMinY && relativeVelY < 0){
                 double dist = aMaxY - bMinY;
                 double travelTime = dist / -relativeVelY;
@@ -381,7 +381,7 @@ public abstract class Shape {
                 }
             }
         }
-        if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > minLeaveTime){
+        if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > maxTime){
             result.set(Collision.NO_COLLISION);
             return;
         }
@@ -499,9 +499,7 @@ public abstract class Shape {
                 double subLength = Math.sqrt(radiusSquared - distToVelRaySquared);
                 double travelDist = projLength - subLength;
                 double travelTime = travelDist / velLength;
-//                System.out.println("test " + travelTime + " " + maxEntryTime);
                 if(travelTime <= maxEntryTime){
-                    System.out.println("pass " + travelTime);
                     double distOverVel = travelDist / velLength;
                     result.getCollisionNormal().set(cx - px - pVelX * distOverVel, cy - py - pVelY * distOverVel).unit();
                     result.set(travelTime, result.getCollisionNormal(), a, b);

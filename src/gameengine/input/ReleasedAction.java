@@ -8,7 +8,6 @@ package gameengine.input;
  * @author davidrusu
  */
 public class ReleasedAction extends InputAction {
-    public static final int ACTION_TYPE = 1;
     private ActionHandler handler;
     private int inputCode;
 
@@ -51,7 +50,7 @@ public class ReleasedAction extends InputAction {
     
     @Override
     public int getActionType(){
-        return ACTION_TYPE;
+        return InputAction.RELEASED_ACTION;
     }
 
     @Override

@@ -8,7 +8,6 @@ package gameengine.input;
  * @author davidrusu
  */
 public class MouseMovedAction extends InputAction {
-    public static final int ACTION_TYPE = 2;
     private MouseMovedHandler handler;
     private int mouseX, mouseY;
 
@@ -48,7 +47,7 @@ public class MouseMovedAction extends InputAction {
     
     @Override
     public int getActionType(){
-        return ACTION_TYPE;
+        return InputAction.MOUSE_MOVED_ACTION;
     }
 
     @Override

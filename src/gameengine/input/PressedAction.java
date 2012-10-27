@@ -9,7 +9,6 @@ package gameengine.input;
  */
 //look at docs from ReleasedAction and mimick!!!
 public class PressedAction extends InputAction {
-    public static final int ACTION_TYPE = 0;
     private ActionHandler handler;
     private int inputCode;
     
@@ -45,7 +44,7 @@ public class PressedAction extends InputAction {
     
     @Override
     public int getActionType(){
-        return ACTION_TYPE;
+        return InputAction.PRESSED_ACTION;
     }
     
     @Override

@@ -11,18 +11,19 @@ public class EventQueue {
     private static final int INIT_CAPACITY = 16, INIT_RECYCLE_CAPACITY = 16;
     private InputAction[] queue;
     private int front = 0, size = 0; //document
-    
+    private long mouseDelayTime;
     private InputAction[][] recycledInstances = new InputAction[3][INIT_RECYCLE_CAPACITY];
     private int[] numRecycled = new int[3];
 
-    public EventQueue() {
+    public EventQueue(long mouseDelayTime) {
+        this.mouseDelayTime = mouseDelayTime;
         queue = new InputAction[INIT_CAPACITY];
         numRecycled[0] = 1;
         numRecycled[1] = 1;
         numRecycled[2] = 1;
-        recycledInstances[PressedAction.ACTION_TYPE][0] = new PressedAction(null, 0, 0);
-        recycledInstances[ReleasedAction.ACTION_TYPE][0] = new ReleasedAction(null, 0, 0);
-        recycledInstances[MouseMovedAction.ACTION_TYPE][0] = new MouseMovedAction(null, 0, 0, 0);
+        recycledInstances[InputAction.PRESSED_ACTION][0] = new PressedAction(null, 0, 0);
+        recycledInstances[InputAction.RELEASED_ACTION][0] = new ReleasedAction(null, 0, 0);
+        recycledInstances[InputAction.MOUSE_MOVED_ACTION][0] = new MouseMovedAction(null, 0, 0, 0);
     }
 
     /**
@@ -35,7 +36,7 @@ public class EventQueue {
      * @param eventTime the time this action was triggered
      */
     public synchronized void addPressedAction(ActionHandler handler, int inputCode, long eventTime) {
-        ((PressedAction)addRecycledInputAction(PressedAction.ACTION_TYPE)).setup(handler, inputCode, eventTime);
+        ((PressedAction)addRecycledInputAction(InputAction.PRESSED_ACTION)).setup(handler, inputCode, eventTime);
     }
 
     /**
@@ -48,7 +49,7 @@ public class EventQueue {
      * @param eventTime the time this action was triggered
      */
     public synchronized void addReleasedAction(ActionHandler handler, int inputCode, long eventTime) {
-        ((ReleasedAction)addRecycledInputAction(ReleasedAction.ACTION_TYPE)).setup(handler, inputCode, eventTime);
+        ((ReleasedAction)addRecycledInputAction(InputAction.RELEASED_ACTION)).setup(handler, inputCode, eventTime);
     }
     
     private InputAction addRecycledInputAction(int actionType){
@@ -78,7 +79,7 @@ public class EventQueue {
      * @param eventTime the time this action was triggered
      */
     public synchronized void addMouseMovedAction(MouseMovedHandler handler, int x, int y, long eventTime) {
-        ((MouseMovedAction)addRecycledInputAction(MouseMovedAction.ACTION_TYPE)).setup(handler, x, y, eventTime);
+        ((MouseMovedAction)addRecycledInputAction(InputAction.MOUSE_MOVED_ACTION)).setup(handler, x, y, eventTime);
     }
 
     /**

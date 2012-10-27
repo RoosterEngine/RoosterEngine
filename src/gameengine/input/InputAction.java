@@ -6,7 +6,7 @@ package gameengine.input;
  * @author davidrusu
  */
 public abstract class InputAction {
-
+    public static final int PRESSED_ACTION = 0, RELEASED_ACTION = 1, MOUSE_MOVED_ACTION = 2;
     protected long eventTime;
     
     public InputAction(long eventTime){

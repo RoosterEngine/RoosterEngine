@@ -26,7 +26,7 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
     
     public InputManager(GameController gameController){
         this.gameController = gameController;
-        eventQueue = new EventQueue();
+        eventQueue = new EventQueue(1000000);
         try{
             robot = new Robot();
         }catch(Exception e){

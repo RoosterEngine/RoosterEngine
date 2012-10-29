@@ -15,5 +15,5 @@ public interface MouseMovedHandler {
      * @param x the mouse x position relative to the container
      * @param y the mouse y position relative to the container
      */
-    public void mouseMoved(int x, int y);
+    public void mouseMoved(double x, double y);
 }

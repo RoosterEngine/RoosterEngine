@@ -9,7 +9,8 @@ package gameengine.input;
  */
 public class MouseMovedAction extends InputAction {
     private MouseMovedHandler handler;
-    private int mouseX, mouseY;
+    public static double gameMouseX = 0, gameMouseY = 0;
+    public double mouseX, mouseY;
 
     /**
      * @param handler the handler for this mouse moved input action
@@ -28,6 +29,11 @@ public class MouseMovedAction extends InputAction {
         return new MouseMovedAction(null, 0, 0, 0);
     }
     
+    public static void setGameMousePosition(double mouseX, double mouseY){
+        gameMouseX = mouseX;
+        gameMouseY = mouseY;
+    }
+    
     @Override
     public void clearHandler(){
         handler = null;
@@ -38,7 +44,7 @@ public class MouseMovedAction extends InputAction {
      * @param mouseX the mouse x position
      * @param mouseY the mouse y position
      */
-    public void setup(MouseMovedHandler handler, int x, int y, long eventTime){
+    public void setup(MouseMovedHandler handler, double x, double y, long eventTime){
         this.handler = handler;
         mouseX = x;
         mouseY = y;
@@ -52,6 +58,28 @@ public class MouseMovedAction extends InputAction {
 
     @Override
     public void handleAction() {
-        handler.mouseMoved(mouseX, mouseY);
+//        if(InputManager.isRelativeMouseMode()){
+//            handler.mouseMoved(mouseX - gameMouseX, mouseY - gameMouseY);
+//            gameMouseX = 0;
+//            gameMouseY = 0;
+//        }else{
+//            handler.mouseMoved(mouseX, mouseY);
+//            gameMouseX = mouseX;
+//            gameMouseY = mouseY;
+//        }
+    }
+    
+    public void handleAction(double fraction){
+        if(InputManager.isRelativeMouseMode()){
+            double deltaX = mouseX * fraction;
+            double deltaY = mouseY * fraction;
+            mouseX -= deltaX;
+            mouseY -= deltaY;
+            handler.mouseMoved(deltaX, deltaY);
+        }else{
+            gameMouseX += (mouseX - gameMouseX) * fraction;
+            gameMouseY += (mouseY - gameMouseY) * fraction;
+            handler.mouseMoved(gameMouseX, gameMouseY);
+        }
     }
 }

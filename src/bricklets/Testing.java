@@ -14,17 +14,12 @@ import java.awt.Graphics2D;
  * @author david
  */
 public class Testing extends Context{
-    private int mouseX, mouseY;
+    private double mouseX, mouseY;
     private Polygon polygon;
     
     public Testing(GameController controller){
         super(controller, ContextType.GAME, true, false);
-        init();
         setupInput();
-    }
-    
-    public void init(){
-//        polygon = Polygon.getRandomConvexPolygon(350, 350, 3, 500, 0);
     }
     
     @Override
@@ -33,26 +28,20 @@ public class Testing extends Context{
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(Color.BLACK);
+        double x1 = width / 2, y1 = height / 2, x2 = 500, y2 = 300;
+        Color bg = Color.BLACK;
+        if(Vector2D.isPointsProjectionWithinLine(mouseX, mouseY, x2, y2, x1, y1)){
+            bg = Color.DARK_GRAY;
+        }
+        g.setColor(bg);
         g.fillRect(0, 0, width, height);
-//        g.translate(width / 2, height / 2);
-        
-        Vector2D testLine = new Vector2D(width, width);
-        double x1 = 0;
-        double y1 = 0;
-        double x2 = testLine.getX();
-        double y2 = testLine.getY();
-        
-//        double dist = Vector2D.distToLine(mouseX, mouseY, x1, y1, x2, y2);
-        double dist = new Vector2D(mouseX, mouseY).distToLine(new Vector2D(x1, y1), new Vector2D(x2, y2));
-        g.setColor(Color.RED);
+        g.setColor(Color.WHITE);
         g.drawLine((int)x1, (int)y1, (int)x2, (int)y2);
-//        g.translate(-width / 2, -height / 2);
-        g.drawString("dist " + dist, mouseX, mouseY);
+//        g.translate(width / 2, height / 2);
     }
 
     @Override
-    public void mouseMoved(int x, int y) {
+    public void mouseMoved(double x, double y) {
         mouseX = x;
         mouseY = y;
     }
@@ -70,18 +59,5 @@ public class Testing extends Context{
                 controller.exitContext();
             }
         });
-        
-//        controller.setContextBinding(contextType, InputCode.KEY_SPACE, Action.NEW_SHAPE);
-//        bindAction(Action.NEW_SHAPE, new ActionHandler() {
-//
-//            @Override
-//            public void startAction(int inputCode) {
-//            }
-//
-//            @Override
-//            public void stopAction(int inputCode) {
-//                init();
-//            }
-//        });
     }
 }

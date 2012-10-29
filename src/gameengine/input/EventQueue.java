@@ -11,12 +11,11 @@ public class EventQueue {
     private static final int INIT_CAPACITY = 16, INIT_RECYCLE_CAPACITY = 16;
     private InputAction[] queue;
     private int front = 0, size = 0; //document
-    private long mouseDelayTime;
     private InputAction[][] recycledInstances = new InputAction[3][INIT_RECYCLE_CAPACITY];
     private int[] numRecycled = new int[3];
-
-    public EventQueue(long mouseDelayTime) {
-        this.mouseDelayTime = mouseDelayTime;
+    private double gameMouseX = 0, gameMouseY = 0;
+    private boolean clearQueue = false;
+    public EventQueue() {
         queue = new InputAction[INIT_CAPACITY];
         numRecycled[0] = 1;
         numRecycled[1] = 1;
@@ -72,7 +71,7 @@ public class EventQueue {
     /**
      * Adds a {@link MouseMovedAction} to the queue
      *
-     * @param handlerthe handler to be called when the handleAction method is
+     * @param handler the handler to be called when the handleAction method is
      * called
      * @param x the mouses x position
      * @param y the mouses y position
@@ -88,12 +87,61 @@ public class EventQueue {
      * @param cutOffTime the time to handle events upto
      */
     public synchronized void handleEvents(long cutOffTime) {
-        while(size > 0 && queue[front].getEventTime() < cutOffTime) {
+        if(clearQueue){
+            emptyQueue();
+        }
+        while(size > 0 && queue[front].getEventTime() <= cutOffTime) {
+            size--;
             queue[front].handleAction();
+            recycleAction(queue[front]);
+            front = (front + 1) % queue.length;
+        }
+    }
+    
+    public synchronized void interpolateMouse(long currentTimeNanos, long updateTimeNanos, boolean branch){
+        if(clearQueue){
+            emptyQueue();
+        }
+        int i = 0;
+        InputAction action = null;
+        boolean foundMouseEvent = false;
+        while(i < size && !foundMouseEvent){
+            action = queue[(i + front) % queue.length];
+            i++;
+            foundMouseEvent = action.getActionType() == InputAction.MOUSE_MOVED_ACTION;
+        }
+        if(foundMouseEvent){
+            MouseMovedAction mouseAction = (MouseMovedAction)action;
+            mouseAction.handleAction((double)updateTimeNanos / (mouseAction.getEventTime() - currentTimeNanos));
+            if(branch && (mouseAction.mouseX != mouseAction.gameMouseX || mouseAction.mouseY != mouseAction.gameMouseY)){
+                System.out.println("x " + mouseAction.mouseX + " " + mouseAction.gameMouseX);
+                System.out.println("y " + mouseAction.mouseY + " " + mouseAction.gameMouseY);
+            }
+        }
+    }
+    
+    /**
+     * Returns the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
+     * @return 
+     */
+    public long getNextEventTime(){
+        if(size == 0){
+            return Long.MAX_VALUE;
+        }
+        return queue[front].getEventTime();
+    }
+    
+    private void emptyQueue(){
+        while(size > 0) {
             size--;
             recycleAction(queue[front]);
             front = (front + 1) % queue.length;
         }
+        clearQueue = false;
+    }
+    
+    public synchronized void clearQueue(){
+        clearQueue = true;
     }
     
     private void recycleAction(InputAction action){

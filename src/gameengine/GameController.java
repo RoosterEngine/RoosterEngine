@@ -126,6 +126,8 @@ public class GameController {
      * @param context the context to be entered
      */
     public void enterContext(Context context) {
+        input.clearInputQueue();
+        System.out.println("inputQueue cleared");
         if(!showingMouseCursor && context.isShowingMouseCursor()){
             showingMouseCursor = true;
             resetMouseCursor(screen.getFullScreenWindow());
@@ -135,8 +137,10 @@ public class GameController {
         }
         if(context.isRelativeMouseMovedEnabled()){
             input.enableRelativeMouseMove(context.getWidth() / 2, context.getHeight() / 2);
+            MouseMovedAction.setGameMousePosition(0, 0);
         }else{
             input.disableRelativeMouseMove();
+            MouseMovedAction.setGameMousePosition(context.getWidth() / 2, context.getHeight() / 2);
         }
         contextStack.push(context);
         currentContext = context;
@@ -270,8 +274,22 @@ public class GameController {
         currentProfile.setProperty(propertyName, property);
     }
     
+    
+    
+    /**
+     * Returns the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
+     * @return 
+     */
+    public long getNextInputEventTime(){
+        return input.getNextEventTime();
+    }
+    
     public void handleEvents(long cutOffTime){
         input.handleEvents(cutOffTime);
+    }
+    
+    public void interpolateMouse(long currentTimeNanos, long updatTimeNanos, boolean branch){
+        input.interpolateMouse(currentTimeNanos, updatTimeNanos, branch);
     }
     
     public void setFullScreen(){

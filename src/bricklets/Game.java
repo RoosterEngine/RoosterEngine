@@ -16,8 +16,8 @@ import java.util.ArrayList;
  * @author davidrusu
  */
 public class Game extends Context{
-    private int mouseX = 0, mouseY = 0;
-    private int realMouseX = 0, realMouseY = 0;
+    private double mouseX = 0, mouseY = 0;
+    private double realMouseX = 0, realMouseY = 0;
     private CollisionDetector collisionDetector = new CollisionDetector(3);
     private ArrayList<CircleEntity> circles = new ArrayList<CircleEntity>();
     private ArrayList<PolygonEntity> polygons = new ArrayList<PolygonEntity>();
@@ -31,7 +31,7 @@ public class Game extends Context{
     private double currentGameTime = 0, collisionRate = 0;
     private int collisionX, collisionY, back = 0, numCollision = 0;
     private boolean rulerMode, dragging;
-    private int startMouseX, startMouseY;
+    private double startMouseX, startMouseY;
     private double rulerLength;
     private long seed = 0;
     
@@ -51,26 +51,27 @@ public class Game extends Context{
     }
             
     @Override
-    public void mouseMoved(int x, int y) {
+    public void mouseMoved(double x, double y) {
         mouseX = x;
         mouseY = y;
         realMouseX += x;
         realMouseY += y;
         if(dragging){
-            int dx = realMouseX - startMouseX;
-            int dy = realMouseY - startMouseY;
+            double dx = realMouseX - startMouseX;
+            double dy = realMouseY - startMouseY;
             rulerLength = Math.sqrt(dx * dx + dy * dy);
         }else if(panMode){
             shiftX += x;
             shiftY += y;
         }else{
-            double scale = 5000.0;
-            mouseItem.addForce(mouseX / scale, mouseY / scale);
+            double scale = 1.0;
+            mouseItem.setVelocity(mouseItem.getDX() + mouseX / scale, mouseItem.getDY() + mouseY / scale);
         }
     }
     
     @Override
     public void update(double elapsedTime) {
+        mouseItem.setVelocity(mouseItem.getDX() / elapsedTime, mouseItem.getDY() / elapsedTime);
         double timeLeft = elapsedTime * timeScale;
         while(timeLeft > 0 && !paused){
             Collision collision = collisionDetector.getNextCollision(timeLeft);
@@ -93,6 +94,7 @@ public class Game extends Context{
             }
             timeLeft -= updateTime;
         }
+        mouseItem.setVelocity(0, 0);
     }
     
     private void updatePositions(double elapsedTime){
@@ -120,7 +122,7 @@ public class Game extends Context{
         }
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 1, collisionsPerMilli);
+        Physics.performCollision(collision, 0.01, collisionsPerMilli);
         collision.getA().getParentEntity().setColor(Color.BLUE);
         collision.getB().getParentEntity().setColor(Color.RED);
     }
@@ -142,8 +144,8 @@ public class Game extends Context{
         }
         if(rulerMode){
             g.setColor(Color.WHITE);
-            g.drawLine(startMouseX, startMouseY, realMouseX, realMouseY);
-            g.drawString(rulerLength + "", realMouseX, realMouseY);
+            g.drawLine((int)startMouseX, (int)startMouseY, (int)realMouseX, (int)realMouseY);
+            g.drawString(rulerLength + "", (int)realMouseX, (int)realMouseY);
         }
 //        paddle.draw(g);
         g.scale(1 / scale, 1 / scale);
@@ -175,18 +177,18 @@ public class Game extends Context{
         polygons.clear();
         aabBoxs.clear();
         collisionDetector.clearCollisions();
-        AABBMode();
-//        polygonMode();
+//        AABBMode();
+        polygonMode();
         ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
     
     private void AABBMode(){
-        double width = 50;
-        double height = 40;
-        double padding = 0.3;
-        int rows = 10;
-        int columns = 10;
+        double width = 100;
+        double height = 100;
+        double padding = 5;
+        int rows = 2;
+        int columns = 1;
         double borderX = (this.width - columns * (width + padding)) / 2;
         double borderY = (this.height - rows * (height + padding)) / 2;
         double  offsetX = width/2 + borderX;
@@ -227,11 +229,10 @@ public class Game extends Context{
             }
         }
         mouseItem = polygons.get(0);
-        mouseItem.setMass(0.001);
     }
     
     private void ballMode(){
-        int radius = 50;
+        int radius = 100;
         int padding = 50;
         int rows = 1;
         int columns = 1;
@@ -250,6 +251,7 @@ public class Game extends Context{
             }
         }
         mouseItem = circles.get(0);
+        mouseItem.setMass(0.001);
     }
     
     private void setupInput(){
@@ -267,7 +269,7 @@ public class Game extends Context{
             }
         });
         
-        final double thrust = 0.05;
+        final double thrust = 0.005;
         controller.setContextBinding(contextType, InputCode.KEY_LEFT, Action.GAME_LEFT);
         bindAction(Action.GAME_LEFT, new ActionHandler() {
             @Override
@@ -298,8 +300,8 @@ public class Game extends Context{
         bindAction(Action.GAME_UP, new ActionHandler() {
             @Override
             public void startAction(int inputCode) {
-//                mouseItem.addForce(0, -thrust);
-                timeScale += timeSpeedIncrement;
+                mouseItem.addForce(0, -thrust);
+//                timeScale += timeSpeedIncrement;
             }
 
             @Override
@@ -311,10 +313,10 @@ public class Game extends Context{
         bindAction(Action.GAME_DOWN, new ActionHandler() {
             @Override
             public void startAction(int inputCode) {
-//                mouseItem.addForce(0, thrust);
-                if(timeScale - timeSpeedIncrement > 0){
-                    timeScale -= timeSpeedIncrement;
-                }
+                mouseItem.addForce(0, thrust);
+//                if(timeScale - timeSpeedIncrement > 0){
+//                    timeScale -= timeSpeedIncrement;
+//                }
             }
 
             @Override

@@ -20,6 +20,7 @@ public class GameTimer implements Runnable {
     private long maxFrameTime;         //maximum delay between rendering so that it's not slower than the minimum frame rate
     private long sleepAccumulator = 0;   //small differences between frame times are accumulated so that frames are sincronized to avoid drifting
     private long overSleep = 0;        //the amount of nanoseconds that the last sleep operation overslept by (based on what was requested)
+    private static final long updateLag = 2000000;
 
     /**
      * @param updateRate update game state this many times per second
@@ -78,17 +79,32 @@ public class GameTimer implements Runnable {
         long gameTime = currentTime;
 
         while (isRunning) {
-            currentTime = System.nanoTime();
+            currentTime = System.nanoTime() - updateLag;
             // should predict if it has enough time to do two updates in the condition of the while loop
+            long eventTime = gameController.getNextInputEventTime();
+            while(eventTime <= currentTime){
+                if(eventTime < gameTime + updateTime || System.nanoTime() > lastRenderTime + maxFrameTime){
+                    long eventUpdateTime = eventTime - gameTime;
+                    gameController.interpolateMouse(gameTime, eventUpdateTime, true);
+                    gameController.update(eventUpdateTime / 1000000.0);
+                    gameController.handleEvents(eventTime);
+                    gameTime = eventTime;
+                }else{
+                    gameController.interpolateMouse(gameTime, updateTime, false);
+                    gameController.update(updateTimeMS);
+                    gameTime += updateTime;
+                }
+                eventTime = gameController.getNextInputEventTime();
+            }
             while (gameTime + updateTime < currentTime && System.nanoTime() < lastRenderTime + maxFrameTime) {
+                gameController.interpolateMouse(gameTime, updateTime, false);
                 gameTime += updateTime; //if need to update every 5ms but 15ms passed then update by 5ms 3 times
-                gameController.handleEvents(gameTime);
                 update(updateTimeMS);
             }
-            currentTime = System.nanoTime();
             lastUpdateTime = currentTime;
-            gameController.handleEvents(currentTime);
-            update((currentTime - gameTime) / 1000000.0); //update the game based on how much time is left
+            long finalUpdateTime = currentTime - gameTime;
+            gameController.interpolateMouse(gameTime, finalUpdateTime, false);
+            update(finalUpdateTime / 1000000.0); //update the game based on how much time is left
             gameTime = currentTime;
             lastRenderTime = System.nanoTime();
             draw();

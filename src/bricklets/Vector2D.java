@@ -132,6 +132,14 @@ public class Vector2D {
         return x * v.x + y * v.y;
     }
     
+    public static double dot(double x, double y, Vector2D v){
+        return x * v.x + y * v.y;
+    }
+    
+    public static double dot(double x1, double y1, double x2, double y2){
+        return x1 * x2 + y1 * y2;
+    }
+    
     public Vector2D project(Vector2D onTo){
         double dist = (x * onTo.x + y * onTo.y) / (onTo.x * onTo.x + onTo.y * onTo.y);
         x = dist * onTo.x;
@@ -224,6 +232,14 @@ public class Vector2D {
         this.x /= length;
         this.y /= length;
         return this;
+    }
+    
+    public static boolean isPointsProjectionWithinLine(double px, double py, double r1x, double r1y, double r2x, double r2y){
+        double dx = r1x - r2x;
+        double dy = r1y - r2y;
+        double x = px - r2x;
+        double y = py - r2y;
+        return dot(x, y, dx, dy) > 0 == dot(x - dx, y - dy, dx, dy) < 0;
     }
     
     public Vector2D clear(){

@@ -17,6 +17,7 @@ public class CircleEntity extends Entity{
     public CircleEntity(Context context, double x, double y, double radius){
         super(context, x, y, Color.BLACK);
         this.radius = radius;
+        mass = 10;
         for(int i = 0; i < pastX.length; i++){
             pastX[i] = (int)x;
             pastY[i] = (int)y;
@@ -57,8 +58,14 @@ public class CircleEntity extends Entity{
 //        start = (start + 1) % pastX.length;
         g.setColor(color);
         g.fillOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
-        double scale = 100;
+//        double scale = 100;
+//        g.setColor(Color.ORANGE);
+//        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
         g.setColor(Color.ORANGE);
-        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
+        g.drawString(debugVector.toString(), (int)x, (int)y);
+        int size = 5;
+        int x = (int)(debugVector.getX() - size/2);
+        int y = (int)(debugVector.getY() - size/2);
+        g.fillRect(x, y, size, size);
     }
 }

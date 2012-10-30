@@ -38,11 +38,11 @@ public class AABBEntity extends Entity{
         g.setColor(color);
         g.fillRect((int)(x - halfWidth), (int)(y - halfHeight), (int)width, (int)height);
         double scale = 100;
-        g.setColor(Color.ORANGE);
-        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
-        scale = 100;
-        g.setColor(Color.RED);
-        g.drawLine((int)x, (int)y, (int)(x + dx * scale), (int)(y + dy * scale));
+//        g.setColor(Color.ORANGE);
+//        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
+//        scale = 100;
+//        g.setColor(Color.RED);
+//        g.drawLine((int)x, (int)y, (int)(x + dx * scale), (int)(y + dy * scale));
     }
     
 }

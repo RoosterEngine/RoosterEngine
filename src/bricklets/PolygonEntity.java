@@ -38,6 +38,11 @@ public class PolygonEntity extends Entity{
     @Override
     public void draw(Graphics2D g) {
         polygon.draw(g, Color.BLACK);
+        g.setColor(Color.ORANGE);
+        int size = 5;
+        int x = (int)(debugVector.getX() - size/2);
+        int y = (int)(debugVector.getY() - size/2);
+        g.fillRect(x, y, size, size);
     }
     
 }

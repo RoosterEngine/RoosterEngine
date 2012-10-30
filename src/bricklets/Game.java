@@ -232,7 +232,7 @@ public class Game extends Context{
     }
     
     private void ballMode(){
-        int radius = 100;
+        int radius = 10;
         int padding = 50;
         int rows = 1;
         int columns = 1;

@@ -87,37 +87,46 @@ public class EventQueue {
      * @param cutOffTime the time to handle events upto
      */
     public synchronized void handleEvents(long cutOffTime) {
-        if(clearQueue){
-            emptyQueue();
-        }
         while(size > 0 && queue[front].getEventTime() <= cutOffTime) {
             size--;
-            queue[front].handleAction();
+            InputAction inputEvent = queue[front];
+            if(inputEvent.getActionType() == InputAction.MOUSE_MOVED_ACTION){
+                MouseMovedAction action = getNextMouseMovedAction((front + 1) % queue.length, size);
+                if(action == null){
+                    inputEvent.handleAction();
+                }else{
+                    action.updateMouseVelocity(inputEvent.getEventTime());
+                }
+            }else{
+                inputEvent.handleAction();
+                
+            }
             recycleAction(queue[front]);
             front = (front + 1) % queue.length;
         }
     }
     
-    public synchronized void interpolateMouse(long currentTimeNanos, long updateTimeNanos, boolean branch){
+    public synchronized void updateMouseVelocity(long currentTimeNanos){
         if(clearQueue){
             emptyQueue();
         }
         int i = 0;
-        InputAction action = null;
-        boolean foundMouseEvent = false;
-        while(i < size && !foundMouseEvent){
-            action = queue[(i + front) % queue.length];
-            i++;
-            foundMouseEvent = action.getActionType() == InputAction.MOUSE_MOVED_ACTION;
+        MouseMovedAction action = getNextMouseMovedAction(front, size);
+        if(action != null){
+            action.updateMouseVelocity(currentTimeNanos);
         }
-        if(foundMouseEvent){
-            MouseMovedAction mouseAction = (MouseMovedAction)action;
-            mouseAction.handleAction((double)updateTimeNanos / (mouseAction.getEventTime() - currentTimeNanos));
-            if(branch && (mouseAction.mouseX != mouseAction.gameMouseX || mouseAction.mouseY != mouseAction.gameMouseY)){
-                System.out.println("x " + mouseAction.mouseX + " " + mouseAction.gameMouseX);
-                System.out.println("y " + mouseAction.mouseY + " " + mouseAction.gameMouseY);
+    }
+    
+    private MouseMovedAction getNextMouseMovedAction(int startingIndex, int numEvents){
+        InputAction action;
+        for(int i = 0; i < numEvents; i++){
+            action = queue[(startingIndex + i) % queue.length];
+            if(action.getActionType() == InputAction.MOUSE_MOVED_ACTION){
+                return (MouseMovedAction)action;
             }
+            
         }
+        return null;
     }
     
     /**

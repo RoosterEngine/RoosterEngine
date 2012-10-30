@@ -9,8 +9,8 @@ package gameengine.input;
  */
 public class MouseMovedAction extends InputAction {
     private MouseMovedHandler handler;
-    public static double gameMouseX = 0, gameMouseY = 0;
-    public double mouseX, mouseY;
+    public static int gameMouseX = 0, gameMouseY = 0;
+    public int mouseX, mouseY;
 
     /**
      * @param handler the handler for this mouse moved input action
@@ -29,7 +29,7 @@ public class MouseMovedAction extends InputAction {
         return new MouseMovedAction(null, 0, 0, 0);
     }
     
-    public static void setGameMousePosition(double mouseX, double mouseY){
+    public static void setGameMousePosition(int mouseX, int mouseY){
         gameMouseX = mouseX;
         gameMouseY = mouseY;
     }
@@ -44,7 +44,7 @@ public class MouseMovedAction extends InputAction {
      * @param mouseX the mouse x position
      * @param mouseY the mouse y position
      */
-    public void setup(MouseMovedHandler handler, double x, double y, long eventTime){
+    public void setup(MouseMovedHandler handler, int x, int y, long eventTime){
         this.handler = handler;
         mouseX = x;
         mouseY = y;
@@ -58,28 +58,17 @@ public class MouseMovedAction extends InputAction {
 
     @Override
     public void handleAction() {
-//        if(InputManager.isRelativeMouseMode()){
-//            handler.mouseMoved(mouseX - gameMouseX, mouseY - gameMouseY);
-//            gameMouseX = 0;
-//            gameMouseY = 0;
-//        }else{
-//            handler.mouseMoved(mouseX, mouseY);
-//            gameMouseX = mouseX;
-//            gameMouseY = mouseY;
-//        }
+        handler.mouseMoved(gameMouseX, gameMouseY, 0, 0);
     }
     
-    public void handleAction(double fraction){
+    public void updateMouseVelocity(long currentTime){
+        double timeDelta = (eventTime - currentTime) / 1000000.0;
         if(InputManager.isRelativeMouseMode()){
-            double deltaX = mouseX * fraction;
-            double deltaY = mouseY * fraction;
-            mouseX -= deltaX;
-            mouseY -= deltaY;
-            handler.mouseMoved(deltaX, deltaY);
+            handler.mouseMoved(0, 0, mouseX / timeDelta, mouseY / timeDelta);
         }else{
-            gameMouseX += (mouseX - gameMouseX) * fraction;
-            gameMouseY += (mouseY - gameMouseY) * fraction;
-            handler.mouseMoved(gameMouseX, gameMouseY);
+            handler.mouseMoved(gameMouseX, gameMouseY, (mouseX - gameMouseX) / timeDelta, (mouseY - gameMouseY) / timeDelta);
+            gameMouseX = mouseX;
+            gameMouseY = mouseY;
         }
     }
 }

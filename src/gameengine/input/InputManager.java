@@ -61,8 +61,8 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
         eventQueue.handleEvents(cutOffTime);
     }
 
-    public void interpolateMouse(long currentTimeNanos, long updatTimeNanos, boolean branch){
-        eventQueue.interpolateMouse(currentTimeNanos, updatTimeNanos, branch);
+    public void updateMouseVelocity(long currentTimeNanos){
+        eventQueue.updateMouseVelocity(currentTimeNanos);
     }
 
     /**

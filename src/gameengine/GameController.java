@@ -288,8 +288,8 @@ public class GameController {
         input.handleEvents(cutOffTime);
     }
     
-    public void interpolateMouse(long currentTimeNanos, long updatTimeNanos, boolean branch){
-        input.interpolateMouse(currentTimeNanos, updatTimeNanos, branch);
+    public void updateMouseVelocity(long currentTimeNanos){
+        input.updateMouseVelocity(currentTimeNanos);
     }
     
     public void setFullScreen(){

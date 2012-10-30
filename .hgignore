@@ -3,3 +3,10 @@
 \.chg\..*$
 \.rej$
 \.conflict\~$
+syntax: glob
+build/classes/gameengine/BasicMenu$6.class
+build/classes/bricklets/PolygonEntity.class
+build/classes/bricklets/CircleShape.class
+build/classes/bricklets/CircleEntity.class
+build/classes/bricklets/AABBShape.class
+build/classes/bricklets/AABBEntity.class

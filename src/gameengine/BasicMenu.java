@@ -15,9 +15,9 @@ public class BasicMenu extends Context{
     
     private BasicButton[] buttons;
     private int selectedIndex;
-    private double mouseX, mouseY;
-    private ArrayList<Double> pastMouseX = new ArrayList<Double>();
-    private ArrayList<Double> pastMouseY = new ArrayList<Double>();
+    private int mouseX, mouseY;
+    private ArrayList<Integer> pastMouseX = new ArrayList<Integer>();
+    private ArrayList<Integer> pastMouseY = new ArrayList<Integer>();
     private boolean isMousePressed = false;
     private ButtonHandler buttonHandler;
     private Graphic background;
@@ -46,7 +46,7 @@ public class BasicMenu extends Context{
     }
 
     @Override
-    public void mouseMoved(double x, double y) {
+    public void mouseMoved(int x, int y, double dx, double dy) {
         // mouse is stored because the mouse position is needed for when the mouse is pressed
         pastMouseX.add(mouseX);
         pastMouseY.add(mouseY);
@@ -108,7 +108,7 @@ public class BasicMenu extends Context{
      * number corresponds to the the button order top to bottom when displayed.
      * -1 is returned if there is no point below the specified point
      */
-    private int getButtonIndex(double x, double y){
+    private int getButtonIndex(int x, int y){
         for(int i = 0; i < buttons.length; i++){
             if(buttons[i].contains(x, y)){
                 return i;

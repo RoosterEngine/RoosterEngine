@@ -14,7 +14,7 @@ import java.awt.Graphics2D;
  * @author david
  */
 public class Testing extends Context{
-    private double mouseX, mouseY;
+    private int mouseX, mouseY;
     private Polygon polygon;
     
     public Testing(GameController controller){
@@ -41,7 +41,7 @@ public class Testing extends Context{
     }
 
     @Override
-    public void mouseMoved(double x, double y) {
+    public void mouseMoved(int x, int y, double dx, double dy) {
         mouseX = x;
         mouseY = y;
     }

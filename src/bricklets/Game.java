@@ -16,7 +16,8 @@ import java.util.ArrayList;
  * @author davidrusu
  */
 public class Game extends Context{
-    private double mouseX = 0, mouseY = 0;
+    private int mouseX = 0, mouseY = 0;
+    private double mouseVelX = 0, mouseVelY = 0;
     private double realMouseX = 0, realMouseY = 0;
     private CollisionDetector collisionDetector = new CollisionDetector(3);
     private ArrayList<CircleEntity> circles = new ArrayList<CircleEntity>();
@@ -51,27 +52,30 @@ public class Game extends Context{
     }
             
     @Override
-    public void mouseMoved(double x, double y) {
+    public void mouseMoved(int x, int y, double dx, double dy) {
         mouseX = x;
         mouseY = y;
-        realMouseX += x;
-        realMouseY += y;
+        mouseVelX = dx;
+        mouseVelY = dy;
+        realMouseX += dx;
+        realMouseY += dy;
+        double scale = 1.0;
         if(dragging){
-            double dx = realMouseX - startMouseX;
-            double dy = realMouseY - startMouseY;
-            rulerLength = Math.sqrt(dx * dx + dy * dy);
+            double deltaX = realMouseX - startMouseX;
+            double deltaY = realMouseY - startMouseY;
+            rulerLength = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         }else if(panMode){
             shiftX += x;
             shiftY += y;
         }else{
-            double scale = 1.0;
-            mouseItem.setVelocity(mouseItem.getDX() + mouseX / scale, mouseItem.getDY() + mouseY / scale);
+            mouseItem.setVelocity(dx * scale, dy * scale);
+//            mouseItem.setVelocity(mouseItem.getDX() + mouseX / scale, mouseItem.getDY() + mouseY / scale);
         }
     }
     
     @Override
     public void update(double elapsedTime) {
-        mouseItem.setVelocity(mouseItem.getDX() / elapsedTime, mouseItem.getDY() / elapsedTime);
+//        mouseItem.setVelocity(mouseItem.getDX() / elapsedTime, mouseItem.getDY() / elapsedTime);
         double timeLeft = elapsedTime * timeScale;
         while(timeLeft > 0 && !paused){
             Collision collision = collisionDetector.getNextCollision(timeLeft);
@@ -94,7 +98,6 @@ public class Game extends Context{
             }
             timeLeft -= updateTime;
         }
-        mouseItem.setVelocity(0, 0);
     }
     
     private void updatePositions(double elapsedTime){
@@ -178,7 +181,7 @@ public class Game extends Context{
         aabBoxs.clear();
         collisionDetector.clearCollisions();
 //        AABBMode();
-        polygonMode();
+//        polygonMode();
         ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
@@ -234,7 +237,7 @@ public class Game extends Context{
     private void ballMode(){
         int radius = 100;
         int padding = 50;
-        int rows = 1;
+        int rows = 2;
         int columns = 1;
         int borderX = (width - columns * (radius * 2 + padding)) / 2;
         int borderY = 100;

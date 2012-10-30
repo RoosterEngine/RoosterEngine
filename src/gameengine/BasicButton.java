@@ -84,7 +84,7 @@ public class BasicButton {
         currentGraphic.update(elapsedTime);
     }
     
-    public boolean contains(int x, int y){
+    public boolean contains(double x, double y){
         return x >= this.x && x <= this.x + width && y >= this.y && y <= this.y + this.height;
     }
     

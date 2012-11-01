@@ -2,7 +2,6 @@ package bricklets;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import sun.net.www.content.audio.x_aiff;
 
 /**
  *

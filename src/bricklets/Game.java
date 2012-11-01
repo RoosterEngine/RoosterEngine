@@ -51,27 +51,22 @@ public class Game extends Context{
     }
             
     @Override
-    public void mouseMoved(double x, double y) {
-        mouseX = x;
-        mouseY = y;
-        realMouseX += x;
-        realMouseY += y;
-        if(dragging){
-            double dx = realMouseX - startMouseX;
-            double dy = realMouseY - startMouseY;
-            rulerLength = Math.sqrt(dx * dx + dy * dy);
-        }else if(panMode){
-            shiftX += x;
-            shiftY += y;
-        }else{
-            double scale = 1.0;
-            mouseItem.setVelocity(mouseItem.getDX() + mouseX / scale, mouseItem.getDY() + mouseY / scale);
-        }
+    public void mouseMoved(double x, double y, double velocityX, double velocityY) {
+//        if(dragging){
+//            double dx = realMouseX - startMouseX;
+//            double dy = realMouseY - startMouseY;
+//            rulerLength = Math.sqrt(dx * dx + dy * dy);
+//        }else if(panMode){
+//            shiftX += x;
+//            shiftY += y;
+//        }else{
+//        System.out.println(velocityX + " " + velocityY);
+            mouseItem.setVelocity(velocityX, velocityY);
+//        }
     }
     
     @Override
     public void update(double elapsedTime) {
-        mouseItem.setVelocity(mouseItem.getDX() / elapsedTime, mouseItem.getDY() / elapsedTime);
         double timeLeft = elapsedTime * timeScale;
         while(timeLeft > 0 && !paused){
             Collision collision = collisionDetector.getNextCollision(timeLeft);
@@ -94,7 +89,6 @@ public class Game extends Context{
             }
             timeLeft -= updateTime;
         }
-        mouseItem.setVelocity(0, 0);
     }
     
     private void updatePositions(double elapsedTime){
@@ -178,7 +172,7 @@ public class Game extends Context{
         aabBoxs.clear();
         collisionDetector.clearCollisions();
 //        AABBMode();
-        polygonMode();
+//        polygonMode();
         ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
@@ -234,7 +228,7 @@ public class Game extends Context{
     private void ballMode(){
         int radius = 100;
         int padding = 50;
-        int rows = 1;
+        int rows = 2;
         int columns = 1;
         int borderX = (width - columns * (radius * 2 + padding)) / 2;
         int borderY = 100;
@@ -251,7 +245,6 @@ public class Game extends Context{
             }
         }
         mouseItem = circles.get(0);
-        mouseItem.setMass(0.001);
     }
     
     private void setupInput(){

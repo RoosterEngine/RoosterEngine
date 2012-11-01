@@ -13,14 +13,15 @@ public class GameTimer implements Runnable {
     
     private GameController gameController;
     private boolean isRunning = true;
+    private double nanosPerSecond = 1000000000;
     private long milliToNano = 1000000;	 //this is the number of nanoseconds in a millisecond (multiply milliseconds by this to convert to the number of nanoseconds)
+    private static final double millisPerNano = 1 / 1000000.0;
     private long updateTime;
     private double updateTimeMS;       //update time in milliseconds as a double
     private long desiredFrameTime;	 //minimum delay between rendering so that it doesn't exceed the desired frame rate
     private long maxFrameTime;         //maximum delay between rendering so that it's not slower than the minimum frame rate
     private long sleepAccumulator = 0;   //small differences between frame times are accumulated so that frames are sincronized to avoid drifting
     private long overSleep = 0;        //the amount of nanoseconds that the last sleep operation overslept by (based on what was requested)
-    private static final long updateLag = 2000000;
 
     /**
      * @param updateRate update game state this many times per second
@@ -31,10 +32,10 @@ public class GameTimer implements Runnable {
      */
     public GameTimer(GameController gameController, int updateRate, int desiredFrameRate, int minFrameRate) {
         this.gameController = gameController;
-        updateTime = 1000 * milliToNano / updateRate;
+        updateTime = (long)(nanosPerSecond / updateRate);
         updateTimeMS = 1000.0 / updateRate;
-        desiredFrameTime = 1000 * milliToNano / desiredFrameRate;
-        maxFrameTime = 1000 * milliToNano / minFrameRate;
+        desiredFrameTime = (long)(nanosPerSecond / desiredFrameRate);
+        maxFrameTime = (long)(nanosPerSecond / minFrameRate);
         
         frameTimes = new long[desiredFrameRate];
         updateTimes = new long[updateRate];
@@ -59,12 +60,13 @@ public class GameTimer implements Runnable {
 
     public void init() {
         // sets up the the frame and update times arrays so that the values stored are close to would be if the game was currently running
+        long twoSeconds = (long)(2 * nanosPerSecond);
         long currentTime = System.nanoTime();
-        long offset = 2000000000 / frameTimes.length; // starts half way between 0 fps and the desired fps
+        long offset = twoSeconds / frameTimes.length; // starts half way between 0 fps and the desired fps
         for(int i = 0; i < frameTimes.length; i++){
             frameTimes[i] = currentTime - offset * (frameTimes.length - i);
         }
-        offset = 2000000000 / updateTimes.length;
+        offset = twoSeconds / updateTimes.length;
         for(int i = 0; i < updateTimes.length; i++){
             updateTimes[i] = currentTime - offset * (updateTimes.length - i);
         }
@@ -79,32 +81,33 @@ public class GameTimer implements Runnable {
         long gameTime = currentTime;
 
         while (isRunning) {
-            currentTime = System.nanoTime() - updateLag;
+            currentTime = System.nanoTime();
+            gameController.updateMouseVelocity((currentTime - gameTime) * millisPerNano);
             // should predict if it has enough time to do two updates in the condition of the while loop
             long eventTime = gameController.getNextInputEventTime();
             while(eventTime <= currentTime){
                 if(eventTime < gameTime + updateTime || System.nanoTime() > lastRenderTime + maxFrameTime){
-                    long eventUpdateTime = eventTime - gameTime;
-                    gameController.interpolateMouse(gameTime, eventUpdateTime, true);
-                    gameController.update(eventUpdateTime / 1000000.0);
+                    double eventUpdateTime = (eventTime - gameTime) * millisPerNano;
+                    gameController.updateMouseMovedHandler(eventUpdateTime);
+                    gameController.update(eventUpdateTime);
                     gameController.handleEvents(eventTime);
                     gameTime = eventTime;
                 }else{
-                    gameController.interpolateMouse(gameTime, updateTime, false);
+                    gameController.updateMouseMovedHandler(updateTimeMS);
                     gameController.update(updateTimeMS);
                     gameTime += updateTime;
                 }
                 eventTime = gameController.getNextInputEventTime();
             }
             while (gameTime + updateTime < currentTime && System.nanoTime() < lastRenderTime + maxFrameTime) {
-                gameController.interpolateMouse(gameTime, updateTime, false);
+                gameController.updateMouseMovedHandler(updateTimeMS);
                 gameTime += updateTime; //if need to update every 5ms but 15ms passed then update by 5ms 3 times
                 update(updateTimeMS);
             }
             lastUpdateTime = currentTime;
-            long finalUpdateTime = currentTime - gameTime;
-            gameController.interpolateMouse(gameTime, finalUpdateTime, false);
-            update(finalUpdateTime / 1000000.0); //update the game based on how much time is left
+            double finalUpdateTime = (currentTime - gameTime) * millisPerNano;
+            gameController.updateMouseMovedHandler(finalUpdateTime);
+            update(finalUpdateTime); //update the game based on how much time is left
             gameTime = currentTime;
             lastRenderTime = System.nanoTime();
             draw();
@@ -117,10 +120,10 @@ public class GameTimer implements Runnable {
         long currentTime = System.nanoTime();
         if (currentTime < endTime) {
             long timeLeft = endTime - currentTime - sleepAccumulator - overSleep;
-            long timeMS = timeLeft / 1000000;
+            long timeMS = timeLeft / milliToNano;
             if (timeMS > 0) {
                 try {
-                    Thread.sleep(timeMS, (int) (timeLeft - 1000000 * timeMS));
+                    Thread.sleep(timeMS, (int) (timeLeft - milliToNano * timeMS));
                     overSleep = System.nanoTime() - currentTime - timeLeft;
                 } catch (InterruptedException e) {
                     overSleep = 0;
@@ -152,18 +155,18 @@ public class GameTimer implements Runnable {
     }
 
     public double getFrameRate() {
-        return 1000000000.0 * frameTimes.length/(frameTimes[lastFrameIndex] - frameTimes[(lastFrameIndex + 1) % frameTimes.length]);
+        return nanosPerSecond * frameTimes.length/(frameTimes[lastFrameIndex] - frameTimes[(lastFrameIndex + 1) % frameTimes.length]);
     }
 
     public double getUpdateRate() {
-        return 1000000000.0 * updateTimes.length/(updateTimes[lastUpdateIndex] - updateTimes[(lastUpdateIndex + 1) % updateTimes.length]);
+        return nanosPerSecond * updateTimes.length/(updateTimes[lastUpdateIndex] - updateTimes[(lastUpdateIndex + 1) % updateTimes.length]);
     }
     
     public double getAverageFrameRate(){
-        return 1000000000.0 * numFrames / (System.nanoTime() - startTime);
+        return nanosPerSecond * numFrames / (System.nanoTime() - startTime);
     }
 
     public double getAverateUpdateRate(){
-        return 1000000000.0 * numUpdates / (System.nanoTime() - startTime);
+        return nanosPerSecond * numUpdates / (System.nanoTime() - startTime);
     }
 }

@@ -46,7 +46,7 @@ public class BasicMenu extends Context{
     }
 
     @Override
-    public void mouseMoved(double x, double y) {
+    public void mouseMoved(double x, double y, double velocityX, double velocityY) {
         // mouse is stored because the mouse position is needed for when the mouse is pressed
         pastMouseX.add(mouseX);
         pastMouseY.add(mouseY);
@@ -205,7 +205,6 @@ public class BasicMenu extends Context{
             @Override
             public void stopAction(int inputCode) {
                 int buttonIndex = getButtonIndex(mouseX, mouseY);
-                    System.out.println(buttonIndex);
                 if(buttonIndex >= 0){
                     BasicButton button = buttons[buttonIndex];
                     buttonHandler.buttonActivated(button);

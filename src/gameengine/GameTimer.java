@@ -86,6 +86,7 @@ public class GameTimer implements Runnable {
             // should predict if it has enough time to do two updates in the condition of the while loop
             long eventTime = gameController.getNextInputEventTime();
             while(eventTime <= currentTime){
+                gameController.updateMouseVelocity(gameTime);
                 if(eventTime < gameTime + updateTime || System.nanoTime() > lastRenderTime + maxFrameTime){
                     double eventUpdateTime = (eventTime - gameTime) * millisPerNano;
                     gameController.updateMouseMovedHandler(eventUpdateTime);

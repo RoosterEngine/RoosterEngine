@@ -63,7 +63,7 @@ public class Game extends Context{
 //        System.out.println(velocityX + " " + velocityY);
             mouseItem.setVelocity(velocityX, velocityY);
 //        }
-    }
+        }
     
     @Override
     public void update(double elapsedTime) {

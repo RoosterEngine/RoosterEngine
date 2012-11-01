@@ -72,9 +72,6 @@ public class EventQueue {
      * @param cutOffTime the time to handle events upto
      */
     public synchronized void handleEvents(long cutOffTime) {
-        if(clearQueue){
-            emptyQueue();
-        }
         while(size > 0 && queue[front].getEventTime() <= cutOffTime) {
             size--;
             queue[front].handleAction();

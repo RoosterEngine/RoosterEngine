@@ -16,8 +16,8 @@ public class BasicMenu extends Context{
     private BasicButton[] buttons;
     private int selectedIndex;
     private double mouseX, mouseY;
-    private ArrayList<Double> pastMouseX = new ArrayList<Double>();
-    private ArrayList<Double> pastMouseY = new ArrayList<Double>();
+    private ArrayList<Integer> pastMouseX = new ArrayList<Integer>();
+    private ArrayList<Integer> pastMouseY = new ArrayList<Integer>();
     private boolean isMousePressed = false;
     private ButtonHandler buttonHandler;
     private Graphic background;
@@ -47,9 +47,6 @@ public class BasicMenu extends Context{
 
     @Override
     public void mouseMoved(double x, double y, double velocityX, double velocityY) {
-        // mouse is stored because the mouse position is needed for when the mouse is pressed
-        pastMouseX.add(mouseX);
-        pastMouseY.add(mouseY);
         mouseX = x;
         mouseY = y;
         int buttonIndex = getButtonIndex(x, y);

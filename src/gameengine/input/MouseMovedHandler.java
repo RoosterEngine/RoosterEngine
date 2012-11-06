@@ -17,5 +17,5 @@ public interface MouseMovedHandler {
      * @param dx the x velocity of the mouse;
      * @param dy the y velocity of the mouse
      */
-    public void mouseMoved(int x, int y, double dx, double dy);
+    public void mouseMoved(double x, double y, double velocityX, double velocityY);
 }

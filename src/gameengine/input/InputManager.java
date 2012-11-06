@@ -19,10 +19,15 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
     private EventQueue eventQueue;
     private double mouseWheelRes = 1;
     private double mouseWheelRotation = 0;//This accumulates the wheel rotations for when the wheel moves a fraction of a tick
-    private static boolean isRelativeMouseMode = false;
+    private boolean isRelativeMouseMode = false;
     private int centerX, centerY;
     private Robot robot = null;
-
+    private Object mouseLock = new Object();
+    private int currentMouseX, currentMouseY;
+    private double gameMouseX = 0, gameMouseY = 0;
+    private double mouseVelX = 0, mouseVelY = 0;
+    private boolean mouseMoving = true;
+    
     public InputManager(GameController gameController){
         this.gameController = gameController;
         eventQueue = new EventQueue();
@@ -33,9 +38,10 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
         }
     }
 
-    public static boolean isRelativeMouseMode(){
+    public boolean isRelativeMouseMode(){
         return isRelativeMouseMode;
     }
+    
     /**
      * When enabled the mouse is reset to the specified x and y coordinates(usually the center of the screen).
      * When a mouse event happens the x and y mouse coordinates provided to the handler are relative the the specified x and y coordinates
@@ -43,10 +49,11 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
      * @param centerY
      */
     public void enableRelativeMouseMove(int centerX, int centerY){
-       isRelativeMouseMode = true;
-       this.centerX = centerX;
-       this.centerY = centerY;
-       robot.mouseMove(centerX, centerY);
+        isRelativeMouseMode = true;
+        resetMouseInfo(0, 0);
+        this.centerX = centerX;
+        this.centerY = centerY;
+        robot.mouseMove(centerX, centerY);
     }
     
     public void clearInputQueue(){
@@ -55,14 +62,20 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
 
     public void disableRelativeMouseMove(){
         isRelativeMouseMode = false;
+        resetMouseInfo(centerX, centerX);
+    }
+    
+    private void resetMouseInfo(int x, int y){
+        currentMouseX = x;
+        currentMouseY = y;
+        gameMouseX = x;
+        gameMouseY = y;
+        mouseVelX = 0;
+        mouseVelY = 0;
     }
 
     public void handleEvents(long cutOffTime){
         eventQueue.handleEvents(cutOffTime);
-    }
-
-    public void updateMouseVelocity(long currentTimeNanos){
-        eventQueue.updateMouseVelocity(currentTimeNanos);
     }
 
     /**
@@ -103,18 +116,19 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
 
     @Override
     public void mouseMoved(MouseEvent e) {
-        MouseMovedHandler handler = gameController.getMouseMovedHandler();
-        int x = e.getX();
-        int y = e.getY();
-        if(isRelativeMouseMode && robot != null){
-            if(x != centerX || y != centerY){
-                eventQueue.addMouseMovedAction(handler, x - centerX, y - centerY, System.nanoTime());
-                int deltaX = e.getXOnScreen() - x;
-                int deltaY = e.getYOnScreen() - y;
-                robot.mouseMove(centerX + deltaX, centerY + deltaY);
+        synchronized(mouseLock){
+            int x = e.getX();
+            int y = e.getY();
+            if(isRelativeMouseMode){
+                if(robot != null && (x != centerX || y != centerY)){
+                    currentMouseX += x - centerX;
+                    currentMouseY += y - centerY;
+                    robot.mouseMove(centerX - x + e.getXOnScreen(), centerY - y + e.getYOnScreen());
+                }
+            }else{
+                currentMouseX = e.getX();
+                currentMouseY = e.getY();
             }
-        }else{
-            eventQueue.addMouseMovedAction(handler, x, y, System.nanoTime());
         }
         e.consume();
     }
@@ -131,7 +145,6 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
 
     @Override
     public void keyPressed(KeyEvent e) {
-//        System.out.println(KeyEvent.getKeyText(e.getKeyCode()));
         int inputCode = InputCode.getKeyInputCode(e.getKeyCode());
         handlePressedEvent(inputCode);
         e.consume();
@@ -161,6 +174,48 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
             }
         }
         e.consume();
+    }
+    
+    /**
+     * 
+     * @param frameTime is in milliseconds
+     */
+    public void updateMouseVelocity(double frameTime){
+        synchronized(mouseLock){
+            if(isRelativeMouseMode){
+                mouseVelX = currentMouseX / frameTime;
+                mouseVelY = currentMouseY / frameTime;
+                currentMouseX = 0;
+                currentMouseY = 0;
+            }else{
+                mouseVelX = (currentMouseX - gameMouseX) / frameTime;
+                mouseVelY = (currentMouseY - gameMouseY) / frameTime;
+            }
+        }
+    }
+    
+    /**
+     * 
+     * @param updateTime is in milliseconds
+     */
+    public void updateMouseMovedHandler(double updateTime){
+        if(mouseVelX == 0 && mouseVelY == 0){
+            if(!mouseMoving){
+                return;
+            }
+            mouseMoving = false;
+        }else{
+            mouseMoving = true;
+        }
+        double dx = mouseVelX * updateTime;
+        double dy = mouseVelY * updateTime;
+        if(isRelativeMouseMode){
+            gameController.getMouseMovedHandler().mouseMoved(dx, dy, mouseVelX, mouseVelY);
+        }else{
+            gameMouseX += dx;
+            gameMouseY += dy;
+            gameController.getMouseMovedHandler().mouseMoved(gameMouseX, gameMouseY, mouseVelX, mouseVelY);
+        }
     }
 
     private void handlePressedEvent(int inputCode){

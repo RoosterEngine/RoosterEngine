@@ -10,19 +10,18 @@ public class EventQueue {
     private static final double GROWTH_RATE = 1.5;
     private static final int INIT_CAPACITY = 16, INIT_RECYCLE_CAPACITY = 16;
     private InputAction[] queue;
-    private int front = 0, size = 0; //document
-    private InputAction[][] recycledInstances = new InputAction[3][INIT_RECYCLE_CAPACITY];
-    private int[] numRecycled = new int[3];
-    private double gameMouseX = 0, gameMouseY = 0;
+    private int front = 0, size = 0;
+    private InputAction[][] recycledInstances = new InputAction[2][INIT_RECYCLE_CAPACITY];
+    private int[] numRecycled;
     private boolean clearQueue = false;
+    
     public EventQueue() {
         queue = new InputAction[INIT_CAPACITY];
+        numRecycled = new int[2];
         numRecycled[0] = 1;
         numRecycled[1] = 1;
-        numRecycled[2] = 1;
         recycledInstances[InputAction.PRESSED_ACTION][0] = new PressedAction(null, 0, 0);
         recycledInstances[InputAction.RELEASED_ACTION][0] = new ReleasedAction(null, 0, 0);
-        recycledInstances[InputAction.MOUSE_MOVED_ACTION][0] = new MouseMovedAction(null, 0, 0, 0);
     }
 
     /**
@@ -59,26 +58,12 @@ public class EventQueue {
             numRecycled[actionType]--;
             action = recycledInstances[actionType][numRecycled[actionType]];
         }
-        
         if (size == queue.length) {
             expand();
         }
         queue[(front + size) % queue.length] = action;
         size++;
         return action;
-    }
-
-    /**
-     * Adds a {@link MouseMovedAction} to the queue
-     *
-     * @param handler the handler to be called when the handleAction method is
-     * called
-     * @param x the mouses x position
-     * @param y the mouses y position
-     * @param eventTime the time this action was triggered
-     */
-    public synchronized void addMouseMovedAction(MouseMovedHandler handler, int x, int y, long eventTime) {
-        ((MouseMovedAction)addRecycledInputAction(InputAction.MOUSE_MOVED_ACTION)).setup(handler, x, y, eventTime);
     }
 
     /**
@@ -89,44 +74,10 @@ public class EventQueue {
     public synchronized void handleEvents(long cutOffTime) {
         while(size > 0 && queue[front].getEventTime() <= cutOffTime) {
             size--;
-            InputAction inputEvent = queue[front];
-            if(inputEvent.getActionType() == InputAction.MOUSE_MOVED_ACTION){
-                MouseMovedAction action = getNextMouseMovedAction((front + 1) % queue.length, size);
-                if(action == null){
-                    inputEvent.handleAction();
-                }else{
-                    action.updateMouseVelocity(inputEvent.getEventTime());
-                }
-            }else{
-                inputEvent.handleAction();
-                
-            }
+            queue[front].handleAction();
             recycleAction(queue[front]);
             front = (front + 1) % queue.length;
         }
-    }
-    
-    public synchronized void updateMouseVelocity(long currentTimeNanos){
-        if(clearQueue){
-            emptyQueue();
-        }
-        int i = 0;
-        MouseMovedAction action = getNextMouseMovedAction(front, size);
-        if(action != null){
-            action.updateMouseVelocity(currentTimeNanos);
-        }
-    }
-    
-    private MouseMovedAction getNextMouseMovedAction(int startingIndex, int numEvents){
-        InputAction action;
-        for(int i = 0; i < numEvents; i++){
-            action = queue[(startingIndex + i) % queue.length];
-            if(action.getActionType() == InputAction.MOUSE_MOVED_ACTION){
-                return (MouseMovedAction)action;
-            }
-            
-        }
-        return null;
     }
     
     /**
@@ -167,9 +118,9 @@ public class EventQueue {
     
     private void expand() {
         InputAction[] temp = new InputAction[(int) (queue.length * GROWTH_RATE)];
-        int t = queue.length - front;
-        System.arraycopy(queue, front, temp, 0, t);
-        System.arraycopy(queue, 0, temp, t, front);
+        int firstHalfLength = queue.length - front;
+        System.arraycopy(queue, front, temp, 0, firstHalfLength);
+        System.arraycopy(queue, 0, temp, firstHalfLength, front);
         queue = temp;
         front = 0;
     }

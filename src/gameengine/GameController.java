@@ -99,6 +99,14 @@ public class GameController {
         contextTypeControlsMap.put(currentContext.getContextType(), currentControls);
     }
     
+    public void updateMouseVelocity(double frameTime){
+        input.updateMouseVelocity(frameTime);
+    }
+    
+    public void updateMouseMovedHandler(double updateTime){
+        input.updateMouseMovedHandler(updateTime);
+    }
+    
     private HashMap<Integer, Action> getControlsMap(UserProfile userProfile, ContextType contextType){
         HashMap<Integer, Action> controlMap = new HashMap<Integer, Action>();
 
@@ -127,7 +135,6 @@ public class GameController {
      */
     public void enterContext(Context context) {
         input.clearInputQueue();
-        System.out.println("inputQueue cleared");
         if(!showingMouseCursor && context.isShowingMouseCursor()){
             showingMouseCursor = true;
             resetMouseCursor(screen.getFullScreenWindow());
@@ -137,10 +144,8 @@ public class GameController {
         }
         if(context.isRelativeMouseMovedEnabled()){
             input.enableRelativeMouseMove(context.getWidth() / 2, context.getHeight() / 2);
-            MouseMovedAction.setGameMousePosition(0, 0);
         }else{
             input.disableRelativeMouseMove();
-            MouseMovedAction.setGameMousePosition(context.getWidth() / 2, context.getHeight() / 2);
         }
         contextStack.push(context);
         currentContext = context;
@@ -286,10 +291,6 @@ public class GameController {
     
     public void handleEvents(long cutOffTime){
         input.handleEvents(cutOffTime);
-    }
-    
-    public void updateMouseVelocity(long currentTimeNanos){
-        input.updateMouseVelocity(currentTimeNanos);
     }
     
     public void setFullScreen(){

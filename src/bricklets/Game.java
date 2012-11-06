@@ -116,7 +116,7 @@ public class Game extends Context{
         }
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 0.01, collisionsPerMilli);
+        Physics.performCollision(collision, 1, collisionsPerMilli);
         collision.getA().getParentEntity().setColor(Color.BLUE);
         collision.getB().getParentEntity().setColor(Color.RED);
     }
@@ -226,18 +226,18 @@ public class Game extends Context{
     }
     
     private void ballMode(){
-        int radius = 100;
-        int padding = 50;
-        int rows = 2;
-        int columns = 1;
-        int borderX = (width - columns * (radius * 2 + padding)) / 2;
+        double radius = 10;
+        int padding = 5;
+        int rows = 20;
+        int columns = 20;
+        double borderX = (width - columns * (radius * 2 + padding)) / 2;
         int borderY = 100;
         double offsetX = borderX + radius;
         double offsetY = borderY + radius;
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
                 double xPos = x * (radius * 2 + padding) + offsetX;
-                double yPos = y * (radius * 2 + padding) + offsetY;
+                double yPos = Math.sin(x) * 10 + y * (radius * 2 + padding) + offsetY;
                 CircleEntity circle = new CircleEntity(this, xPos, yPos, radius);
                 circles.add(circle);
                 CircleShape circleShape = new CircleShape(xPos, yPos, 0, 0, radius, circle);

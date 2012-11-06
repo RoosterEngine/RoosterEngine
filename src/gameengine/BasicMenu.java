@@ -1,5 +1,13 @@
 package gameengine;
 
+import gameengine.effects.Effect;
+import gameengine.effects.EffectFactory;
+import gameengine.effects.HorizontalSlide;
+import gameengine.effects.LinearMotion;
+import gameengine.effects.MotionGenerator;
+import gameengine.effects.Slide;
+import gameengine.effects.SpringMotion;
+import gameengine.effects.VerticalSlide;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
@@ -18,9 +26,10 @@ public class BasicMenu extends Context{
     private double mouseX, mouseY;
     private ArrayList<Integer> pastMouseX = new ArrayList<Integer>();
     private ArrayList<Integer> pastMouseY = new ArrayList<Integer>();
-    private boolean isMousePressed = false;
+    private boolean isMousePressed = false, exiting;
     private ButtonHandler buttonHandler;
     private Graphic background;
+    private long exitAnimationTime = 1000000000, exitTime = System.nanoTime();
     
     public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons, ButtonHandler handler, Graphic background){
         this(controller, type, buttons, handler, background, 0.25, 0.25, 0.1, 0.25, 0.25);
@@ -35,6 +44,12 @@ public class BasicMenu extends Context{
         buttons[0].select();
         buttonHandler = handler;
         setUpInput();
+    }
+    
+    public void reset(){
+        for(BasicButton button: buttons){
+            button.reset();
+        }
     }
     
     @Override
@@ -90,11 +105,12 @@ public class BasicMenu extends Context{
         int padding = (int)((height - topBorder - bottomBorder) / buttons.length * paddingRatio);
         int buttonWidth = width - leftBorder - (int)(width * rightBorderRatio);
         int buttonHeight = (int)(height - topBorder - bottomBorder - padding * (buttons.length - 1))/ buttons.length;
-        int currentY = topBorder;
+        int currentY = topBorder + buttonHeight / 2;
         for(int i = 0; i < buttons.length; i++){
-            buttons[i].setDimensions(leftBorder, currentY, buttonWidth, buttonHeight);
+            buttons[i].initialize(-buttonWidth / 2, currentY, buttonWidth, buttonHeight);
             currentY += buttonHeight + padding;
         }
+        EffectFactory.setCurtainEffect(buttons, width / 2, 1);
     }
     
     /**

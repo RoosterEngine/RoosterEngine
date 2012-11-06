@@ -11,7 +11,7 @@ public class EventQueue {
     private static final int INIT_CAPACITY = 16, INIT_RECYCLE_CAPACITY = 16;
     private InputAction[] queue;
     private int front = 0, size = 0;
-    private InputAction[][] recycledInstances = new InputAction[3][INIT_RECYCLE_CAPACITY];
+    private InputAction[][] recycledInstances = new InputAction[2][INIT_RECYCLE_CAPACITY];
     private int[] numRecycled;
     private boolean clearQueue = false;
     

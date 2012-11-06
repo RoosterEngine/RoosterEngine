@@ -15,6 +15,17 @@ public class Physics {
     private Physics(){
     }
     
+    public static double getCriticallyDampedSpringConstant(double k){
+        return 2 * Math.sqrt(k);
+    }
+    
+    public static double springForce(double x, double y, double restingX, double restingY, double k, double restingLength, double dampning){
+        double dx = restingX - x;
+        double dy = restingY - y;
+        double displacement = Math.sqrt(dx * dx + dy * dy) - restingLength;
+        return displacement * k;
+    }
+    
     public static double springForce(Vector2D a, Vector2D b, double k, double restingLength){
         double displacement = new Vector2D(a).subtract(b).length() - restingLength;
         return displacement * k;

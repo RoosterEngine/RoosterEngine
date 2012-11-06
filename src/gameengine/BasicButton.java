@@ -1,20 +1,23 @@
 package gameengine;
 
-import bricklets.WavyGraphic;
+import gameengine.effects.Effect;
+import gameengine.effects.Effectable;
+import gameengine.effects.NoEffect;
 import java.awt.Color;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 
 /**
  *
  * @author davidrusu
  */
-public class BasicButton {
-    
+public class BasicButton implements Effectable{
     private String text;
-    private int x, y, width, height, xPadding, yPadding;
+    private double width, height, xPadding, yPadding;
     private double padding = 0.5;
     private boolean selected = false, isPressed = false;
     private Graphic upGraphic, pressedGraphic, selectedGraphic, currentGraphic;
+    private Effect effect;
     
     public BasicButton(String text){
         this(text, new SolidColorGraphic(new Color(205, 179, 128), 0, 0),
@@ -27,25 +30,26 @@ public class BasicButton {
         this.upGraphic = upGraphic;
         this.pressedGraphic = downGraphic;
         this.selectedGraphic = selectedGraphic;
-        
         currentGraphic = upGraphic;
         xPadding = (int)(width * padding);
         yPadding = (int)(height * padding);
+        effect = new NoEffect(0, 0);
     }
     
-    public void setDimensions(int x, int y, int width, int height){
-        this.x = x;
-        this.y = y;
+    public void initialize(double x, double y, double width, double height){
+        effect.reset(x, y);
         this.width = width;
         this.height = height;
-        
         xPadding = (int)(width * padding);
         yPadding = (int)(height * padding);
+        upGraphic.resize((int)width, (int)height);
+        pressedGraphic.resize((int)width, (int)height);
+        selectedGraphic.resize((int)width, (int)height);
         
-        upGraphic.resize(width, height);
-        pressedGraphic.resize(width, height);
-        selectedGraphic.resize(width, height);
-        
+    }
+    
+    public void setPosition(double x, double y){
+        effect.reset(x, y);
     }
     
     public void select(){
@@ -82,15 +86,59 @@ public class BasicButton {
     
     public void update(double elapsedTime){
         currentGraphic.update(elapsedTime);
+        effect.update(elapsedTime);
+    }
+    
+    public void reset(){
+        effect.reset();
+    }
+
+    @Override
+    public double getX() {
+        return effect.getX();
+    }
+
+    @Override
+    public double getY() {
+        return effect.getY();
+    }
+
+    @Override
+    public double getWidth() {
+        return width;
+    }
+
+    @Override
+    public double getHeight() {
+        return height;
+    }
+
+    @Override
+    public Effect getCurrentEffect() {
+        return effect;
+    }
+
+    @Override
+    public void setEffect(Effect effect) {
+        this.effect = effect;
     }
     
     public boolean contains(double x, double y){
-        return x >= this.x && x <= this.x + width && y >= this.y && y <= this.y + this.height;
+        double leftEdge = effect.getX() - width / 2;
+        double topEdge = effect.getY() - height / 2;
+        return x >= leftEdge && x <= leftEdge + width && y >= topEdge && y <= topEdge + height;
     }
     
     public void draw(Graphics2D g){
-        currentGraphic.draw(g, x, y);
+        double x = effect.getX();
+        double y = effect.getY();
+        currentGraphic.draw(g, (int)(x - width / 2), (int)(y - height / 2));
+        FontMetrics metrics = g.getFontMetrics();
+        int textWidth = metrics.stringWidth(text);
+        int textHeight = metrics.getHeight();
         g.setColor(Color.WHITE);
-        g.drawString(text, x + xPadding, y + yPadding);
+        double xPadding = (width - textWidth) * 0.5;
+        double yPadding = (height + textHeight / 2) * 0.5;
+        g.drawString(text, (int)(x - width / 2 + xPadding), (int)(y - height / 2 + yPadding));
     }
 }

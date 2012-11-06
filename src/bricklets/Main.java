@@ -3,6 +3,9 @@ package bricklets;
 import gameengine.*;
 import gameengine.input.Action;
 import gameengine.input.InputCode;
+import gameengine.math.Function;
+import gameengine.math.ParametricFunction;
+import gameengine.math.Utilities;
 import java.awt.Color;
 
 /**
@@ -10,7 +13,6 @@ import java.awt.Color;
  * @author davidrusu
  */
 public class Main implements ButtonHandler{
-    
     private GameController controller;
     private BasicButton physicsButton = new BasicButton("Physics");
     private BasicButton seedButton = new BasicButton("Change Seed");
@@ -19,6 +21,7 @@ public class Main implements ButtonHandler{
     private BasicButton optionsButton = new BasicButton("Options");
     private BasicButton controlsButton = new BasicButton("Controls");
     private Game game;
+    private BasicMenu menu;
     private Context testing;
     
     public Main(GameController controller){
@@ -26,7 +29,7 @@ public class Main implements ButtonHandler{
         game = new Game(controller);
         testing = new Testing(controller);
         BasicButton[] buttons = {physicsButton, seedButton, testingButton, optionsButton, controlsButton, exitButton};
-        BasicMenu menu = new BasicMenu(controller, ContextType.MENU, buttons, this, new SolidColorGraphic(new Color(232,221,203), controller.getWidth(), controller.getHeight()));
+        menu = new BasicMenu(controller, ContextType.MENU, buttons, this, new SolidColorGraphic(new Color(232,221,203), controller.getWidth(), controller.getHeight()));
         controller.enterContext(menu);
     }
     
@@ -48,10 +51,12 @@ public class Main implements ButtonHandler{
     public void buttonActivated(BasicButton button) {
         if(button == physicsButton){
             controller.enterContext(game);
+            menu.reset();
         }else if(button == seedButton){
             game.setSeed((long)(Math.random() * 100));
         }else if(button == testingButton){
             controller.enterContext(testing);
+            menu.reset();
         }else if(button == exitButton){
             controller.exitContext();
         }

@@ -31,8 +31,8 @@ public class EffectFactory {
         for(int i = 0; i < effects.length; i++){
             k *= 0.7;
             Effectable effectable = effectables[i];
-//            effectable.setEffect(new HorizontalSlide(effectable.getX(), effectable.getY(), destinationX, new SpringMotion(k, dampening)));
-            effectable.setEffect(new HorizontalSlide(effectable.getX(), effectable.getY(), destinationX, new LinearMotion(1)));
+            effectable.setEffect(new HorizontalSlide(effectable.getX(), effectable.getY(), destinationX, new SpringMotion(k, dampening)));
+//            effectable.setEffect(new HorizontalSlide(effectable.getX(), effectable.getY(), destinationX, new LinearMotion(1)));
         }
     }
     

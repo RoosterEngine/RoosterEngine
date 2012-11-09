@@ -52,17 +52,16 @@ public class Game extends Context{
             
     @Override
     public void mouseMoved(double x, double y, double velocityX, double velocityY) {
-//        if(dragging){
+        if(dragging){
 //            double dx = realMouseX - startMouseX;
 //            double dy = realMouseY - startMouseY;
 //            rulerLength = Math.sqrt(dx * dx + dy * dy);
-//        }else if(panMode){
-//            shiftX += x;
-//            shiftY += y;
-//        }else{
-//        System.out.println(velocityX + " " + velocityY);
+        }else if(panMode){
+            shiftX += x;
+            shiftY += y;
+        }else{
             mouseItem.setVelocity(velocityX, velocityY);
-//        }
+        }
         }
     
     @Override
@@ -99,7 +98,6 @@ public class Game extends Context{
     
     private void updateBoxes(double elapsedTime){
         for(AABBEntity box: aabBoxs){
-            box.setColor(Color.BLACK);
             box.update(elapsedTime);
         }
     }
@@ -116,9 +114,9 @@ public class Game extends Context{
         }
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 1, collisionsPerMilli);
-        collision.getA().getParentEntity().setColor(Color.BLUE);
-        collision.getB().getParentEntity().setColor(Color.RED);
+        Physics.performCollision(collision, 0.001, collisionsPerMilli);
+//        collision.getA().getParentEntity().setColor(Color.BLUE);
+//        collision.getB().getParentEntity().setColor(Color.RED);
     }
 
     @Override
@@ -172,8 +170,8 @@ public class Game extends Context{
         aabBoxs.clear();
         collisionDetector.clearCollisions();
 //        AABBMode();
-//        polygonMode();
-        ballMode();
+        polygonMode();
+//        ballMode();
         collisionDetector.setCollisionPair(0, 0);
     }
     
@@ -201,11 +199,11 @@ public class Game extends Context{
     }
     
     private void polygonMode(){
-        double minRadius = 50;
-        double maxRadius = 50;
-        int minPoints = 3;
-        int maxPoints = 5;
-        int padding = 5;
+        double minRadius = 300;
+        double maxRadius = 500;
+        int minPoints = 4;
+        int maxPoints = 4;
+        int padding = 500;
         int rows = 2;
         int columns = 1;
         double borderX = (width - columns * (maxRadius * 2 + padding)) / 2;
@@ -223,6 +221,7 @@ public class Game extends Context{
             }
         }
         mouseItem = polygons.get(0);
+        mouseItem.setMass(0.0000001);
     }
     
     private void ballMode(){

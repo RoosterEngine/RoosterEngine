@@ -110,7 +110,7 @@ public class BasicMenu extends Context{
             buttons[i].initialize(-buttonWidth / 2, currentY, buttonWidth, buttonHeight);
             currentY += buttonHeight + padding;
         }
-        EffectFactory.setCurtainEffect(buttons, width / 2, 1);
+        EffectFactory.setCurtainEffect(buttons, width / 2, 1.5);
     }
     
     /**

@@ -62,22 +62,22 @@ public abstract class Shape {
         }
         Vector2D collisionNormal = result.getCollisionNormal().clear();
         double relativeVelX = b.dx - a.dx, relativeVelY = b.dy - a.dy;
-        double[] maxMinTimes = {-Double.MAX_VALUE, Double.MAX_VALUE};
-        getEntryAndLeaveTime(b.getNormals(), a.getPoints(), b.getNormalMins(), b.getNormalMaxs(), b.x, b.y, a.x, a.y, relativeVelX, relativeVelY, maxMinTimes, collisionNormal);
-        if(maxMinTimes[0] == NO_COLLISION){
+        double[] entryLeaveTimes = {-Double.MAX_VALUE, Double.MAX_VALUE};
+        getEntryAndLeaveTime(b, a, relativeVelX, relativeVelY, entryLeaveTimes, collisionNormal);
+        if(entryLeaveTimes[0] == NO_COLLISION){
             result.set(Collision.NO_COLLISION);
             return;
         }
-        getEntryAndLeaveTime(a.getNormals(), b.getPoints(), a.getNormalMins(), a.getNormalMaxs(), a.x, a.y, b.x, b.y, -relativeVelX, -relativeVelY, maxMinTimes, collisionNormal);
-        if(maxMinTimes[0] == NO_COLLISION){
+        getEntryAndLeaveTime(a, b, -relativeVelX, -relativeVelY, entryLeaveTimes, collisionNormal);
+        if(entryLeaveTimes[0] == NO_COLLISION){
             result.set(Collision.NO_COLLISION);
             return;
         }
-        if(maxMinTimes[0] == -Double.MAX_VALUE || maxMinTimes[0] > maxTime || maxMinTimes[0] > maxMinTimes[1]){
+        if(entryLeaveTimes[0] == -Double.MAX_VALUE || entryLeaveTimes[0] > maxTime || entryLeaveTimes[0] > entryLeaveTimes[1]){
             result.set(Collision.NO_COLLISION);
             return;
         }
-        result.set(maxMinTimes[0], collisionNormal, b, a);
+        result.set(entryLeaveTimes[0], collisionNormal, b, a);
     }
     
     public static void collideCirclePoly(Shape a, Polygon b, double maxTime, Collision result){
@@ -227,7 +227,11 @@ public abstract class Shape {
         }
     }
     
-    private static void getEntryAndLeaveTime(Vector2D[] aNormals, Vector2D[] bPoints, double[] aMins, double[]aMaxs, double aX, double aY, double bX, double bY, double relativeVelX, double relativeVelY, double[] result, Vector2D collisionNormal){
+    private static void getEntryAndLeaveTime(Polygon a, Polygon b, double relativeVelX, double relativeVelY, double[] result, Vector2D collisionNormal){
+        Vector2D[] aNormals = a.getNormals();
+        Vector2D[] bPoints = b.getPoints();
+        double[] aMins = a.getNormalMins();
+        double[] aMaxs = a.getNormalMaxs(); 
         for(int i = 0; i < aNormals.length; i++){
             Vector2D normal = aNormals[i];
             double bMin = Double.MAX_VALUE;
@@ -241,8 +245,8 @@ public abstract class Shape {
                     bMax = dist;
                 }
             }
-            double centerA = Vector2D.unitScalarProject(aX, aY, normal);
-            double centerB = Vector2D.unitScalarProject(bX, bY, normal);
+            double centerA = Vector2D.unitScalarProject(a.x, a.y, normal);
+            double centerB = Vector2D.unitScalarProject(b.x, b.y, normal);
             bMin += centerB;
             bMax += centerB;
             double aMin = aMins[i] + centerA;
@@ -372,12 +376,15 @@ public abstract class Shape {
         double deltaX = a.x - b.x;
         double deltaY = a.y - b.y;
         double distBetween = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        distBetween -= radiiSum;
+        if(distBetween <= 0){
+            return true;
+        }
         double projVel = Vector2D.scalarProject(combinedVelX, combinedVelY, deltaX, deltaY, distBetween);
         if(projVel < 0){
             // travelling away from each other
             return false;
         }
-        distBetween -= radiiSum;
         double travelTime = distBetween / projVel;
         return travelTime <= maxTime;
     }
@@ -453,6 +460,14 @@ public abstract class Shape {
         double dist = actualBPos - actualAPos;
         return dist / relativeVel;
     }
+//    
+//    /**
+//     * return Vector2D is temporary
+//     * @param directionX
+//     * @param directionY
+//     * @return 
+//     */
+//    public abstract Vector2D support(Vector2D direction);
     
     public abstract int getShapeType();
     

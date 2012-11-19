@@ -58,16 +58,14 @@ public class CircleEntity extends Entity{
 //        start = (start + 1) % pastX.length;
         g.setColor(color);
         g.fillOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
-//        double scale = 100;
-//        g.setColor(Color.ORANGE);
-//        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
+        double scale = 100;
         g.setColor(Color.ORANGE);
-//        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
-        double vel = Math.sqrt(dx * dx + dy * dy);
-        if(vel == 0){
-            vel = 1;
-        }
-        double scale = 50;
-        g.drawLine((int)x, (int)y, (int)(x + dx / vel * scale), (int)(y + dy / vel * scale));
+        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
+//        double vel = Math.sqrt(dx * dx + dy * dy);
+//        if(vel == 0){
+//            vel = 1;
+//        }
+//        double scale = 50;
+//        g.drawLine((int)x, (int)y, (int)(x + dx / vel * scale), (int)(y + dy / vel * scale));
     }
 }

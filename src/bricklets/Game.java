@@ -37,8 +37,8 @@ public class Game extends Context{
     
     //Panning around screen
     boolean panMode = false;
-    int shiftX = 0, shiftY = 0;
-    double scale = 1;
+    double scale = 0.5;
+    int shiftX = (int)(width * scale * scale), shiftY = (int)(height * scale * scale);
     private double timeScale = 1;
     
     //debug
@@ -52,17 +52,21 @@ public class Game extends Context{
             
     @Override
     public void mouseMoved(double x, double y, double velocityX, double velocityY) {
-        if(dragging){
-//            double dx = realMouseX - startMouseX;
-//            double dy = realMouseY - startMouseY;
-//            rulerLength = Math.sqrt(dx * dx + dy * dy);
+        mouseX += velocityX / scale;
+        mouseY += velocityY / scale;
+        realMouseX = mouseX;
+        realMouseY = mouseY;
+        if(rulerMode){
+            double dx = realMouseX - startMouseX;
+            double dy = realMouseY - startMouseY;
+            rulerLength = Math.sqrt(dx * dx + dy * dy);
         }else if(panMode){
             shiftX += x;
             shiftY += y;
         }else{
             mouseItem.setVelocity(velocityX, velocityY);
         }
-        }
+    }
     
     @Override
     public void update(double elapsedTime) {
@@ -109,44 +113,50 @@ public class Game extends Context{
     }
     
     private void updateCircles(double elapsedTime){
+        double k = 0.000005;
+        double d = 0.0005;
         for(CircleEntity circle: circles){
             circle.update(elapsedTime);
+//            circle.addForce((mouseX - circle.getX()) * k * elapsedTime - d * circle.getDX(), (mouseY - circle.getY()) * k * elapsedTime - d * circle.getDY());
         }
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 0.001, collisionsPerMilli);
+        Physics.performCollision(collision, 1, collisionsPerMilli);
 //        collision.getA().getParentEntity().setColor(Color.BLUE);
 //        collision.getB().getParentEntity().setColor(Color.RED);
     }
 
     @Override
     public void draw(Graphics2D g) {
+        g.clearRect(0, 0, 300, 200);
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
         g.translate(shiftX, shiftY);
         g.scale(scale, scale);
-        for(CircleEntity circle: circles){
-            circle.draw(g);
-        }
         for(PolygonEntity polygon: polygons){
             polygon.draw(g);
+        }
+        for(CircleEntity circle: circles){
+            circle.draw(g);
         }
         for(AABBEntity box: aabBoxs){
             box.draw(g);
         }
         if(rulerMode){
-            g.setColor(Color.WHITE);
+            g.setColor(Color.BLACK);
             g.drawLine((int)startMouseX, (int)startMouseY, (int)realMouseX, (int)realMouseY);
             g.drawString(rulerLength + "", (int)realMouseX, (int)realMouseY);
         }
-//        paddle.draw(g);
+        g.setColor(Color.RED);
+//        int r = 50;
+//        g.fillRect((int)(mouseX - r), (int)(mouseY - r), r + r, r + r);
         g.scale(1 / scale, 1 / scale);
         g.translate(-shiftX, -shiftY);
         drawStats(g);
     }
     
     private void drawStats(Graphics2D g){
-        g.setColor(Color.LIGHT_GRAY);
+        g.setColor(Color.BLACK);
         g.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         g.drawString("          fps: " + controller.getFrameRate(), 50, 50);
         g.drawString("          ups: " + controller.getUpdateRate(), 50, 70);
@@ -154,9 +164,10 @@ public class Game extends Context{
         g.drawString("    collision: " + collisionX + " " + collisionY, 50, 110);
         g.drawString("collisionRate: " + collisionRate, 50, 130);
         g.drawString("   collisions: " + numCollision, 50, 150);
-        g.drawString(" num of circles: " + circles.size(), 50, 170);
+        g.drawString(" num of shapes: " + (circles.size() + polygons.size() + aabBoxs.size()), 50, 170);
         g.drawString("mouseItem pos: " + mouseItem.getX() + ", " + mouseItem.getY(), 50, 190);
-        g.drawString("mouseItem vel: " + mouseItem.getDX() + ", " + mouseItem.getDY(), 50, 210);
+        g.drawString("mouseItem velX: " + mouseItem.getDX(), 50, 210);
+        g.drawString("mouseItem velY: " + Math.abs(mouseItem.getDY()), 50, 240);
     }
     
     public void setSeed(long seed){
@@ -173,18 +184,22 @@ public class Game extends Context{
         polygonMode();
 //        ballMode();
         collisionDetector.setCollisionPair(0, 0);
+        mouseItem = polygons.get(0);
+        mouseItem.setMass(0.000001);
+        mouseItem.setColor(Color.DARK_GRAY);
+//        polygons.get(2).setMass(10000000D);
     }
     
     private void AABBMode(){
         double width = 100;
         double height = 100;
-        double padding = 5;
+        double padding = 700;
         int rows = 2;
         int columns = 1;
         double borderX = (this.width - columns * (width + padding)) / 2;
-        double borderY = (this.height - rows * (height + padding)) / 2;
+        double borderY = 0;// (this.height - rows * (height + padding)) / 2;
         double  offsetX = width/2 + borderX;
-        double offsetY = height/2 + borderY;
+        double offsetY = 0;//height/2 + borderY;
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
                 double xPos = x * (width + padding) + offsetX;
@@ -195,55 +210,59 @@ public class Game extends Context{
                 collisionDetector.addShape(aabb, 0);
             }
         }
-        mouseItem = aabBoxs.get(0);
     }
     
     private void polygonMode(){
         double minRadius = 300;
         double maxRadius = 500;
-        int minPoints = 4;
-        int maxPoints = 4;
-        int padding = 500;
+        int minPoints = 3;
+        int maxPoints = 9;
+        int padding = 5;
         int rows = 2;
         int columns = 1;
         double borderX = (width - columns * (maxRadius * 2 + padding)) / 2;
         double borderY = (height - rows * (maxRadius * 2 + padding)) / 2;
-        double offsetX = borderX + maxRadius;
-        double offsetY = borderY + maxRadius;
+//        double offsetX = borderX + maxRadius;
+//        double offsetY = borderY + maxRadius;
+        double offsetX = width / 2;
+        double offsetY = height / 2;
         Polygon.setRandomSeed(104523);
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
-                double xPos = x * (maxRadius * 2 + padding) + offsetX;
-                double yPos = y * (maxRadius * 2 + padding) + offsetY;
+//                double xPos = x * (maxRadius * 2 + padding) + offsetX;
+//                double yPos = y * (maxRadius * 2 + padding) + offsetY;
+                double xPos = offsetX;
+                double yPos = offsetY;
                 PolygonEntity polygon = new PolygonEntity(this, xPos, yPos, minRadius, maxRadius, minPoints, maxPoints);
                 polygons.add(polygon);
                 collisionDetector.addShape(polygon.getPolygonShape(), 0);
             }
         }
-        mouseItem = polygons.get(0);
-        mouseItem.setMass(0.0000001);
     }
     
     private void ballMode(){
-        double radius = 10;
-        int padding = 5;
-        int rows = 20;
-        int columns = 20;
+        double radius = 200;
+        int padding = 0;
+        int rows = 1;
+        int columns = 1;
         double borderX = (width - columns * (radius * 2 + padding)) / 2;
-        int borderY = 100;
-        double offsetX = borderX + radius;
-        double offsetY = borderY + radius;
+        int borderY = 0;
+//        double offsetX = borderX + radius;
+//        double offsetY = borderY - radius;
+        double offsetX = width / 2;
+        double offsetY = height / 2;
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
-                double xPos = x * (radius * 2 + padding) + offsetX;
-                double yPos = Math.sin(x) * 10 + y * (radius * 2 + padding) + offsetY;
+//                double xPos = x * (radius * 2 + padding) + offsetX;
+//                double yPos = Math.sin(x) * 10 + y * (radius * 2 + padding) + offsetY;
+                double xPos = offsetX;
+                double yPos = offsetY;
                 CircleEntity circle = new CircleEntity(this, xPos, yPos, radius);
                 circles.add(circle);
                 CircleShape circleShape = new CircleShape(xPos, yPos, 0, 0, radius, circle);
                 collisionDetector.addShape(circleShape, 0);
             }
         }
-        mouseItem = circles.get(0);
     }
     
     private void setupInput(){
@@ -261,7 +280,7 @@ public class Game extends Context{
             }
         });
         
-        final double thrust = 0.005;
+        final double thrust = 0.001;
         controller.setContextBinding(contextType, InputCode.KEY_LEFT, Action.GAME_LEFT);
         bindAction(Action.GAME_LEFT, new ActionHandler() {
             @Override
@@ -351,11 +370,12 @@ public class Game extends Context{
             public void startAction(int inputCode) {
                 startMouseX = realMouseX;
                 startMouseY = realMouseY;
+                dragging = true;
             }
 
             @Override
             public void stopAction(int inputCode) {
-//                dragging = false;
+                dragging = false;
             }
         });
         
@@ -379,6 +399,9 @@ public class Game extends Context{
             @Override
             public void startAction(int inputCode) {
                 scale -= zoom;
+                if(scale < zoom){
+                    scale = zoom;
+                }
             }
 
             @Override

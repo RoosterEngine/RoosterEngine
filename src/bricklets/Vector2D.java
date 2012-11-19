@@ -183,30 +183,22 @@ public class Vector2D {
     }
     
     public static double distToLine(double x, double y, double x1, double y1, double x2, double y2){
-        double dx = x2 - x1;
-        double dy = y1 - y2;
-        double dist = x * dy + y * dx + x1 * y2 - x2 * y1;
-        return dist / Math.sqrt(dx * dx + dy * dy);
+        return Math.abs(signedDistToLine(x, y, x1, y1, x2, y2));
     }
     
     public static double distToLineSquared(double x, double y, double x1, double y1, double x2, double y2){
-        double dx = x2 - x1;
-        double dy = y1 - y2;
-        double dist = x * dy + y * dx + x1 * y2 - x2 * y1;
+        double dx = x1 - x2;
+        double dy = y2 - y1;
+        double dist = x * dy + y * dx + x2 * y1 - x1 * y2;
         return dist * dist / (dx * dx + dy * dy);
     }
     
     public double distToLineSquared(double x1, double y1, double x2, double y2){
-        double dx = x2 - x1;
-        double dy = y1 - y2;
-        double dist = x * dy + y * dx + x1 * y2 - x2 * y1;
-        return dist * dist / (dx * dx + dy * dy);
+        return distToLineSquared(x, y, x1, y1, x2, y2);
     }
     
     public double distToLine(double x1, double y1, double x2, double y2){
-        double dx = x2 - x1;
-        double dy = y1 - y2;
-        return Math.abs((x * dy + y * dx + x1 * y2 - x2 * y1) / Math.sqrt(dx * dx + dy * dy));
+        return distToLine(x, y, x1, y1, x2, y2);
     }
     
     /**
@@ -216,9 +208,18 @@ public class Vector2D {
      * @return 
      */
     public double distToLine(Vector2D p1, Vector2D p2){
-        double dx = p2.x - p1.x;
-        double dy = p1.y - p2.y;
-        return Math.abs((x * dy + y * dx + p1.x * p2.y - p2.x * p1.y) / Math.sqrt(dx * dx + dy * dy));
+        return Math.abs(signedDistToLine(x, y, p1.x, p1.y, p2.x, p2.y));
+    }
+    
+    public static double signedDistToLine(double x, double y, double x1, double y1, double x2, double y2){
+        double dx = x1 - x2;
+        double dy = y2 - y1;
+        double dist = x * dy + y * dx + x2 * y1 - x1 * y2;
+        return dist / Math.sqrt(dx * dx + dy * dy);
+    }
+    
+    public double signedDistanceToLine(double x1, double y1, double x2, double y2){
+        return signedDistToLine(x, y, x1, y1, x2, y2);
     }
     
     public Vector2D unit(){
@@ -239,7 +240,7 @@ public class Vector2D {
         double dy = r1y - r2y;
         double x = px - r2x;
         double y = py - r2y;
-        return dot(x, y, dx, dy) > 0 == dot(x - dx, y - dy, dx, dy) < 0;
+        return dot(x, y, dx, dy) >= 0 == dot(x - dx, y - dy, dx, dy) <= 0;
     }
     
     public Vector2D clear(){

@@ -535,6 +535,11 @@ public class Polygon extends Shape{
         }
         g.setColor(color);
         g.fillPolygon(xInts, yInts, numPoints);
+        g.setColor(Color.GRAY);
+        double scale = 300;
+        for(int i = 0; i < numPoints; i++){
+            g.drawLine((int)(normals[i].getX() * scale + x), (int)(normals[i].getY() * scale + y), (int)x, (int)y);
+        }
         drawBounding(g);
     }
     

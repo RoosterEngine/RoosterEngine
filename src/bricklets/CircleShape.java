@@ -15,6 +15,7 @@ public class CircleShape extends Shape{
     
     public CircleShape(double x, double y, double dx, double dy, double radius, Entity parentEntity){
         super(x, y, dx, dy, radius, parentEntity);
+        System.out.println(dx + " " + dy);
     }
     
     @Override

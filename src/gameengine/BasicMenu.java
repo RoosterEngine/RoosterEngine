@@ -107,10 +107,14 @@ public class BasicMenu extends Context{
         int buttonHeight = (int)(height - topBorder - bottomBorder - padding * (buttons.length - 1))/ buttons.length;
         int currentY = topBorder + buttonHeight / 2;
         for(int i = 0; i < buttons.length; i++){
-            buttons[i].initialize(-buttonWidth / 2, currentY, buttonWidth, buttonHeight);
+            buttons[i].initialize(width / 2, currentY, buttonWidth, buttonHeight);
             currentY += buttonHeight + padding;
         }
-        EffectFactory.setCurtainEffect(buttons, width / 2, 1.5);
+//        EffectFactory.setCurtainEffect(buttons, -buttonWidth / 2, width / 2, 1.5);
+        EffectFactory.setZipperEffect(buttons, width / 2, width, 1);
+//        EffectFactory.setIntersectingEffect(buttons, width / 2, width, 1);
+//        EffectFactory.setCurtainDropEffect(buttons, 1);
+//        EffectFactory.setSlideDownEffect(buttons, 1);
     }
     
     /**

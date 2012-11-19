@@ -160,6 +160,10 @@ public class CollisionDetector {
             Shape.collideAABBCircle((AABBShape)a, b, maxTime, result);
         }else if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){
             Shape.collideAABBCircle((AABBShape)b, a, maxTime, result);
+        }else if(a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_POLYGON){
+            Shape.collideAABBPoly((AABBShape)a, (Polygon)b, maxTime, result);
+        }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){
+            Shape.collideAABBPoly((AABBShape)b, (Polygon)a, maxTime, result);
         }
     }
 }

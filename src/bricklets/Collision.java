@@ -7,7 +7,7 @@ import java.awt.Color;
  * @author davidrusu
  */
 public class Collision {
-    public static final Collision NO_COLLISION = new Collision();
+    private static final Collision NO_COLLISION = new Collision();
     private Vector2D collisionNormal;
     private Shape a, b;
     private double timeToCollision;
@@ -40,7 +40,10 @@ public class Collision {
         collisionNormal.set(collision.collisionNormal);
         a = collision.a;
         b = collision.b;
-        
+    }
+
+    public void setNoCollision(){
+        set(NO_COLLISION);
     }
     
     public double getTimeToCollision(){

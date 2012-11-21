@@ -117,12 +117,17 @@ public class CollisionData {
         max = -Double.MAX_VALUE;
     }
 
-    public void updateMin(double min){
-        this.min = Math.min(min, this.min);
-    }
+//    public void updateMin(double min){
+//        this.min = Math.min(min, this.min);
+//    }
+//
+//    public void updateMax(double max){
+//        this.max = Math.max(max, this.max);
+//    }
 
-    public void updateMax(double max){
-        this.max = Math.max(max, this.max);
+    public void updateMinMax(double value) {
+        min = Math.min(min, value);
+        max = Math.max(max, value);
     }
 
     public double getMin(){

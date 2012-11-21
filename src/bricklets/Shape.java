@@ -84,80 +84,85 @@ public abstract class Shape {
     }
     
     public static void collideAABBPoly(AABBShape a, Polygon b, double maxTime, Collision result){
-        Vector2D collisionNormal = result.getCollisionNormal().clear();
-        double relativeVelX = a.dx - b.dx;
-        double relativeVelY = a.dy - b.dy;
-        double maxEntryTime = -Double.MAX_VALUE, minLeaveTime = Double.MAX_VALUE;
-        Vector2D[] normals = b.getNormals();
-        double[] bMins = b.getNormalMins();
-        double[] bMaxs = b.getNormalMaxs();
-        double left = a.x - a.getHalfWidth(), right = a.x + a.getHalfWidth();
-        double top = a.y - a.getHalfHeight(), bottom = a.y + a.getHalfHeight();
-        
+        collisionData.clear();
+        double relVelX = a.dx - b.dx;
+        double relVelY = a.dy - b.dy;
+
+        double minX = a.x - a.getHalfWidth() - b.x, maxX = a.x + a.getHalfWidth() - b.x;
+        double minY = a.y - a.getHalfHeight() - b.y, maxY = a.y + a.getHalfHeight() - b.y;
         for(int i = 0; i < b.getNumPoints(); i++){
-            Vector2D normal = normals[i];
-            double projDist = Vector2D.unitScalarProject(left, top, normal);
-            double aMin = projDist;
-            double aMax = projDist;
-            projDist = Vector2D.unitScalarProject(right, top, normal);
-            aMin = Math.min(aMin, projDist);
-            aMax = Math.max(aMax, projDist);
-            projDist = Vector2D.unitScalarProject(right, bottom, normal);
-            aMin = Math.min(aMin, projDist);
-            aMax = Math.max(aMax, projDist);
-            projDist = Vector2D.unitScalarProject(left, bottom, normal);
-            aMin = Math.min(aMin, projDist);
-            aMax = Math.max(aMax, projDist);
-            
-            double bPos = Vector2D.unitScalarProject(b.x, b.y, normal);
-            double bMin = bMins[i] + bPos;
-            double bMax = bMaxs[i] + bPos;
-            double projVel = Vector2D.unitScalarProject(relativeVelX, relativeVelY, normal);
-            double TOI = getTOIAlongAxis(aMin, aMax, bMin, bMax, projVel);
+            Vector2D normal = b.getNormals()[i];
+            double bMin = b.getNormalMins()[i];
+            double bMax = b.getNormalMaxs()[i];
+            double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
+            double TOI = getTOIUsingPolyNormalAndSetMinMaxValues(minX, maxX, minY, maxY, normal, bMin, bMax, projVel);
             if(TOI == NO_COLLISION){
                 result.setNoCollision();
                 return;
             }
-            if(TOI > maxEntryTime){
-                maxEntryTime = TOI;
-                collisionNormal.set(normal);
-            }
-            minLeaveTime = Math.min(minLeaveTime, getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, projVel));
+            collisionData.updateEntryTime(TOI, normal);
+            collisionData.updateLeaveTime(getLeaveTimeAlongAxis(collisionData.getMin(), collisionData.getMax(), bMin, bMax, projVel));
+            double dist = bMax - collisionData.getMin();
+            collisionData.updateTempOverlapData(dist, projVel, normal.getX(), normal.getY());
         }
-        
-        Vector2D[] bPoints = b.getPoints();
+
+        calcCollisionWithBoxNormals(a, b, relVelX, relVelY, collisionData);
+        collisionData.updateOverlapData();
+        if(collisionData.isIntersectingAndTravellingTowardsEachOther()){
+            result.set(0, collisionData.getOverlapNormal(), a, b);
+        }else if(collisionData.willCollisionHappen(maxTime)){
+            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a, b);
+        }else{
+            result.setNoCollision();
+        }
+    }
+
+    private static double getTOIUsingPolyNormalAndSetMinMaxValues(double minX, double maxX, double minY, double maxY,
+                                                                  Vector2D normal, double bMin, double bMax,
+                                                                  double projVel){
+        collisionData.clearMinMax();
+        double projDist = Vector2D.unitScalarProject(minX, minY, normal);
+        collisionData.updateMinMax(projDist);
+        projDist = Vector2D.unitScalarProject(maxX, minY, normal);
+        collisionData.updateMinMax(projDist);
+        projDist = Vector2D.unitScalarProject(maxX, maxY, normal);
+        collisionData.updateMinMax(projDist);
+        projDist = Vector2D.unitScalarProject(minX, maxY, normal);
+        collisionData.updateMinMax(projDist);
+        return getTOIAlongAxis(collisionData.getMin(), collisionData.getMax(), bMin, bMax, projVel);
+    }
+
+    private static void calcCollisionWithBoxNormals(AABBShape a, Polygon b, double relVelX, double relVelY, CollisionData collisionData) {
         double bMinX = Double.MAX_VALUE;
         double bMaxX = -Double.MAX_VALUE;
         double bMinY = Double.MAX_VALUE;
         double bMaxY = -Double.MAX_VALUE;
         for(int i = 0; i < b.getNumPoints(); i++){
-            Vector2D point = bPoints[i];
-            double x = point.getX() + b.x;
+            Vector2D point = b.getPoints()[i];
+            double x = point.getX() + b.x - a.x;
             bMinX = Math.min(bMinX, x);
             bMaxX = Math.max(bMaxX, x);
-            double y = point.getY() + b.y;
+            double y = point.getY() + b.y - a.y;
             bMinY = Math.min(bMinY, y);
             bMaxY = Math.max(bMaxY, y);
         }
-        double TOI = getTOIAlongAxis(left, right, bMinX, bMaxX, relativeVelX);
-        if(TOI > maxEntryTime){
-            maxEntryTime = TOI;
-            collisionNormal.set(1, 0);
-        }
-        minLeaveTime = Math.min(minLeaveTime, getLeaveTimeAlongAxis(left, right, bMinX, bMaxX, relativeVelX));
-        TOI = getTOIAlongAxis(top, bottom, bMinY, bMaxY, relativeVelY);
-        if(TOI > maxEntryTime){
-            maxEntryTime = TOI;
-            collisionNormal.set(0, 1);
-        }
-        minLeaveTime = Math.min(minLeaveTime, getLeaveTimeAlongAxis(top, bottom, bMinY, bMaxY, relativeVelY));
-        if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > maxTime || maxEntryTime > minLeaveTime){
-            result.setNoCollision();
-            return;
-        }
-        result.set(maxEntryTime, collisionNormal, a, b);
+        double minX = -a.getHalfWidth();
+        double maxX = a.getHalfWidth();
+        double minY = -a.getHalfHeight();
+        double maxY = a.getHalfHeight();
+        double TOI = getTOIAlongAxis(minX, maxX, bMinX, bMaxX, relVelX);
+        collisionData.updateEntryTime(TOI, 1, 0);
+        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(minX, maxX, bMinX, bMaxX, relVelX));
+        TOI = getTOIAlongAxis(minY, maxY, bMinY, bMaxY, relVelY);
+        collisionData.updateEntryTime(TOI, 0, 1);
+        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(minY, maxY, bMinY, bMaxY, relVelY));
+        //In the following code block the velocities are reversed because now the box is stationary and the polygon is moving
+        collisionData.updateTempOverlapData(bMaxX - minX, relVelX, -1, 0);
+        collisionData.updateTempOverlapData(maxX - bMinX, -relVelX, 1, 0);
+        collisionData.updateTempOverlapData(bMaxY - minY, relVelY, 0, -1);
+        collisionData.updateTempOverlapData(maxY - bMinY, -relVelY, 0, 1);
     }
-    
+
     public static void collideCirclePoly(Shape a, Polygon b, double maxTime, Collision result){
         collisionData.clear();
         checkCollisionWithLines(a, b, collisionData);
@@ -503,7 +508,7 @@ public abstract class Shape {
         dx /= dist;
         dy /= dist;
         collisionData.clearMinMax();
-        calculateMinAndMax(a, bMinX, bMaxX, bMinY, bMaxY, dx, dy, collisionData);
+        calculateCircleAABBMinAndMax(a, bMinX, bMaxX, bMinY, bMaxY, dx, dy, collisionData);
         double projVel = Vector2D.unitScalarProject(relVelX, relVelY, dx, dy);
         double TOI = getTOIAlongAxis(-a.radius, a.radius, collisionData.getMin(), collisionData.getMax(), projVel);
         if(TOI == NO_COLLISION){
@@ -515,23 +520,19 @@ public abstract class Shape {
                 getLeaveTimeAlongAxis(-a.radius, a.radius, collisionData.getMin(), collisionData.getMax(), projVel));
     }
 
-    private static void calculateMinAndMax(Shape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
-                                           double normalX, double normalY, CollisionData collisionData){
+    private static void calculateCircleAABBMinAndMax(Shape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
+                                                     double normalX, double normalY, CollisionData collisionData){
         double projDist = Vector2D.unitScalarProject(bMinX - a.x, bMinY - a.y, normalX, normalY);
-        collisionData.updateMin(projDist);
-        collisionData.updateMax(projDist);
+        collisionData.updateMinMax(projDist);
 
         projDist = Vector2D.unitScalarProject(bMaxX - a.x, bMinY - a.y, normalX, normalY);
-        collisionData.updateMin(projDist);
-        collisionData.updateMax(projDist);
+        collisionData.updateMinMax(projDist);
 
         projDist = Vector2D.unitScalarProject(bMaxX - a.x, bMaxY - a.y, normalX, normalY);
-        collisionData.updateMin(projDist);
-        collisionData.updateMax(projDist);
+        collisionData.updateMinMax(projDist);
 
         projDist = Vector2D.unitScalarProject(bMinX - a.x, bMaxY - a.y, normalX, normalY);
-        collisionData.updateMin(projDist);
-        collisionData.updateMax(projDist);
+        collisionData.updateMinMax(projDist);
     }
 
     private static double getCirclePointTOI(Shape a, Shape b, double px, double py, double pVelX, double pVelY, double velLength, Collision result){

@@ -2,7 +2,6 @@ package gameengine;
 
 /**
  * High level user specified context types.
- * These context types are mapped to {@link ControlsProfile}s in {@link GameController}
  * @author davidrusu
  */
 public enum ContextType {
@@ -11,6 +10,6 @@ public enum ContextType {
     
     // start default context types
     MENU,
-    GAME;
+    GAME
     // end default context types
 }

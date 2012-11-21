@@ -4,7 +4,6 @@
  */
 package bricklets;
 
-import gameengine.Context;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
@@ -15,8 +14,8 @@ import java.awt.Graphics2D;
 public class AABBEntity extends Entity{
     private double width, height, halfWidth, halfHeight;
     
-    public AABBEntity(Context context, double x, double y, double width, double height){
-        super(context, x, y, Color.BLACK);
+    public AABBEntity(double x, double y, double width, double height){
+        super(x, y, Color.BLACK);
         this.width = width;
         this.height = height;
         halfWidth = width / 2;
@@ -37,12 +36,6 @@ public class AABBEntity extends Entity{
     public void draw(Graphics2D g) {
         g.setColor(color);
         g.fillRect((int)(x - halfWidth), (int)(y - halfHeight), (int)width, (int)height);
-        double scale = 100;
-//        g.setColor(Color.ORANGE);
-//        g.drawLine((int)x, (int)y, (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
-//        scale = 100;
-//        g.setColor(Color.RED);
-//        g.drawLine((int)x, (int)y, (int)(x + dx * scale), (int)(y + dy * scale));
     }
     
 }

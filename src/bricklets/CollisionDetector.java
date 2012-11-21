@@ -1,6 +1,5 @@
 package bricklets;
 
-import java.awt.Color;
 import java.util.ArrayList;
 
 /**
@@ -37,7 +36,7 @@ public class CollisionDetector {
         
         categories = new ArrayList[numOfCollisionCategories];
         for(int i = 0; i < numOfCollisionCategories; i++){
-            categories[i] = new ArrayList();
+            categories[i] = new ArrayList<Shape>();
         }
     }
     
@@ -94,7 +93,6 @@ public class CollisionDetector {
     
     public Collision getNextCollision(double maxTime){
         Collision nextCollision = new Collision();
-        double shortestTimeTillNextCollision = Shape.NO_COLLISION;
         for(CollisionCategoryPair pair: collisionPairs){
             ArrayList<Shape> listA = categories[pair.getA()];
             ArrayList<Shape> listB = categories[pair.getB()];

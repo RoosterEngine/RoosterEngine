@@ -130,11 +130,11 @@ public class CollisionData {
         return entryTime == NO_COLLISION;
     }
 
-    public boolean hasEntryTimeBeenUpdated(){
-        return entryTime != -Double.MAX_VALUE;
+    public boolean hasEntryTimeNotBeenUpdated(){
+        return entryTime == -Double.MAX_VALUE;
     }
 
-    public boolean wasEntryTimeUpdated(){
+    public boolean wasEntryTimeNotUpdated(){
         return entryTime != -Double.MAX_VALUE;
     }
 

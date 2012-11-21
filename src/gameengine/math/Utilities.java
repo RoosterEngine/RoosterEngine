@@ -29,12 +29,12 @@ public class Utilities {
         return sum * delta * (1 / 3.0);
     }
     
-    public static double simpsonsRule(Function f, double a, double b){
+    private static double simpsonsRule(Function f, double a, double b){
         double half = (b - a) / 2;
         return half / 3 * (f.valueAt(a) + 4 * f.valueAt(a + half) + f.valueAt(b));
     }
     
-    public static double recursiveSimpsonsRule(Function f, double a, double b, double eps, double whole){
+    private static double recursiveSimpsonsRule(Function f, double a, double b, double eps, double whole){
         double c = (a + b) / 2;
         double left = simpsonsRule(f, a, c);
         double right = simpsonsRule(f, c, b);

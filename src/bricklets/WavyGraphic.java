@@ -3,7 +3,6 @@ package bricklets;
 import gameengine.Graphic;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -58,9 +57,9 @@ public class WavyGraphic implements Graphic{
     @Override
     public void reset(){
         Random rand = new Random();
-        for(int i = 0; i < balls.length; i++){
-            balls[i].setPos(rand.nextDouble() * width, rand.nextDouble() * height);
-            balls[i].clearVel();
+        for (WavyBall ball : balls) {
+            ball.setPos(rand.nextDouble() * width, rand.nextDouble() * height);
+            ball.clearVel();
         }
     }
     

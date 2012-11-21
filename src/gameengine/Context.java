@@ -24,7 +24,7 @@ public abstract class Context implements MouseMovedHandler {
      * handler is called the position of the mouse will be a vector in the
      * direction that the mouse was moved
      */
-    public Context(GameController controller, ContextType contextType, boolean showMouseCursor, boolean enableRelativeMouseMoved){
+    protected Context(GameController controller, ContextType contextType, boolean showMouseCursor, boolean enableRelativeMouseMoved){
         this.controller = controller;
         this.contextType = contextType;
         this.isShowingMouseCursor = showMouseCursor;

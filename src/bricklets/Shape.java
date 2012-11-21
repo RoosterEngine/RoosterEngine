@@ -13,6 +13,7 @@ public abstract class Shape {
     private static CollisionData collisionData = new CollisionData();
     protected double x, y, dx, dy, radius, parentOffsetX, parentOffsetY;
     protected Entity parentEntity;
+
     public Shape(double x, double y, double dx, double dy, double radius, Entity parentEntity){
         this.x = x;
         this.y = y;
@@ -80,7 +81,6 @@ public abstract class Shape {
             return;
         }
         result.setNoCollision();
-        return;
     }
     
     public static void collideAABBPoly(AABBShape a, Polygon b, double maxTime, Collision result){
@@ -175,7 +175,7 @@ public abstract class Shape {
             result.setNoCollision();
             return;
         }
-        if(!collisionData.wasEntryTimeUpdated()){
+        if(collisionData.wasEntryTimeNotUpdated()){
             // a and b are overlapping
             double velTowardsLine = getVelocityTowardsTheLineWhereDistanceDividedBySpeedIsSmallest(a, b, collisionData);
             if(velTowardsLine < 0){
@@ -358,7 +358,7 @@ public abstract class Shape {
             result.setNoCollision();
             return;
         }
-        if(!collisionData.hasEntryTimeBeenUpdated()){
+        if(collisionData.hasEntryTimeNotBeenUpdated()){
             calcOverlapNormal(a, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
             if(collisionData.getOverlapVelocity() < 0){
                 result.set(0, collisionData.getOverlapNormal(), a, b);

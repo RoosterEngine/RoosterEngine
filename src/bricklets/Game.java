@@ -36,13 +36,11 @@ public class Game extends Context{
     private long seed = 0;
     
     //Panning around screen
-    boolean panMode = false;
-    double scale = 0.5;
-    int shiftX = (int)(width * scale * scale), shiftY = (int)(height * scale * scale);
+    private boolean panMode = false;
+    private double scale = 0.5;
+    private int shiftX = (int)(width * scale * scale), shiftY = (int)(height * scale * scale);
     private double timeScale = 1;
-    
-    //debug
-    Vector2D collisionNormal = new Vector2D();
+
     
     public Game(GameController controller){
         super(controller, ContextType.GAME, false, true);
@@ -202,7 +200,7 @@ public class Game extends Context{
             for(int x = 0; x < columns; x++){
                 double xPos = offsetX;//x * (width + padding) + offsetX;
                 double yPos = offsetY;//y * (height + padding) + offsetY;
-                AABBEntity box = new AABBEntity(this, xPos, yPos, width, height);
+                AABBEntity box = new AABBEntity(xPos, yPos, width, height);
                 aabBoxs.add(box);
                 AABBShape aabb = new AABBShape(xPos, yPos, width, height, box);
                 collisionDetector.addShape(aabb, 0);
@@ -231,7 +229,7 @@ public class Game extends Context{
 //                double yPos = y * (maxRadius * 2 + padding) + offsetY;
                 double xPos = offsetX;
                 double yPos = offsetY;
-                PolygonEntity polygon = new PolygonEntity(this, xPos, yPos, minRadius, maxRadius, minPoints, maxPoints);
+                PolygonEntity polygon = new PolygonEntity(xPos, yPos, minRadius, maxRadius, minPoints, maxPoints);
                 polygons.add(polygon);
                 collisionDetector.addShape(polygon.getPolygonShape(), 0);
             }
@@ -255,7 +253,7 @@ public class Game extends Context{
 //                double yPos = Math.sin(x) * 10 + y * (radius * 2 + padding) + offsetY;
                 double xPos = offsetX;
                 double yPos = offsetY;
-                CircleEntity circle = new CircleEntity(this, xPos, yPos, radius);
+                CircleEntity circle = new CircleEntity(xPos, yPos, radius);
                 circles.add(circle);
                 CircleShape circleShape = new CircleShape(xPos, yPos, 0, 0, radius, circle);
                 collisionDetector.addShape(circleShape, 0);

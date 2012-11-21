@@ -1,7 +1,5 @@
 package bricklets;
 
-import gameengine.Context;
-import gameengine.GameController;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
@@ -12,18 +10,16 @@ import java.awt.Graphics2D;
 public abstract class Entity {
     
     protected static double air = 1, g = 0;
-    protected Context context;
     protected double x, y, dx, dy, ddx, ddy;
     protected double restitution, mass = 1;
     protected Color color;
     protected Vector2D debugVector = new Vector2D();
     
-    public Entity(Context context, double x, double y, Color color){
-        this(context, x, y, 0, 0, color);
+    public Entity(double x, double y, Color color){
+        this(x, y, 0, 0, color);
     }
     
-    public Entity(Context context, double x, double y, double dx, double dy, Color color){
-        this.context = context;
+    public Entity(double x, double y, double dx, double dy, Color color){
         this.x = x;
         this.y = y;
         this.dx = dx;

@@ -22,7 +22,7 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
     private boolean isRelativeMouseMode = false;
     private int centerX, centerY;
     private Robot robot = null;
-    private Object mouseLock = new Object();
+    private final Object mouseLock = new Object();
     private int currentMouseX, currentMouseY;
     private double gameMouseX = 0, gameMouseY = 0;
     private double mouseVelX = 0, mouseVelY = 0;
@@ -62,7 +62,7 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
 
     public void disableRelativeMouseMove(){
         isRelativeMouseMode = false;
-        resetMouseInfo(centerX, centerX);
+        resetMouseInfo(centerX, centerY);
     }
     
     private void resetMouseInfo(int x, int y){

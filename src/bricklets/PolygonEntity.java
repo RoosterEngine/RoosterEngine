@@ -4,7 +4,6 @@
  */
 package bricklets;
 
-import gameengine.Context;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
@@ -15,8 +14,8 @@ import java.awt.Graphics2D;
 public class PolygonEntity extends Entity{
     private Polygon polygon;
     
-    public PolygonEntity(Context context, double x, double y, double minRadius, double maxRadius, int minPoints, int maxPoints){
-        super(context, x, y, Color.BLACK);
+    public PolygonEntity(double x, double y, double minRadius, double maxRadius, int minPoints, int maxPoints){
+        super(x, y, Color.BLACK);
         polygon = Polygon.getRandomConvexPolygon(x, y, minRadius, maxRadius, minPoints, maxPoints, this);
     }
     

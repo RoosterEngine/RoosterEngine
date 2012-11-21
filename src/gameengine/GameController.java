@@ -43,10 +43,10 @@ public class GameController {
      * @param minFrameRate minimum allowable frame rate before the updateRate
      * slows down (game play doesn't slow down though)
      */
-    public GameController(int updatRate, int desiredFrameRate, int minFrameRate){
+    public GameController(int updateRate, int desiredFrameRate, int minFrameRate){
         UserProfile profile = new UserProfile("Default");
         profile.setInputBinding(InputCode.KEY_A, Action.EXIT_GAME);
-        init(updatRate, desiredFrameRate, minFrameRate, profile);
+        init(updateRate, desiredFrameRate, minFrameRate, profile);
     }
     /**
      * @param updateRate update the game state this many times per second
@@ -202,8 +202,7 @@ public class GameController {
     }
     
     /**
-     * adds {@link MouseListener}, {@link MouseMotionListener},
-     * {@link MouseWheelListener}, {@link KeyListener} to a specified container
+     * adds input listeners to a specified component
      * @param component the container to add listeners to
      */
     public final void addInputListeners(Component component) {
@@ -247,6 +246,7 @@ public class GameController {
             InputMapping mapping = mappings.get(i);
             if(mapping.getInputCode() == inputCode && mapping.getAction() == action){
                 mappings.remove(mapping);
+                duplicateNotFound = false;
             }
             i++;
         }

@@ -178,11 +178,11 @@ public class Game extends Context{
         polygons.clear();
         aabBoxs.clear();
         collisionDetector.clearCollisions();
-        AABBMode();
-//        polygonMode();
-        ballMode();
+//        AABBMode();
+        polygonMode();
+//        ballMode();
         collisionDetector.setCollisionPair(0, 0);
-        mouseItem = circles.get(0);
+        mouseItem = polygons.get(0);
         mouseItem.setMass(0.000001);
         mouseItem.setColor(Color.DARK_GRAY);
 //        polygons.get(2).setMass(10000000D);
@@ -216,7 +216,7 @@ public class Game extends Context{
         int minPoints = 3;
         int maxPoints = 9;
         int padding = 5;
-        int rows = 1;
+        int rows = 2;
         int columns = 1;
         double borderX = (width - columns * (maxRadius * 2 + padding)) / 2;
         double borderY = (height - rows * (maxRadius * 2 + padding)) / 2;

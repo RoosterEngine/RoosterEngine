@@ -26,77 +26,23 @@ public class CollisionData {
         this.collisionNormal.set(collisionNormal);
     }
 
-    public void setCollisionNormal(double x, double y){
-        collisionNormal.set(x, y);
-    }
-
     public Vector2D getOverlapNormal(){
         return  overlapNormal;
-    }
-
-    public void setOverlapNormal(Vector2D normal){
-        overlapNormal.set(normal);
-    }
-
-    public void setOverlapNormal(double x, double y){
-        overlapNormal.set(x, y);
     }
 
     public double getEntryTime(){
         return entryTime;
     }
 
-    public void setEntryTime(double time){
-        entryTime = time;
-    }
-
-    public double getLeaveTime(){
-        return leaveTime;
-    }
-
-    public void setLeaveTime(double time){
-        leaveTime = time;
-    }
-
-    public double getOverlapTime(){
-        return overlapTime;
-    }
-
-    public void setOverlapTime(double time){
-        overlapTime = time;
-        overlapUpdated = true;
-    }
-
     public double getOverlapVelocity(){
         return overlapVelocity;
-    }
-
-    public void setOverlapVelocity(double velocity){
-        overlapVelocity = velocity;
-        overlapUpdated = true;
-    }
-
-    public Vector2D getTempOverlapNormal(){
-        return tempOverlapNormal;
-    }
-
-    public void setTempOverlapNormal(Vector2D normal){
-        tempOverlapNormal.set(normal);
-    }
-
-    public double getTempOverlapVelocity(){
-        return tempOverlapVelocity;
     }
 
     public void setTempOverlapVelocity(double velocity){
         tempOverlapVelocity = velocity;
     }
 
-    public void setTempOverlapData(Vector2D normal, double velocity, double time){
-        setTempOverlapData(normal.getX(), normal.getY(), velocity, time);
-    }
-
-    public void setTempOverlapData(double x, double y, double velocity, double time){
+    private void setTempOverlapData(double x, double y, double velocity, double time){
         overlapUpdated = true;
         tempOverlapNormal.set(x, y);
         tempOverlapVelocity = velocity;
@@ -116,14 +62,6 @@ public class CollisionData {
         min = Double.MAX_VALUE;
         max = -Double.MAX_VALUE;
     }
-
-//    public void updateMin(double min){
-//        this.min = Math.min(min, this.min);
-//    }
-//
-//    public void updateMax(double max){
-//        this.max = Math.max(max, this.max);
-//    }
 
     public void updateMinMax(double value) {
         min = Math.min(min, value);
@@ -194,10 +132,6 @@ public class CollisionData {
 
     public boolean hasEntryTimeBeenUpdated(){
         return entryTime != -Double.MAX_VALUE;
-    }
-
-    public boolean isOverlapping(){
-        return entryTime == -Double.MAX_VALUE && overlapUpdated;
     }
 
     public boolean wasEntryTimeUpdated(){

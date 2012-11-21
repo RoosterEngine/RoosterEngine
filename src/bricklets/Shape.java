@@ -379,34 +379,23 @@ public abstract class Shape {
         double relVelY = a.dy - b.dy;
         for(int i = 0; i < a.getNumPoints(); i++){
             Vector2D normal = a.getNormals()[i];
-            double bMin = Double.MAX_VALUE;
-            double bMax = -Double.MAX_VALUE;
+            collisionData.clearMinMax();
             for(Vector2D point: b.getPoints()){
                 double dist = Vector2D.unitScalarProject(point.getX() + b.x - a.x, point.getY() + b.y - a.y, normal);
-                bMin = Math.min(bMin, dist);
-                bMax = Math.max(bMax, dist);
+                collisionData.updateMinMax(dist);
             }
             double aMin = a.getNormalMins()[i];
             double aMax = a.getNormalMaxs()[i];
             double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
-            double time = getTOIAlongAxis(aMin, aMax, bMin, bMax, projVel);
+            double time = getTOIAlongAxis(aMin, aMax, collisionData.getMin(), collisionData.getMax(), projVel);
             if(time == NO_COLLISION){
                 collisionData.setNoCollision();
                 return;
             }
-            if(time >= collisionData.getEntryTime()){
-                collisionData.setEntryTime(time);
-                collisionData.setCollisionNormal(normal);
-            }
-            collisionData.setLeaveTime(
-                    Math.min(collisionData.getLeaveTime(), getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, projVel)));
-            double dist = bMax - aMin;
-            if(dist > 0){
-                time = dist / Math.abs(projVel);
-                if(time < collisionData.getOverlapTime()){
-                    collisionData.setTempOverlapData(normal, projVel, time);
-                }
-            }
+            collisionData.updateEntryTime(time, normal);
+            collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, collisionData.getMin(), collisionData.getMax(), projVel));
+            double dist = collisionData.getMax() - aMin;
+            collisionData.updateTempOverlapData(dist, projVel, normal.getX(), normal.getY());
         }
         collisionData.updateOverlapData();
     }
@@ -535,31 +524,6 @@ public abstract class Shape {
         collisionData.updateMinMax(projDist);
     }
 
-    private static double getCirclePointTOI(Shape a, Shape b, double px, double py, double pVelX, double pVelY, double velLength, Collision result){
-        double distToVelRaySquared = Vector2D.distToLineSquared(a.x, a.y, px, py, px + pVelX, py + pVelY);
-        double radiusSquared = a.radius * a.radius;
-        if(distToVelRaySquared <= radiusSquared){
-            // in the path of the velocity ray
-            double deltaX = a.x - px;
-            double deltaY = a.y - py;
-            double projLength = Vector2D.scalarProject(deltaX, deltaY, pVelX, pVelY, velLength);
-            if(projLength >= 0){
-                // travelling towards each other
-                double subLength = Math.sqrt(radiusSquared - distToVelRaySquared);
-                double travelDist = projLength - subLength;
-                double travelTime = travelDist / velLength;
-                if(travelTime <= result.getTimeToCollision()){
-                    double distOverVel = travelDist / velLength;
-                    result.getCollisionNormal().set(a.x - px - pVelX * distOverVel, a.y - py - pVelY * distOverVel).unit();
-                    result.set(travelTime, result.getCollisionNormal(), a, b);
-                    return travelTime;
-                }
-            }
-        }
-        return Double.MAX_VALUE;
-        
-    }
-    
     private static boolean willBoundingCollide(Polygon a, Polygon b, double maxTime){
         if(!a.isUsingBoundingBox() && !b.isUsingBoundingBox()){
             return willBoundingCircleCircleCollide(a, b, maxTime);

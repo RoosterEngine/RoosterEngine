@@ -8,6 +8,7 @@ public class CollisionData {
     private static final double NO_COLLISION = Double.MAX_VALUE, DEFAULT_ENTRY = -Double.MAX_VALUE;
     private Vector2D collisionNormal, overlapNormal, tempOverlapNormal;
     private double entryTime, leaveTime, overlapTime, overlapVelocity, tempOverlapVelocity;
+    private double min, max;
     private boolean overlapUpdated = false;
 
     public CollisionData(){
@@ -92,10 +93,44 @@ public class CollisionData {
     }
 
     public void setTempOverlapData(Vector2D normal, double velocity, double time){
+        setTempOverlapData(normal.getX(), normal.getY(), velocity, time);
+    }
+
+    public void setTempOverlapData(double x, double y, double velocity, double time){
         overlapUpdated = true;
-        tempOverlapNormal.set(normal);
+        tempOverlapNormal.set(x, y);
         tempOverlapVelocity = velocity;
         overlapTime = time;
+    }
+
+    public void updateTempOverlapData(double dist, double velocity, double normalX, double normalY){
+        if(dist > 0){
+            double time = dist / Math.abs(velocity);
+            if(time < overlapTime){
+                setTempOverlapData(normalX, normalY, velocity, time);
+            }
+        }
+    }
+
+    public void clearMinMax(){
+        min = Double.MAX_VALUE;
+        max = -Double.MAX_VALUE;
+    }
+
+    public void updateMin(double min){
+        this.min = Math.min(min, this.min);
+    }
+
+    public void updateMax(double max){
+        this.max = Math.max(max, this.max);
+    }
+
+    public double getMin(){
+        return min;
+    }
+
+    public double getMax(){
+        return max;
     }
 
     public void updateOverlapData(){
@@ -136,6 +171,8 @@ public class CollisionData {
         overlapVelocity = 0;
         tempOverlapVelocity = 0;
         overlapUpdated = false;
+        min = Double.MAX_VALUE;
+        max = -Double.MAX_VALUE;
     }
 
     public boolean isIntersectingAndTravellingTowardsEachOther(){
@@ -146,8 +183,12 @@ public class CollisionData {
         return entryTime <= maxTime && entryTime <= leaveTime && entryTime != DEFAULT_ENTRY;
     }
 
-    public boolean isCollisionNotPosible(){
+    public boolean isCollisionNotPossible(){
         return entryTime == NO_COLLISION;
+    }
+
+    public boolean hasEntryTimeBeenUpdated(){
+        return entryTime != -Double.MAX_VALUE;
     }
 
     public boolean isOverlapping(){

@@ -62,12 +62,12 @@ public abstract class Shape {
         }
         collisionData.clear();
         getEntryLeaveAndOverlapTime(a, b, collisionData);
-        if(collisionData.isCollisionNotPosible()){
+        if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
             return;
         }
         getEntryLeaveAndOverlapTime(b, a, collisionData);
-        if(collisionData.isCollisionNotPosible()){
+        if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
             return;
         }
@@ -161,12 +161,12 @@ public abstract class Shape {
     public static void collideCirclePoly(Shape a, Polygon b, double maxTime, Collision result){
         collisionData.clear();
         checkCollisionWithLines(a, b, collisionData);
-        if(collisionData.isCollisionNotPosible()){
+        if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
             return;
         }
         checkCollisionWithPoints(a, b, collisionData);
-        if(collisionData.isCollisionNotPosible()){
+        if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
             return;
         }
@@ -335,32 +335,36 @@ public abstract class Shape {
         result.set(maxEntryTime, result.getCollisionNormal(), a, b);
     }
     
-    public static void collideAABBCircle(AABBShape a, Shape b, double maxTime, Collision result){
-        double relativeVelX = b.dx - a.dx, relativeVelY = b.dy - a.dy;
-        double aMaxX = a.x + a.getHalfWidth(), aMinX = a.x - a.getHalfWidth();
-        double aMaxY = a.y + a.getHalfHeight(), aMinY = a.y - a.getHalfHeight();
-        double bMaxX = b.x + b.radius, bMinX = b.x - b.radius;
-        double bMaxY = b.y + b.radius, bMinY = b.y - b.radius;
-        Vector2D collisionNormal = result.getCollisionNormal();
-        double maxEntryTime = getCircleBoxTOIBeforeCheckingPoints(b.x, b.y, bMinX, bMaxX, bMinY, bMaxY, aMinX, aMaxX, aMinY, aMaxY, relativeVelX, relativeVelY, result);
-        if(maxEntryTime == NO_COLLISION){
+    public static void collideCircleAABB(Shape a, AABBShape b, double maxTime, Collision result){
+        collisionData.clear();
+        double relVelX = a.dx - b.dx;
+        double relVelY = a.dy - b.dy;
+        double bMaxX = b.x + b.getHalfWidth();
+        double bMinX = b.x - b.getHalfWidth();
+        double bMaxY = b.y + b.getHalfHeight();
+        double bMinY = b.y - b.getHalfHeight();
+        calcCircleBoxTOIBeforeCheckingPoints(a, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
+        if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
             return;
         }
-        if(maxEntryTime == -Double.MAX_VALUE){
-            maxEntryTime *= -1;
-        }
-        result.set(maxEntryTime, collisionNormal, b, a);
-        relativeVelX *= -1;
-        relativeVelY *= -1;
-        double velLength = Math.sqrt(relativeVelX * relativeVelX + relativeVelY * relativeVelY);
-        maxEntryTime = Math.min(maxEntryTime, getCirclePointTOI(b, a, aMinX, aMinY, relativeVelX, relativeVelY, velLength,  result));
-        maxEntryTime = Math.min(maxEntryTime, getCirclePointTOI(b, a, aMaxX, aMinY, relativeVelX, relativeVelY, velLength,  result));
-        maxEntryTime = Math.min(maxEntryTime, getCirclePointTOI(b, a, aMaxX, aMaxY, relativeVelX, relativeVelY, velLength,  result));
-        maxEntryTime = Math.min(maxEntryTime, getCirclePointTOI(b, a, aMinX, aMaxY, relativeVelX, relativeVelY, velLength,  result));
-        if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > maxTime){
+        calculateCircleBoxPointsTOI(a, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
+        if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
+            return;
         }
+        if(!collisionData.hasEntryTimeBeenUpdated()){
+            calcOverlapNormal(a, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
+            if(collisionData.getOverlapVelocity() < 0){
+                result.set(0, collisionData.getOverlapNormal(), a, b);
+                return;
+            }
+        }
+        if(collisionData.willCollisionHappen(maxTime)){
+            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a, b);
+            return;
+        }
+        result.setNoCollision();
     }
 
     private static void getEntryLeaveAndOverlapTime(Polygon a, Polygon b, CollisionData collisionData){
@@ -440,27 +444,96 @@ public abstract class Shape {
         }
         return travelTime;
     }
-    
-    private static double getCircleBoxTOIBeforeCheckingPoints(double aX, double aY, double aMinX, double aMaxX, double aMinY, double aMaxY,
-                                                              double bMinX, double bMaxX, double bMinY, double bMaxY,
-                                                              double velX, double velY, Collision result){
-        double travelTime = -Double.MAX_VALUE;
-        if(aY >= bMinY && aY <= bMaxY){
-            travelTime = getTOIAlongAxis(aMinX, aMaxX, bMinX, bMaxX, velX);
-            if(travelTime != -Double.MAX_VALUE){
-                result.getCollisionNormal().set(1, 0);
-            }
-        }
-        if(aX >= bMinX && aX <= bMaxX){
-            double time = getTOIAlongAxis(aMinY, aMaxY, bMinY, bMaxY, velY);
-            if(time > travelTime){
-                travelTime = time;
-                result.getCollisionNormal().set(0, 1);
-            }
-        }
-        return travelTime;
+
+    private static void calcOverlapNormal(Shape a, double minX, double maxX, double minY, double maxY,
+                                          double velX, double velY, CollisionData collisionData){
+        double dist = a.x + a.radius - minX;
+        collisionData.updateTempOverlapData(dist, -velX, -1, 0);
+        dist = maxX - a.x + a.radius;
+        collisionData.updateTempOverlapData(dist, velX, 1, 0);
+        dist = a.y + a.radius - minY;
+        collisionData.updateTempOverlapData(dist, -velY, 0, -1);
+        dist = maxY - a.y + a.radius;
+        collisionData.updateTempOverlapData(dist, velY, 0, 1);
+        collisionData.updateOverlapData();
     }
-    
+
+    private static void calcCircleBoxTOIBeforeCheckingPoints(Shape a, double minX, double maxX, double minY, double maxY,
+                                                             double velX, double velY, CollisionData collisionData){
+        double time = getTOIAlongAxis(-a.radius, a.radius, minX - a.x, maxX - a.x, velX);
+        if(time == NO_COLLISION){
+            collisionData.setNoCollision();
+            return;
+        }
+        collisionData.updateEntryTime(time, 1, 0);
+        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(-a.radius, a.radius, minX - a.x, maxX - a.y, velX));
+
+        time = getTOIAlongAxis(-a.radius, a.radius, minY - a.y, maxY - a.y, velY);
+        if(time == NO_COLLISION){
+            collisionData.setNoCollision();
+            return;
+        }
+        collisionData.updateEntryTime(time, 0, 1);
+        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(-a.radius, a.radius, minY - a.y, maxX - a.y, velY));
+    }
+
+    private static void calculateCircleBoxPointsTOI(Shape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
+                                                    double relVelX, double relVelY, CollisionData collisionData){
+        calculateCirclePointTOI(a, bMinX, bMaxX, bMinY, bMaxY, bMinX, bMinY, relVelX, relVelY, collisionData);
+        if(collisionData.isCollisionNotPossible()){
+            return;
+        }
+        calculateCirclePointTOI(a, bMinX, bMaxX, bMinY, bMaxY, bMaxX, bMinY, relVelX, relVelY, collisionData);
+        if(collisionData.isCollisionNotPossible()){
+            return;
+        }
+        calculateCirclePointTOI(a, bMinX, bMaxX, bMinY, bMaxY, bMaxX, bMaxY, relVelX, relVelY, collisionData);
+        if(collisionData.isCollisionNotPossible()){
+            return;
+        }
+        calculateCirclePointTOI(a, bMinX, bMaxX, bMinY, bMaxY, bMinX, bMaxY, relVelX, relVelY, collisionData);
+    }
+
+    private static void calculateCirclePointTOI(Shape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
+                                                double x, double y, double relVelX, double relVelY,
+                                                CollisionData collisionData){
+        double dx = x - a.x;
+        double dy = y - a.y;
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        dx /= dist;
+        dy /= dist;
+        collisionData.clearMinMax();
+        calculateMinAndMax(a, bMinX, bMaxX, bMinY, bMaxY, dx, dy, collisionData);
+        double projVel = Vector2D.unitScalarProject(relVelX, relVelY, dx, dy);
+        double TOI = getTOIAlongAxis(-a.radius, a.radius, collisionData.getMin(), collisionData.getMax(), projVel);
+        if(TOI == NO_COLLISION){
+            collisionData.setNoCollision();
+            return;
+        }
+        collisionData.updateEntryTime(TOI, dx, dy);
+        collisionData.updateLeaveTime(
+                getLeaveTimeAlongAxis(-a.radius, a.radius, collisionData.getMin(), collisionData.getMax(), projVel));
+    }
+
+    private static void calculateMinAndMax(Shape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
+                                           double normalX, double normalY, CollisionData collisionData){
+        double projDist = Vector2D.unitScalarProject(bMinX - a.x, bMinY - a.y, normalX, normalY);
+        collisionData.updateMin(projDist);
+        collisionData.updateMax(projDist);
+
+        projDist = Vector2D.unitScalarProject(bMaxX - a.x, bMinY - a.y, normalX, normalY);
+        collisionData.updateMin(projDist);
+        collisionData.updateMax(projDist);
+
+        projDist = Vector2D.unitScalarProject(bMaxX - a.x, bMaxY - a.y, normalX, normalY);
+        collisionData.updateMin(projDist);
+        collisionData.updateMax(projDist);
+
+        projDist = Vector2D.unitScalarProject(bMinX - a.x, bMaxY - a.y, normalX, normalY);
+        collisionData.updateMin(projDist);
+        collisionData.updateMax(projDist);
+    }
+
     private static double getCirclePointTOI(Shape a, Shape b, double px, double py, double pVelX, double pVelY, double velLength, Collision result){
         double distToVelRaySquared = Vector2D.distToLineSquared(a.x, a.y, px, py, px + pVelX, py + pVelY);
         double radiusSquared = a.radius * a.radius;

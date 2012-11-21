@@ -178,8 +178,8 @@ public class Game extends Context{
         polygons.clear();
         aabBoxs.clear();
         collisionDetector.clearCollisions();
-//        AABBMode();
-        polygonMode();
+        AABBMode();
+//        polygonMode();
         ballMode();
         collisionDetector.setCollisionPair(0, 0);
         mouseItem = circles.get(0);
@@ -192,16 +192,16 @@ public class Game extends Context{
         double width = 100;
         double height = 100;
         double padding = 700;
-        int rows = 2;
+        int rows = 1;
         int columns = 1;
-        double borderX = (this.width - columns * (width + padding)) / 2;
-        double borderY = 0;// (this.height - rows * (height + padding)) / 2;
+        double borderX = this.width  / 2;
+        double borderY = this.height / 2;
         double  offsetX = width/2 + borderX;
-        double offsetY = 0;//height/2 + borderY;
+        double offsetY = height/2 + borderY;
         for(int y = 0; y < rows; y++){
             for(int x = 0; x < columns; x++){
-                double xPos = x * (width + padding) + offsetX;
-                double yPos = y * (height + padding) + offsetY;
+                double xPos = offsetX;//x * (width + padding) + offsetX;
+                double yPos = offsetY;//y * (height + padding) + offsetY;
                 AABBEntity box = new AABBEntity(this, xPos, yPos, width, height);
                 aabBoxs.add(box);
                 AABBShape aabb = new AABBShape(xPos, yPos, width, height, box);

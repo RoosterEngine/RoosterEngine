@@ -15,7 +15,7 @@ public class CollisionDetector {
     /**
      * Constructs a CollisionDetector with the specified number of
      * collision categories.
-     * Collision categories are lists of {@link Collidable}'s that all interact
+     * Collision categories are lists of {@link Shape}'s that all interact
      * with the same collision categories. When Items are added to the collision
      * detector the collision category number is also needed. To set which
      * categories collide with each other, the user must set collision pairs.
@@ -83,7 +83,7 @@ public class CollisionDetector {
     }
     
     /**
-     * Removes all {@link Collidable}'s that were added and collision pairs
+     * Removes all {@link Shape}'s that were added and collision pairs
      */
     public void clearCollisions(){
         for(ArrayList list: categories){
@@ -157,9 +157,9 @@ public class CollisionDetector {
         }else if(a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){
             Shape.collideAABBAABB((AABBShape)a, (AABBShape)b, maxTime, result);
         }else if(a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_CIRCLE){
-            Shape.collideAABBCircle((AABBShape)a, b, maxTime, result);
+            Shape.collideCircleAABB(b, (AABBShape)a, maxTime, result);
         }else if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){
-            Shape.collideAABBCircle((AABBShape)b, a, maxTime, result);
+            Shape.collideCircleAABB(a, (AABBShape)b, maxTime, result);
         }else if(a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_POLYGON){
             Shape.collideAABBPoly((AABBShape)a, (Polygon)b, maxTime, result);
         }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){

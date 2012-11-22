@@ -119,7 +119,7 @@ public class Game extends Context{
         }
     }
     private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 1, collisionsPerMilli);
+        Physics.performCollision(collision, 0.7, 0.1, collisionsPerMilli);
     }
 
     @Override
@@ -176,12 +176,12 @@ public class Game extends Context{
         polygons.clear();
         aabBoxs.clear();
         collisionDetector.clearCollisions();
-//        AABBMode();
+        AABBMode();
         polygonMode();
 //        ballMode();
         collisionDetector.setCollisionPair(0, 0);
-        mouseItem = polygons.get(0);
-        mouseItem.setMass(0.000001);
+        mouseItem = aabBoxs.get(0);
+        mouseItem.setMass(0.0001);
         mouseItem.setColor(Color.DARK_GRAY);
 //        polygons.get(2).setMass(10000000D);
     }
@@ -190,7 +190,7 @@ public class Game extends Context{
         double width = 100;
         double height = 100;
         double padding = 700;
-        int rows = 1;
+        int rows = 2;
         int columns = 1;
         double borderX = this.width  / 2;
         double borderY = this.height / 2;
@@ -211,8 +211,8 @@ public class Game extends Context{
     private void polygonMode(){
         double minRadius = 300;
         double maxRadius = 500;
-        int minPoints = 3;
-        int maxPoints = 9;
+        int minPoints = 4;
+        int maxPoints = 4;
         int padding = 5;
         int rows = 2;
         int columns = 1;
@@ -276,7 +276,7 @@ public class Game extends Context{
             }
         });
         
-        final double thrust = 0.001;
+        final double thrust = 0.01;
         controller.setContextBinding(contextType, InputCode.KEY_LEFT, Action.GAME_LEFT);
         bindAction(Action.GAME_LEFT, new ActionHandler() {
             @Override

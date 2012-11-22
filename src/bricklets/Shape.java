@@ -95,18 +95,20 @@ public abstract class Shape {
             double bMin = b.getNormalMins()[i];
             double bMax = b.getNormalMaxs()[i];
             double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
-            double TOI = getTOIUsingPolyNormalAndSetMinMaxValues(minX, maxX, minY, maxY, normal, bMin, bMax, projVel);
-            if(TOI == NO_COLLISION){
+            calcTOIUsingPolyNormalAndSetMinMaxValues(minX, maxX, minY, maxY, normal, bMin, bMax, projVel, collisionData);
+            if(collisionData.isCollisionNotPossible()){
                 result.setNoCollision();
                 return;
             }
-            collisionData.updateEntryTime(TOI, normal);
-            collisionData.updateLeaveTime(getLeaveTimeAlongAxis(collisionData.getMin(), collisionData.getMax(), bMin, bMax, projVel));
             double dist = bMax - collisionData.getMin();
             collisionData.updateTempOverlapData(dist, projVel, normal.getX(), normal.getY());
         }
 
         calcCollisionWithBoxNormals(a, b, relVelX, relVelY, collisionData);
+        if(collisionData.isCollisionNotPossible()){
+            result.setNoCollision();
+            return;
+        }
         collisionData.updateOverlapData();
         if(collisionData.isIntersectingAndTravellingTowardsEachOther()){
             result.set(0, collisionData.getOverlapNormal(), a, b);
@@ -117,9 +119,9 @@ public abstract class Shape {
         }
     }
 
-    private static double getTOIUsingPolyNormalAndSetMinMaxValues(double minX, double maxX, double minY, double maxY,
+    private static void calcTOIUsingPolyNormalAndSetMinMaxValues(double minX, double maxX, double minY, double maxY,
                                                                   Vector2D normal, double bMin, double bMax,
-                                                                  double projVel){
+                                                                  double projVel, CollisionData collisionData){
         collisionData.clearMinMax();
         double projDist = Vector2D.unitScalarProject(minX, minY, normal);
         collisionData.updateMinMax(projDist);
@@ -129,7 +131,7 @@ public abstract class Shape {
         collisionData.updateMinMax(projDist);
         projDist = Vector2D.unitScalarProject(minX, maxY, normal);
         collisionData.updateMinMax(projDist);
-        return getTOIAlongAxis(collisionData.getMin(), collisionData.getMax(), bMin, bMax, projVel);
+        calcTOIAlongAxis(collisionData.getMin(), collisionData.getMax(), bMin, bMax, projVel, collisionData, normal);
     }
 
     private static void calcCollisionWithBoxNormals(AABBShape a, Polygon b, double relVelX, double relVelY, CollisionData collisionData) {
@@ -150,13 +152,14 @@ public abstract class Shape {
         double maxX = a.getHalfWidth();
         double minY = -a.getHalfHeight();
         double maxY = a.getHalfHeight();
-        double TOI = getTOIAlongAxis(minX, maxX, bMinX, bMaxX, relVelX);
-        collisionData.updateEntryTime(TOI, 1, 0);
-        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(minX, maxX, bMinX, bMaxX, relVelX));
-        TOI = getTOIAlongAxis(minY, maxY, bMinY, bMaxY, relVelY);
-        collisionData.updateEntryTime(TOI, 0, 1);
-        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(minY, maxY, bMinY, bMaxY, relVelY));
-        //In the following code block the velocities are reversed because now the box is stationary and the polygon is moving
+        calcTOIAlongAxis(minX, maxX, bMinX, bMaxX, relVelX, collisionData, 1, 0);
+        if(collisionData.isCollisionNotPossible()){
+            return;
+        }
+        calcTOIAlongAxis(minY, maxY, bMinY, bMaxY, relVelY, collisionData, 0, 1);
+        if(collisionData.isCollisionNotPossible()){
+            return;
+        }
         collisionData.updateTempOverlapData(bMaxX - minX, relVelX, -1, 0);
         collisionData.updateTempOverlapData(maxX - bMinX, -relVelX, 1, 0);
         collisionData.updateTempOverlapData(bMaxY - minY, relVelY, 0, -1);
@@ -201,13 +204,10 @@ public abstract class Shape {
             double bMin = b.getNormalMins()[i];
             double bMax = b.getNormalMaxs()[i];
             double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
-            double TOI = getTOIAlongAxis(aMin, aMax, bMin, bMax, projVel);
-            if(TOI == NO_COLLISION){
-                collisionData.setNoCollision();
+            calcTOIAlongAxis(aMin, aMax, bMin, bMax, projVel, collisionData, normal);
+            if(collisionData.isCollisionNotPossible()){
                 return;
             }
-            collisionData.updateEntryTime(TOI, normal);
-            collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, projVel));
         }
     }
 
@@ -215,7 +215,6 @@ public abstract class Shape {
         double relVelX = a.dx - b.dx;
         double relVelY = a.dy - b.dy;
         for(Vector2D vertex: b.getPoints()){
-            // checking for collision with points
             double dx = vertex.getX() + b.x - a.x;
             double dy = vertex.getY() + b.y - a.y;
             double dist = Math.sqrt(dx * dx + dy * dy);
@@ -229,13 +228,10 @@ public abstract class Shape {
                 bMax = Math.max(bMax, projDist);
             }
             double projVel = Vector2D.unitScalarProject(relVelX, relVelY, dx, dy);
-            double TOI = getTOIAlongAxis(-a.radius, a.radius, bMin, bMax, projVel);
-            if(TOI == NO_COLLISION){
-                collisionData.setNoCollision();
+            calcTOIAlongAxis(-a.radius, a.radius, bMin, bMax, projVel, collisionData, dx, dy);
+            if(collisionData.isCollisionNotPossible()){
                 return;
             }
-            collisionData.updateEntryTime(TOI, dx, dy);
-            collisionData.updateLeaveTime(getLeaveTimeAlongAxis(-a.radius, a.radius, bMin, bMax, projVel));
         }
     }
 
@@ -310,36 +306,32 @@ public abstract class Shape {
     }
     
     public static void collideAABBAABB(AABBShape a, AABBShape b, double maxTime, Collision result){
-        double relativeVelX = a.dx - b.dx, relativeVelY = a.dy - b.dy;
-        double maxEntryTime, minLeaveTime = Double.MAX_VALUE;
-        double aMaxX = a.x + a.getHalfWidth(), aMinX = a.x - a.getHalfWidth(), aMaxY = a.y + a.getHalfHeight(), aMinY = a.y - a.getHalfHeight();
-        double bMaxX = b.x + b.getHalfWidth(), bMinX = b.x - b.getHalfWidth(), bMaxY = b.y + b.getHalfHeight(), bMinY = b.y - b.getHalfHeight();
-        
-        maxEntryTime = getTOIAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relativeVelX);
-        if (maxEntryTime == NO_COLLISION){
-            result.setNoCollision();
-            return;
-        }else if(maxEntryTime != -Double.MAX_VALUE){
-            result.getCollisionNormal().set(1, 0);
-        }
-        minLeaveTime = getLeaveTimeAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relativeVelX);
-        
-        double time = getTOIAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relativeVelY);
-        if(time == NO_COLLISION){
-            result.setNoCollision();
-            return;
-        }else if(time > maxEntryTime){
-            maxEntryTime = time;
-            result.getCollisionNormal().set(0, 1);
-        }
-        minLeaveTime = Math.min(minLeaveTime, getLeaveTimeAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relativeVelY));
-        if(maxEntryTime == -Double.MAX_VALUE || maxEntryTime > maxTime || maxEntryTime > minLeaveTime){
+        collisionData.clear();
+        double relVelX = a.dx - b.dx, relVelY = a.dy - b.dy;
+        double aMaxX = a.x + a.getHalfWidth(), aMinX = a.x - a.getHalfWidth();
+        double aMaxY = a.y + a.getHalfHeight(), aMinY = a.y - a.getHalfHeight();
+        double bMaxX = b.x + b.getHalfWidth(), bMinX = b.x - b.getHalfWidth();
+        double bMaxY = b.y + b.getHalfHeight(), bMinY = b.y - b.getHalfHeight();
+
+        calcTOIAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relVelX, collisionData, 1, 0);
+        if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
             return;
         }
-        result.set(maxEntryTime, result.getCollisionNormal(), a, b);
+
+        calcTOIAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relVelY, collisionData, 0, 1);
+        if(collisionData.isCollisionNotPossible()){
+            result.setNoCollision();
+            return;
+        }
+
+        if(collisionData.willCollisionHappen(maxTime)){
+            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a, b);
+        }else{
+            result.setNoCollision();
+        }
     }
-    
+
     public static void collideCircleAABB(Shape a, AABBShape b, double maxTime, Collision result){
         collisionData.clear();
         double relVelX = a.dx - b.dx;
@@ -387,19 +379,16 @@ public abstract class Shape {
             double aMin = a.getNormalMins()[i];
             double aMax = a.getNormalMaxs()[i];
             double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
-            double time = getTOIAlongAxis(aMin, aMax, collisionData.getMin(), collisionData.getMax(), projVel);
-            if(time == NO_COLLISION){
-                collisionData.setNoCollision();
+            calcTOIAlongAxis(aMin, aMax, collisionData.getMin(), collisionData.getMax(), projVel, collisionData, normal);
+            if(collisionData.isCollisionNotPossible()){
                 return;
             }
-            collisionData.updateEntryTime(time, normal);
-            collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, collisionData.getMin(), collisionData.getMax(), projVel));
             double dist = collisionData.getMax() - aMin;
             collisionData.updateTempOverlapData(dist, projVel, normal.getX(), normal.getY());
         }
         collisionData.updateOverlapData();
     }
-    
+
     private static double getLeaveTimeAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel){
         double leaveTime = Double.MAX_VALUE;
         if(vel > 0){
@@ -409,34 +398,30 @@ public abstract class Shape {
         }
         return leaveTime;
     }
-    
-    /**
-     * -Double.MAX_VALUE is returned if already overlapping
-     * NO_COLLISION is returned if a collision will not happen; 
-     * assuming that a is moving and b is staying still;
-     * @param aMin
-     * @param aMax
-     * @param bMin
-     * @param bMax
-     * @param vel
-     * @return 
-     */
-    private static double getTOIAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel){
+
+    private static void  calcTOIAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel,
+                                          CollisionData collisionData, Vector2D axis){
+        calcTOIAlongAxis(aMin, aMax, bMin, bMax, vel, collisionData, axis.getX(), axis.getY());
+    }
+
+    private static void  calcTOIAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel,
+                                         CollisionData collisionData, double axisX, double axisY){
         double travelTime = -Double.MAX_VALUE;
-//        if(aMin <= bMin){
         if(aMax <= bMin){
             if(vel <= 0){
-                return NO_COLLISION;
+                collisionData.setNoCollision();
+                return;
             }
             travelTime = (bMin - aMax) / vel;
-//        }else if(aMax >= bMax){
         }else if(aMin >= bMax){
             if(vel >= 0){
-                return NO_COLLISION;
+                collisionData.setNoCollision();
+                return;
             }
             travelTime = (bMax - aMin) / vel;
         }
-        return travelTime;
+        collisionData.updateEntryTime(travelTime, axisX, axisY);
+        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, vel));
     }
 
     private static void calcOverlapNormal(Shape a, double minX, double maxX, double minY, double maxY,
@@ -454,21 +439,11 @@ public abstract class Shape {
 
     private static void calcCircleBoxTOIBeforeCheckingPoints(Shape a, double minX, double maxX, double minY, double maxY,
                                                              double velX, double velY, CollisionData collisionData){
-        double time = getTOIAlongAxis(-a.radius, a.radius, minX - a.x, maxX - a.x, velX);
-        if(time == NO_COLLISION){
-            collisionData.setNoCollision();
+        calcTOIAlongAxis(-a.radius, a.radius, minX - a.x, maxX - a.x, velX, collisionData, 1, 0);
+        if(collisionData.isCollisionNotPossible()){
             return;
         }
-        collisionData.updateEntryTime(time, 1, 0);
-        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(-a.radius, a.radius, minX - a.x, maxX - a.y, velX));
-
-        time = getTOIAlongAxis(-a.radius, a.radius, minY - a.y, maxY - a.y, velY);
-        if(time == NO_COLLISION){
-            collisionData.setNoCollision();
-            return;
-        }
-        collisionData.updateEntryTime(time, 0, 1);
-        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(-a.radius, a.radius, minY - a.y, maxX - a.y, velY));
+        calcTOIAlongAxis(-a.radius, a.radius, minY - a.y, maxY - a.y, velY,  collisionData, 0, 1);
     }
 
     private static void calculateCircleBoxPointsTOI(Shape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
@@ -499,14 +474,7 @@ public abstract class Shape {
         collisionData.clearMinMax();
         calculateCircleAABBMinAndMax(a, bMinX, bMaxX, bMinY, bMaxY, dx, dy, collisionData);
         double projVel = Vector2D.unitScalarProject(relVelX, relVelY, dx, dy);
-        double TOI = getTOIAlongAxis(-a.radius, a.radius, collisionData.getMin(), collisionData.getMax(), projVel);
-        if(TOI == NO_COLLISION){
-            collisionData.setNoCollision();
-            return;
-        }
-        collisionData.updateEntryTime(TOI, dx, dy);
-        collisionData.updateLeaveTime(
-                getLeaveTimeAlongAxis(-a.radius, a.radius, collisionData.getMin(), collisionData.getMax(), projVel));
+        calcTOIAlongAxis(-a.radius, a.radius, collisionData.getMin(), collisionData.getMax(), projVel, collisionData, dx, dy);
     }
 
     private static void calculateCircleAABBMinAndMax(Shape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
@@ -637,15 +605,7 @@ public abstract class Shape {
         double dist = actualBPos - actualAPos;
         return dist / relativeVel;
     }
-//    
-//    /**
-//     * return Vector2D is temporary
-//     * @param directionX
-//     * @param directionY
-//     * @return 
-//     */
-//    public abstract Vector2D support(Vector2D direction);
-    
+
     public abstract int getShapeType();
     
     public abstract void draw(Graphics2D g, Color color);

@@ -30,8 +30,14 @@ public class Physics {
         double displacement = new Vector2D(a).subtract(b).length() - restingLength;
         return displacement * k;
     }
+
+//    public static void performCollision(Collision collision, double collisionRate){
+//        Entity a = collision.getA().getParentEntity();
+//        Entity b = collision.getB().getParentEntity();
+//        performCollision(collision, Math.sqrt(a.getFriction() + b.getFriction()), Math.sqrt(a.getRestitution() + b.getRestitution()), collisionRate);
+//    }
     
-    public static void performCollision(Collision collision, double restitution, double collisionRate){
+    public static void performCollision(Collision collision, double friction, double restitution, double collisionRate){
         unitY.set(collision.getCollisionNormal());
         unitX.set(-unitY.getY(), unitY.getX());
         Entity a = collision.getA().getParentEntity();
@@ -42,16 +48,20 @@ public class Physics {
         double xLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitX);
         double yLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitY);
         
-        double velDiff = yLengthB - yLengthA;
+        double yVelDiff = yLengthB - yLengthA;
+        double xVelDiff = xLengthB - xLengthA;
+
 //        double collisionsThresh = 0.1;
 //        if(collisionRate > collisionsThresh && Math.abs(velDiff) < 0.3){
 //            restitution *= 1 + collisionRate / 2;
 //        }
         double combinedMomentum = yLengthB * b.getMass() + yLengthA * a.getMass();
         double combinedMass = b.getMass() + a.getMass();
-        double yFinalA = (restitution * b.getMass() * velDiff + combinedMomentum) / combinedMass;
-        double yFinalB = (combinedMomentum - restitution * a.getMass() * velDiff) / combinedMass;
-        
+        double yFinalA = (restitution * b.getMass() * yVelDiff + combinedMomentum) / combinedMass;
+        double yFinalB = (combinedMomentum - restitution * a.getMass() * yVelDiff) / combinedMass;
+        xLengthA += friction * xVelDiff * b.getMass() / combinedMass;
+        xLengthB -= friction * xVelDiff * a.getMass() / combinedMass;
+
         double xA = unitY.getX() * yFinalA + unitX.getX() * xLengthA;
         double yA = unitY.getY() * yFinalA + unitX.getY() * xLengthA;
         double xB = unitY.getX() * yFinalB + unitX.getX() * xLengthB;

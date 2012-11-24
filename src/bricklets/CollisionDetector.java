@@ -1,16 +1,19 @@
 package bricklets;
 
+import gameengine.Context;
+
 import java.util.ArrayList;
 
 /**
- * 
  * @author davidrusu
  */
 public class CollisionDetector {
     public static final int MAX_COLLISION_CATEGORIES = 10;
     private ArrayList<Shape>[] categories;
     private ArrayList<CollisionCategoryPair> collisionPairs = new ArrayList<CollisionCategoryPair>();
-    
+    private double[] collisionTimes = new double[16];
+    private int back = 0, numCollision = 0;
+    private double currentGameTime = 0;
     /**
      * Constructs a CollisionDetector with the specified number of
      * collision categories.
@@ -26,53 +29,53 @@ public class CollisionDetector {
      * enemy plane and bullets to collide with the player so we must set a
      * collision pair (1, 2) if we want enemy bullets to collide with each other
      * and enemy planes we must set the collision pair (1, 1)
-     * 
+     *
      * @param numOfCollisionCategories must not exceed MAX_COLLISION_CATEGORIES or be less than 1
      */
-    public CollisionDetector(int numOfCollisionCategories){
-        if(numOfCollisionCategories > MAX_COLLISION_CATEGORIES || numOfCollisionCategories < 1){
+    public CollisionDetector(int numOfCollisionCategories) {
+        if (numOfCollisionCategories > MAX_COLLISION_CATEGORIES || numOfCollisionCategories < 1) {
             throw new IllegalArgumentException("numOfCollisions must not exceed MAX_COLLISION_CATEGORIES or be less than 1, numOfCollisionCategories: " + numOfCollisionCategories);
         }
-        
+
         categories = new ArrayList[numOfCollisionCategories];
-        for(int i = 0; i < numOfCollisionCategories; i++){
+        for (int i = 0; i < numOfCollisionCategories; i++) {
             categories[i] = new ArrayList<Shape>();
         }
     }
-    
-    public void addShape(Shape shape, int collisionCategory){
+
+    public void addShape(Shape shape, int collisionCategory) {
         categories[collisionCategory].add(shape);
     }
-    
-    public boolean removeShape(Shape shape, int collisionCategory){
-        for(Shape testShape: categories[collisionCategory]){
-            if(testShape == shape){
+
+    public boolean removeShape(Shape shape, int collisionCategory) {
+        for (Shape testShape : categories[collisionCategory]) {
+            if (testShape == shape) {
                 return categories[collisionCategory].remove(shape);
             }
         }
         return false;
     }
-    
-    public void setCollisionPair(int collisionCategoryA, int collisionCategoryB){
+
+    public void setCollisionPair(int collisionCategoryA, int collisionCategoryB) {
         int i = 0;
         boolean foundDuplicate = false;
-        while(!foundDuplicate && i < collisionPairs.size()){
+        while (!foundDuplicate && i < collisionPairs.size()) {
             CollisionCategoryPair pair = collisionPairs.get(i);
-            if((pair.getA() == collisionCategoryA && pair.getB() == collisionCategoryB) || (pair.getB() == collisionCategoryA && pair.getA() == collisionCategoryB)){
+            if ((pair.getA() == collisionCategoryA && pair.getB() == collisionCategoryB) || (pair.getB() == collisionCategoryA && pair.getA() == collisionCategoryB)) {
                 foundDuplicate = true;
             }
             i++;
         }
-        if(!foundDuplicate){
+        if (!foundDuplicate) {
             collisionPairs.add(new CollisionCategoryPair(collisionCategoryA, collisionCategoryB));
         }
     }
-    
-    public boolean removeCollisionPair(int collisionCategoryA, int collisionCategoryB){
+
+    public boolean removeCollisionPair(int collisionCategoryA, int collisionCategoryB) {
         int i = 0;
-        while(i < collisionPairs.size()){
+        while (i < collisionPairs.size()) {
             CollisionCategoryPair pair = collisionPairs.get(i);
-            if((pair.getA() == collisionCategoryA && pair.getB() == collisionCategoryB) || (pair.getB() == collisionCategoryA && pair.getA() == collisionCategoryB)){
+            if ((pair.getA() == collisionCategoryA && pair.getB() == collisionCategoryB) || (pair.getB() == collisionCategoryA && pair.getA() == collisionCategoryB)) {
                 collisionPairs.remove(pair);
                 return true;
             }
@@ -80,61 +83,61 @@ public class CollisionDetector {
         }
         return false;
     }
-    
+
     /**
      * Removes all {@link Shape}'s that were added and collision pairs
      */
-    public void clearCollisions(){
-        for(ArrayList list: categories){
+    public void clearCollisions() {
+        for (ArrayList list : categories) {
             list.clear();
         }
         collisionPairs.clear();
     }
-    
-    public Collision getNextCollision(double maxTime){
+
+    public Collision getNextCollision(double maxTime) {
         Collision nextCollision = new Collision();
-        for(CollisionCategoryPair pair: collisionPairs){
+        for (CollisionCategoryPair pair : collisionPairs) {
             ArrayList<Shape> listA = categories[pair.getA()];
             ArrayList<Shape> listB = categories[pair.getB()];
-            
-            for(Shape b: listB){
+
+            for (Shape b : listB) {
                 b.update();
             }
-            
-            if(listA == listB){
+
+            if (listA == listB) {
                 checkCollisionsInSingleList(listA, maxTime, nextCollision);
-            }else{
+            } else {
                 checkCollisionsInLists(listA, listB, maxTime, nextCollision);
             }
         }
         return nextCollision;
     }
-    
-    private void checkCollisionsInSingleList(ArrayList<Shape> list, double maxTime, Collision result){
+
+    private void checkCollisionsInSingleList(ArrayList<Shape> list, double maxTime, Collision result) {
         double shortestTimeTillNextCollision = Shape.NO_COLLISION;
         Collision testCollision = new Collision(); //TODO can be moved to the calling method and passed as an argument to save object creation
-        for(int i = 0; i < list.size(); i++){
+        for (int i = 0; i < list.size(); i++) {
             Shape a = list.get(i);
-            for(int j = i + 1; j < list.size(); j++){
+            for (int j = i + 1; j < list.size(); j++) {
                 Shape b = list.get(j);
                 getTimeToCollision(a, b, maxTime, testCollision);
-                if(testCollision.getTimeToCollision() < shortestTimeTillNextCollision){
+                if (testCollision.getTimeToCollision() < shortestTimeTillNextCollision) {
                     shortestTimeTillNextCollision = testCollision.getTimeToCollision();
                     result.set(testCollision);
                 }
             }
         }
     }
-    
-    private void checkCollisionsInLists(ArrayList<Shape> listA, ArrayList<Shape> listB, double maxTime, Collision result){
+
+    private void checkCollisionsInLists(ArrayList<Shape> listA, ArrayList<Shape> listB, double maxTime, Collision result) {
         double shortestTimeTillNextCollision = Double.MAX_VALUE;
         Collision testCollision = new Collision(); //TODO can be moved to the calling method and passed as an argument to save object creation
-        for(Shape a: listA){
+        for (Shape a : listA) {
             a.update();
-            for(Shape b: listB){
-                if(a != b){
+            for (Shape b : listB) {
+                if (a != b) {
                     getTimeToCollision(a, b, maxTime, testCollision);
-                    if(testCollision.getTimeToCollision() < shortestTimeTillNextCollision){
+                    if (testCollision.getTimeToCollision() < shortestTimeTillNextCollision) {
                         shortestTimeTillNextCollision = testCollision.getTimeToCollision();
                         result.set(testCollision);
                     }
@@ -142,26 +145,49 @@ public class CollisionDetector {
             }
         }
     }
-    
-    private void getTimeToCollision(Shape a, Shape b, double maxTime, Collision result){
-        if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_CIRCLE){
+
+    private void getTimeToCollision(Shape a, Shape b, double maxTime, Collision result) {
+        if (a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_CIRCLE) {
             Shape.collideCircleCircle(a, b, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_POLYGON){
+        } else if (a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_POLYGON) {
             Shape.collidePolyPoly((Polygon) a, (Polygon) b, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_POLYGON){
+        } else if (a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_POLYGON) {
             Shape.collideCirclePoly(a, (Polygon) b, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_CIRCLE){
+        } else if (a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_CIRCLE) {
             Shape.collideCirclePoly(b, (Polygon) a, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){
-            Shape.collideAABBAABB((AABBShape)a, (AABBShape)b, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_CIRCLE){
-            Shape.collideCircleAABB(b, (AABBShape)a, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){
-            Shape.collideCircleAABB(a, (AABBShape)b, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_POLYGON){
-            Shape.collideAABBPoly((AABBShape)a, (Polygon)b, maxTime, result);
-        }else if(a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX){
-            Shape.collideAABBPoly((AABBShape)b, (Polygon)a, maxTime, result);
+        } else if (a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX) {
+            Shape.collideAABBAABB((AABBShape) a, (AABBShape) b, maxTime, result);
+        } else if (a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_CIRCLE) {
+            Shape.collideCircleAABB(b, (AABBShape) a, maxTime, result);
+        } else if (a.getShapeType() == Shape.TYPE_CIRCLE && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX) {
+            Shape.collideCircleAABB(a, (AABBShape) b, maxTime, result);
+        } else if (a.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX && b.getShapeType() == Shape.TYPE_POLYGON) {
+            Shape.collideAABBPoly((AABBShape) a, (Polygon) b, maxTime, result);
+        } else if (a.getShapeType() == Shape.TYPE_POLYGON && b.getShapeType() == Shape.TYPE_AA_BOUNDING_BOX) {
+            Shape.collideAABBPoly((AABBShape) b, (Polygon) a, maxTime, result);
+        }
+    }
+
+    public void update(double elapsedTime, Context context) {
+        double timeLeft = elapsedTime * context.getTimeScale();
+
+        while(timeLeft > 0){
+            Collision collision = getNextCollision(timeLeft);
+            double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
+            currentGameTime += updateTime;
+            if(updateTime > 0){
+                context.update(updateTime);
+            }
+            if(collision.getTimeToCollision() != Shape.NO_COLLISION
+               && collision.getTimeToCollision() <= timeLeft){
+                collisionTimes[back] = currentGameTime;
+                int front = (back + 1) % collisionTimes.length;
+                double dt = collisionTimes[back] - collisionTimes[front];
+                back = front;
+                double collisionRate = collisionTimes.length / dt;
+                context.handleCollision(collision, collisionRate);
+            }
+            timeLeft -= updateTime;
         }
     }
 }

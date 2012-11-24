@@ -59,8 +59,33 @@ public class Physics {
         double combinedMass = b.getMass() + a.getMass();
         double yFinalA = (restitution * b.getMass() * yVelDiff + combinedMomentum) / combinedMass;
         double yFinalB = (combinedMomentum - restitution * a.getMass() * yVelDiff) / combinedMass;
-        xLengthA += friction * xVelDiff * b.getMass() / combinedMass;
-        xLengthB -= friction * xVelDiff * a.getMass() / combinedMass;
+        double frictionA = friction * Math.abs(yFinalA - yLengthA);
+        double frictionB = friction * Math.abs(yFinalB - yLengthB);
+//        xLengthA += friction * 5 * (yFinalA - yLengthA);// * b.getMass() / combinedMass;
+//        xLengthB -= friction * 5 * (yFinalB - yLengthB);// * a.getMass() / combinedMass;
+        if(xVelDiff < 0){
+            if(frictionA > xLengthA){
+                xLengthA = 0;
+            }else{
+                xLengthA -= frictionA;
+            }
+            if(frictionB > xLengthB){
+                xLengthB = 0;
+            }else{
+                xLengthB -= frictionB;
+            }
+        } else if(xVelDiff > 0){
+            if(frictionA < -xLengthA){
+                xLengthA = 0;
+            }else{
+                xLengthA += frictionA;
+            }
+            if(frictionB < -xLengthB){
+                xLengthB = 0;
+            }else{
+                xLengthB += frictionB;
+            }
+        }
 
         double xA = unitY.getX() * yFinalA + unitX.getX() * xLengthA;
         double yA = unitY.getY() * yFinalA + unitX.getY() * xLengthA;

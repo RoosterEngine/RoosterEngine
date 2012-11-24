@@ -1,5 +1,6 @@
 package gameengine;
 
+import bricklets.Collision;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.MouseMovedHandler;
@@ -13,6 +14,7 @@ public abstract class Context implements MouseMovedHandler {
     protected GameController controller;
     protected ContextType contextType;
     protected int width, height;
+    protected double timeScale = 1;
     
     /**
      * Constructs a Context
@@ -53,6 +55,10 @@ public abstract class Context implements MouseMovedHandler {
     public int getHeight(){
         return height;
     }
+
+    public double getTimeScale(){
+        return timeScale;
+    }
     
     /**
      * Returns the {@link ContextType} of this context
@@ -83,4 +89,6 @@ public abstract class Context implements MouseMovedHandler {
     public abstract void update(double elapsedTime);
 
     public abstract void draw(Graphics2D g);
+
+    public abstract void handleCollision(Collision collision, double collisionsPerMilli);
 }

@@ -1,5 +1,6 @@
 package gameengine;
 
+import bricklets.Collision;
 import gameengine.effects.EffectFactory;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
@@ -81,7 +82,11 @@ public class BasicMenu extends Context{
         g.setColor(new Color(80, 10, 70));
         g.fillOval((int)(mouseX - cursorRadius), (int)(mouseY - cursorRadius), (int)(cursorRadius * 2), (int)(cursorRadius * 2));
     }
-    
+
+    @Override
+    public void handleCollision(Collision collision, double collisionsPerMilli) {
+    }
+
     private void setupButtons(double leftBorderRatio, double rightBorderRatio, double topBorderRatio, double bottomBorderRatio, double paddingRatio){
         int leftBorder = (int)(width * leftBorderRatio);
         int topBorder = (int)(height * topBorderRatio);

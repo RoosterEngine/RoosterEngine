@@ -1,15 +1,18 @@
 package gameengine;
 
+import bricklets.CollisionDetector;
+import bricklets.Shape;
 import gameengine.input.*;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
-import javax.imageio.ImageIO;
 
 public class GameController {
-    
+
     private EnumMap<ContextType, ArrayList<InputMapping>> contextTypeContextControlsMap;
     private EnumMap<ContextType, HashMap<Integer, Action>> contextTypeControlsMap;
     private HashMap<Integer, Action> currentControls;
@@ -22,45 +25,47 @@ public class GameController {
     private Context currentContext;
     private ActionHandler singleHandler;
     private boolean inSingleHandlerMode = false, showingMouseCursor = true;
+    private CollisionDetector collisionDetector;
 
-    public GameController(){
+    public GameController() {
         this(120, 60);
     }
-    
+
     /**
-     * @param updateRate update the game state this many times per second
-     * (updateRate needs to be greater or equal to desiredFrameRate)
+     * @param updateRate       update the game state this many times per second
+     *                         (updateRate needs to be greater or equal to desiredFrameRate)
      * @param desiredFrameRate render to the screen this many times per second
      */
-    public GameController(int updateRate, int desiredFrameRate){
-        this(updateRate, desiredFrameRate, (int)(0.6 * desiredFrameRate));
+    public GameController(int updateRate, int desiredFrameRate) {
+        this(updateRate, desiredFrameRate, (int) (0.6 * desiredFrameRate));
     }
-    
+
     /**
-     * @param updateRate update the game state this many times per second
-     * (updateRate needs to be greater or equal to desiredFrameRate)
+     * @param updateRate       update the game state this many times per second
+     *                         (updateRate needs to be greater or equal to desiredFrameRate)
      * @param desiredFrameRate render to the screen this many times per second
-     * @param minFrameRate minimum allowable frame rate before the updateRate
-     * slows down (game play doesn't slow down though)
+     * @param minFrameRate     minimum allowable frame rate before the updateRate
+     *                         slows down (game play doesn't slow down though)
      */
-    public GameController(int updateRate, int desiredFrameRate, int minFrameRate){
+    public GameController(int updateRate, int desiredFrameRate, int minFrameRate) {
         UserProfile profile = new UserProfile("Default");
         profile.setInputBinding(InputCode.KEY_A, Action.EXIT_GAME);
         init(updateRate, desiredFrameRate, minFrameRate, profile);
     }
+
     /**
-     * @param updateRate update the game state this many times per second
-     * (updateRate needs to be greater or equal to desiredFrameRate)
+     * @param updateRate       update the game state this many times per second
+     *                         (updateRate needs to be greater or equal to desiredFrameRate)
      * @param desiredFrameRate render to the screen this many times per second
-     * @param minFrameRate minimum allowable frame rate before the updateRate
-     * slows down (game play doesn't slow down though)
+     * @param minFrameRate     minimum allowable frame rate before the updateRate
+     *                         slows down (game play doesn't slow down though)
      * @param userProfile
      */
     public GameController(int updateRate, int desiredFrameRate, int minFrameRate, UserProfile userProfile) {
         init(updateRate, desiredFrameRate, minFrameRate, userProfile);
     }
-    
-    private void init(int updateRate, int desiredFrameRate, int minFrameRate, UserProfile userProfile){
+
+    private void init(int updateRate, int desiredFrameRate, int minFrameRate, UserProfile userProfile) {
         currentProfile = userProfile;
         input = new InputManager(this);
         screen = new ScreenManager();
@@ -69,20 +74,21 @@ public class GameController {
         contextTypeControlsMap = new EnumMap<ContextType, HashMap<Integer, Action>>(ContextType.class);
         contextTypeContextControlsMap = new EnumMap<ContextType, ArrayList<InputMapping>>(ContextType.class);
         ContextType[] contextTypes = ContextType.values();
-        for(ContextType type: contextTypes){
+        for (ContextType type : contextTypes) {
             contextTypeContextControlsMap.put(type, new ArrayList<InputMapping>());
         }
         timer = new GameTimer(this, updateRate, desiredFrameRate, minFrameRate);
         gameThread = new Thread(timer);
+        collisionDetector = new CollisionDetector(10);
     }
-    
-    public void startGame(){
+
+    public void startGame() {
         System.out.println("starting game");
         addInputListeners(screen.getFullScreenWindow());
         gameThread.start();
     }
-    
-    public void stopGame(){
+
+    public void stopGame() {
         resetCursor();
         timer.stop();
     }
@@ -90,6 +96,7 @@ public class GameController {
     /**
      * Changes the current {@link UserProfile} to the specified one and updates
      * the controls to the new users controls.
+     *
      * @param userProfile the new user profile
      */
     public void changeUserProfile(UserProfile userProfile) {
@@ -98,30 +105,30 @@ public class GameController {
         currentControls = getControlsMap(userProfile, currentContext.getContextType());
         contextTypeControlsMap.put(currentContext.getContextType(), currentControls);
     }
-    
-    public void updateMouseVelocity(double frameTime){
+
+    public void updateMouseVelocity(double frameTime) {
         input.updateMouseVelocity(frameTime);
     }
-    
-    public void updateMouseMovedHandler(double updateTime){
+
+    public void updateMouseMovedHandler(double updateTime) {
         input.updateMouseMovedHandler(updateTime);
     }
-    
-    private HashMap<Integer, Action> getControlsMap(UserProfile userProfile, ContextType contextType){
+
+    private HashMap<Integer, Action> getControlsMap(UserProfile userProfile, ContextType contextType) {
         HashMap<Integer, Action> controlMap = new HashMap<Integer, Action>();
 
         Iterator<Map.Entry<Integer, Action>> iter = userProfile.getControlsIterator();
-        while(iter.hasNext()){
+        while (iter.hasNext()) {
             Map.Entry<Integer, Action> entry = iter.next();
             controlMap.put(entry.getKey(), entry.getValue());
         }
 
         ArrayList<InputMapping> contextMappings = contextTypeContextControlsMap.get(contextType);
-        
-        for(InputMapping mapping : contextMappings){
+
+        for (InputMapping mapping : contextMappings) {
             controlMap.put(mapping.getInputCode(), mapping.getAction());
         }
-        
+
         return controlMap;
     }
 
@@ -130,37 +137,37 @@ public class GameController {
      * previous context is preserved on a stack and can be reentered by calling
      * exitContext. the current control map is updated to have the new contexts
      * default controls
-     * 
+     *
      * @param context the context to be entered
      */
     public void enterContext(Context context) {
         input.clearInputQueue();
-        if(!showingMouseCursor && context.isShowingMouseCursor()){
+        if (!showingMouseCursor && context.isShowingMouseCursor()) {
             showingMouseCursor = true;
             resetMouseCursor(screen.getFullScreenWindow());
-        }else if(showingMouseCursor && !context.isShowingMouseCursor()){
+        } else if (showingMouseCursor && !context.isShowingMouseCursor()) {
             showingMouseCursor = false;
             setInvisibleMouseCursor(screen.getFullScreenWindow());
         }
-        if(context.isRelativeMouseMovedEnabled()){
+        if (context.isRelativeMouseMovedEnabled()) {
             input.enableRelativeMouseMove(context.getWidth() / 2, context.getHeight() / 2);
-        }else{
+        } else {
             input.disableRelativeMouseMove();
         }
         contextStack.push(context);
         currentContext = context;
         currentControls = contextTypeControlsMap.get(context.getContextType());
-        if(currentControls == null){
+        if (currentControls == null) {
             currentControls = getControlsMap(currentProfile, currentContext.getContextType());
             contextTypeControlsMap.put(context.getContextType(), currentControls);
         }
     }
-    
-    private static void setInvisibleMouseCursor(Window window){
+
+    private static void setInvisibleMouseCursor(Window window) {
         window.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit().getImage(""), new Point(0, 0), "invisible"));
     }
-    
-    private static void resetMouseCursor(Window window){
+
+    private static void resetMouseCursor(Window window) {
         window.setCursor(Cursor.getDefaultCursor());
     }
 
@@ -170,11 +177,11 @@ public class GameController {
      * If there is no previous context the game exits
      */
     public void exitContext() {
-        if(!contextStack.isEmpty()){
+        if (!contextStack.isEmpty()) {
             contextStack.pop();
-            if(contextStack.isEmpty()){
+            if (contextStack.isEmpty()) {
                 stopGame();
-            }else{
+            } else {
                 enterContext(contextStack.pop());
             }
         }
@@ -182,27 +189,30 @@ public class GameController {
 
     /**
      * Gets the {@link MouseMovedHandler} from the currentContext
+     *
      * @return MouseMovedHandler
      */
     public MouseMovedHandler getMouseMovedHandler() {
-            return currentContext;
+        return currentContext;
     }
-    
+
     /**
      * Gets the {@link ActionHandler} that is associated with the specified
      * inputCode in the currentContext
+     *
      * @param inputCode
-     * @return 
+     * @return
      */
-    public ActionHandler getActionHandler(int inputCode){
-        if(inSingleHandlerMode){
+    public ActionHandler getActionHandler(int inputCode) {
+        if (inSingleHandlerMode) {
             return singleHandler;
         }
         return currentContext.getActionHandler(currentControls.get(inputCode));
     }
-    
+
     /**
      * adds input listeners to a specified component
+     *
      * @param component the container to add listeners to
      */
     public final void addInputListeners(Component component) {
@@ -217,8 +227,8 @@ public class GameController {
      * Change input bindings, should only be used in a control menu where the
      * player is changing bindings
      *
-     * @param newCode the code to bind, this code should be got from one of the
-     * get*EventType*InputCode() methods
+     * @param newCode      the code to bind, this code should be got from one of the
+     *                     get*EventType*InputCode() methods
      * @param originalCode the code that is currently bound
      */
     public void changeUserBinding(int newCode, int originalCode) {
@@ -227,24 +237,25 @@ public class GameController {
         currentProfile.removeInputBinding(originalCode);
         currentProfile.setInputBinding(newCode, action);
     }
-    
+
     /**
      * Sets context specific input bindings. The combined context specific
      * bindings and {@link UserProfile} bindings are used when the context is
      * entered. When the bindings are combined, the context specific bindings
      * always override the user profile bindings. Game actions should not be
      * reused in menus to avoid having multiple keys bound to the same action
+     *
      * @param contextType the contextType to bind the controls to
-     * @param inputCode the inputCode to bind
-     * @param action the action to bind
+     * @param inputCode   the inputCode to bind
+     * @param action      the action to bind
      */
-    public void setContextBinding(ContextType contextType, int inputCode, Action action){
+    public void setContextBinding(ContextType contextType, int inputCode, Action action) {
         ArrayList<InputMapping> mappings = contextTypeContextControlsMap.get(contextType);
         boolean duplicateNotFound = true;
         int i = 0;
-        while(duplicateNotFound && i < mappings.size()){
+        while (duplicateNotFound && i < mappings.size()) {
             InputMapping mapping = mappings.get(i);
-            if(mapping.getInputCode() == inputCode && mapping.getAction() == action){
+            if (mapping.getInputCode() == inputCode && mapping.getAction() == action) {
                 mappings.remove(mapping);
                 duplicateNotFound = false;
             }
@@ -254,8 +265,9 @@ public class GameController {
     }
 
     /**
-     * All events are handled by one handler that the user specifies, 
+     * All events are handled by one handler that the user specifies,
      * {@link Action}s are not user in single handler mode
+     *
      * @param singleHandler the handler to catch all events
      */
     public void enterSingleHandlerMode(ActionHandler singleHandler) {
@@ -271,73 +283,86 @@ public class GameController {
         inSingleHandlerMode = false;
     }
 
-    public Object getUserProperty(String propertyName){
+    public Object getUserProperty(String propertyName) {
         return currentProfile.getProperty(propertyName);
     }
-    
-    public void setUserProperty(String propertyName, Serializable property){
+
+    public void setUserProperty(String propertyName, Serializable property) {
         currentProfile.setProperty(propertyName, property);
     }
-    
-    
-    
+
+
     /**
      * Returns the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
-     * @return 
+     *
+     * @return
      */
-    public long getNextInputEventTime(){
+    public long getNextInputEventTime() {
         return input.getNextEventTime();
     }
-    
-    public void handleEvents(long cutOffTime){
+
+    public void handleEvents(long cutOffTime) {
         input.handleEvents(cutOffTime);
     }
-    
-    public void setFullScreen(){
+
+    public void setFullScreen() {
         screen.setFullScreen();
     }
-    
-    public void restoreScreen(){
+
+    public void restoreScreen() {
         screen.restoreScreen();
     }
-    
-    public double getFrameRate(){
+
+    public double getFrameRate() {
         return timer.getFrameRate();
     }
-    
-    public double getUpdateRate(){
+
+    public double getUpdateRate() {
         return timer.getUpdateRate();
     }
-    
-    public int getWidth(){
+
+    public int getWidth() {
         return screen.getFullScreenWindow().getWidth();
     }
-    
-    public int getHeight(){
+
+    public int getHeight() {
         return screen.getFullScreenWindow().getHeight();
     }
-    
+
     public void update(double elapsedTime) {
-        currentContext.update(elapsedTime);
+//        currentContext.update(elapsedTime);
+        collisionDetector.update(elapsedTime, currentContext);
     }
-    
-    public Graphic loadImage(String path) throws IOException{
+
+    public void addShapeToCollisionDetector(Shape shape, int collisionCategory){
+        collisionDetector.addShape(shape, collisionCategory);
+    }
+
+    public void setCollisionPair(int collisionCategoryA, int collisionCategoryB){
+        collisionDetector.setCollisionPair(collisionCategoryA, collisionCategoryB);
+    }
+
+    public void clearCollisions(){
+        collisionDetector.clearCollisions();
+    }
+
+    public Graphic loadImage(String path) throws IOException {
         BufferedImage im = ImageIO.read(getClass().getResource(path));
         Graphic result = new ImageGraphic(screen.getCompatibleImageVersion(im));
         im.flush();//to save some memmory right away
         return result;
     }
-    
-    public BufferedImage createCompatibleImage(int width, int height){
+
+    public BufferedImage createCompatibleImage(int width, int height) {
         return screen.createCompatibleImage(width, height, BufferedImage.BITMASK);
     }
-    
-    public void resetCursor(){
-        if(!showingMouseCursor){
+
+    public void resetCursor() {
+        if (!showingMouseCursor) {
             resetMouseCursor(screen.getFullScreenWindow());
         }
     }
-    
+
     public void draw() {
         Graphics2D g2D = screen.getGraphics();
         currentContext.draw(g2D);

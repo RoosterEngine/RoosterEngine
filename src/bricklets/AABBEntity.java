@@ -36,6 +36,9 @@ public class AABBEntity extends Entity{
     public void draw(Graphics2D g) {
         g.setColor(color);
         g.fillRect((int)(x - halfWidth), (int)(y - halfHeight), (int)width, (int)height);
+        g.setColor(Color.ORANGE);
+        double scale = 100;
+        g.drawLine((int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale), (int)x, (int)y);
     }
     
 }

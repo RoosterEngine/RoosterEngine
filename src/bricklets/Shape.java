@@ -308,10 +308,10 @@ public abstract class Shape {
     public static void collideAABBAABB(AABBShape a, AABBShape b, double maxTime, Collision result){
         collisionData.clear();
         double relVelX = a.dx - b.dx, relVelY = a.dy - b.dy;
-        double aMaxX = a.x + a.getHalfWidth(), aMinX = a.x - a.getHalfWidth();
-        double aMaxY = a.y + a.getHalfHeight(), aMinY = a.y - a.getHalfHeight();
-        double bMaxX = b.x + b.getHalfWidth(), bMinX = b.x - b.getHalfWidth();
-        double bMaxY = b.y + b.getHalfHeight(), bMinY = b.y - b.getHalfHeight();
+        double aMaxX = a.getHalfWidth(), aMinX = -a.getHalfWidth();
+        double aMaxY = a.getHalfHeight(), aMinY = -a.getHalfHeight();
+        double bMaxX = b.x + b.getHalfWidth() - a.x, bMinX = b.x - b.getHalfWidth() - a.x;
+        double bMaxY = b.y + b.getHalfHeight() - a.y, bMinY = b.y - b.getHalfHeight() - a.y;
 
         calcTOIAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relVelX, collisionData, 1, 0);
         if(collisionData.isCollisionNotPossible()){
@@ -323,6 +323,14 @@ public abstract class Shape {
         if(collisionData.isCollisionNotPossible()){
             result.setNoCollision();
             return;
+        }
+
+        if(collisionData.hasEntryTimeNotBeenUpdated()){
+            calcOverlapNormalBox(aMinX, aMaxX, aMinY, aMaxY, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
+            if(collisionData.getOverlapVelocity() < 0){
+                result.set(0, collisionData.getOverlapNormal(), a, b);
+                return;
+            }
         }
 
         if(collisionData.willCollisionHappen(maxTime)){
@@ -351,13 +359,14 @@ public abstract class Shape {
             return;
         }
         if(collisionData.hasEntryTimeNotBeenUpdated()){
-            calcOverlapNormal(a, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
+            calcOverlapNormalBox(-a.radius, a.radius, -a.radius, a.radius, bMinX - a.x, bMaxX - a.x,
+                                 bMinY - a.y, bMaxY - a.y, relVelX, relVelY, collisionData);
             if(collisionData.getOverlapVelocity() < 0){
                 result.set(0, collisionData.getOverlapNormal(), a, b);
                 return;
             }
         }
-        if(collisionData.willCollisionHappen(maxTime)){
+        if (collisionData.willCollisionHappen(maxTime)) {
             result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a, b);
             return;
         }
@@ -424,15 +433,29 @@ public abstract class Shape {
         collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, vel));
     }
 
-    private static void calcOverlapNormal(Shape a, double minX, double maxX, double minY, double maxY,
-                                          double velX, double velY, CollisionData collisionData){
-        double dist = a.x + a.radius - minX;
+//    private static void calcOverlapNormalBox(Shape a, double minX, double maxX, double minY, double maxY,
+//                                          double velX, double velY, CollisionData collisionData){
+//        double dist = a.x + a.radius - minX;
+//        collisionData.updateTempOverlapData(dist, -velX, -1, 0);
+//        dist = maxX - a.x + a.radius;
+//        collisionData.updateTempOverlapData(dist, velX, 1, 0);
+//        dist = a.y + a.radius - minY;
+//        collisionData.updateTempOverlapData(dist, -velY, 0, -1);
+//        dist = maxY - a.y + a.radius;
+//        collisionData.updateTempOverlapData(dist, velY, 0, 1);
+//        collisionData.updateOverlapData();
+//    }
+
+    private static void calcOverlapNormalBox(double aMinX, double aMaxX, double aMinY, double aMaxY,
+                                             double bMinX, double bMaxX, double bMinY, double bMaxY,
+                                             double velX, double velY, CollisionData collisionData){
+        double dist = aMaxX - bMinX;
         collisionData.updateTempOverlapData(dist, -velX, -1, 0);
-        dist = maxX - a.x + a.radius;
+        dist = bMaxX - aMinX;
         collisionData.updateTempOverlapData(dist, velX, 1, 0);
-        dist = a.y + a.radius - minY;
+        dist = aMaxY - bMinY;
         collisionData.updateTempOverlapData(dist, -velY, 0, -1);
-        dist = maxY - a.y + a.radius;
+        dist = bMaxY - aMinY;
         collisionData.updateTempOverlapData(dist, velY, 0, 1);
         collisionData.updateOverlapData();
     }

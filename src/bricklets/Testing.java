@@ -44,6 +44,10 @@ public class Testing extends Context{
     }
 
     @Override
+    public void handleCollision(Collision collision, double collisionsPerMilli) {
+    }
+
+    @Override
     public void mouseMoved(double x, double y, double velocityX, double velocityY) {
         mouseX = x;
         mouseY = y;

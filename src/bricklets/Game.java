@@ -18,7 +18,6 @@ import java.util.ArrayList;
 public class Game extends Context{
     private double mouseX = 0, mouseY = 0;
     private double realMouseX = 0, realMouseY = 0;
-    private CollisionDetector collisionDetector = new CollisionDetector(3);
     private ArrayList<CircleEntity> circles = new ArrayList<CircleEntity>();
     private ArrayList<PolygonEntity> polygons = new ArrayList<PolygonEntity>();
     private ArrayList<AABBEntity> aabBoxs = new ArrayList<AABBEntity>();
@@ -29,7 +28,7 @@ public class Game extends Context{
     private boolean paused = false;
     private double[] collisionTimes = new double[16];
     private double currentGameTime = 0, collisionRate = 0;
-    private int collisionX, collisionY, back = 0, numCollision = 0;
+    private int back = 0, numCollision = 0;
     private boolean rulerMode, dragging;
     private double startMouseX, startMouseY;
     private double rulerLength;
@@ -39,9 +38,7 @@ public class Game extends Context{
     private boolean panMode = false;
     private double scale = 0.5;
     private int shiftX = (int)(width * scale * scale), shiftY = (int)(height * scale * scale);
-    private double timeScale = 1;
 
-    
     public Game(GameController controller){
         super(controller, ContextType.GAME, false, true);
         load();
@@ -68,28 +65,29 @@ public class Game extends Context{
     
     @Override
     public void update(double elapsedTime) {
-        double timeLeft = elapsedTime * timeScale;
-        while(timeLeft > 0 && !paused){
-            Collision collision = collisionDetector.getNextCollision(timeLeft);
-            timeToCollision = collision.getTimeToCollision(); // used for display purposes only
-            double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
-            currentGameTime += updateTime;
-            if(updateTime > 0){
-                updatePositions(updateTime);
-            }
-            if(collision.getTimeToCollision() != Shape.NO_COLLISION && collision.getTimeToCollision() <= timeLeft){
-                // for the first collisionTimes.length collisions, the collision rate will be inacurate;
-                collisionTimes[back] = currentGameTime;
-                int front = (back + 1) % collisionTimes.length;
-                double dt = collisionTimes[back] - collisionTimes[front];
-                back = front;
-                collisionRate = collisionTimes.length / dt;
-                handleCollision(collision, collisionRate);
-//                paused = true;
-                numCollision++;
-            }
-            timeLeft -= updateTime;
-        }
+        updatePositions(elapsedTime);
+//        double timeLeft = elapsedTime * timeScale;
+//        while(timeLeft > 0 && !paused){
+//            Collision collision = collisionDetector.getNextCollision(timeLeft);
+//            timeToCollision = collision.getTimeToCollision(); // used for display purposes only
+//            double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
+//            currentGameTime += updateTime;
+//            if(updateTime > 0){
+//                updatePositions(updateTime);
+//            }
+//            if(collision.getTimeToCollision() != Shape.NO_COLLISION && collision.getTimeToCollision() <= timeLeft){
+//                // for the first collisionTimes.length collisions, the collision rate will be inacurate;
+//                collisionTimes[back] = currentGameTime;
+//                int front = (back + 1) % collisionTimes.length;
+//                double dt = collisionTimes[back] - collisionTimes[front];
+//                back = front;
+//                collisionRate = collisionTimes.length / dt;
+//                handleCollision(collision, collisionRate);
+////                paused = true;
+//                numCollision++;
+//            }
+//            timeLeft -= updateTime;
+//        }
     }
     
     private void updatePositions(double elapsedTime){
@@ -118,8 +116,10 @@ public class Game extends Context{
 //            circle.addForce((mouseX - circle.getX()) * k * elapsedTime - d * circle.getDX(), (mouseY - circle.getY()) * k * elapsedTime - d * circle.getDY());
         }
     }
-    private void handleCollision(Collision collision, double collisionsPerMilli){
-        Physics.performCollision(collision, 0.7, 0.1, collisionsPerMilli);
+
+    @Override
+    public void handleCollision(Collision collision, double collisionsPerMilli){
+        Physics.performCollision(collision, 1, 0.001, collisionsPerMilli);
     }
 
     @Override
@@ -157,7 +157,6 @@ public class Game extends Context{
         g.drawString("          fps: " + controller.getFrameRate(), 50, 50);
         g.drawString("          ups: " + controller.getUpdateRate(), 50, 70);
         g.drawString("nextCollision: " + timeToCollision / 1000, 50, 90);
-        g.drawString("    collision: " + collisionX + " " + collisionY, 50, 110);
         g.drawString("collisionRate: " + collisionRate, 50, 130);
         g.drawString("   collisions: " + numCollision, 50, 150);
         g.drawString(" num of shapes: " + (circles.size() + polygons.size() + aabBoxs.size()), 50, 170);
@@ -175,13 +174,13 @@ public class Game extends Context{
         circles.clear();
         polygons.clear();
         aabBoxs.clear();
-        collisionDetector.clearCollisions();
+        controller.clearCollisions();
         AABBMode();
-        polygonMode();
+//        polygonMode();
 //        ballMode();
-        collisionDetector.setCollisionPair(0, 0);
+        controller.setCollisionPair(0, 0);
         mouseItem = aabBoxs.get(0);
-        mouseItem.setMass(0.0001);
+        mouseItem.setMass(0.01);
         mouseItem.setColor(Color.DARK_GRAY);
 //        polygons.get(2).setMass(10000000D);
     }
@@ -203,7 +202,7 @@ public class Game extends Context{
                 AABBEntity box = new AABBEntity(xPos, yPos, width, height);
                 aabBoxs.add(box);
                 AABBShape aabb = new AABBShape(xPos, yPos, width, height, box);
-                collisionDetector.addShape(aabb, 0);
+                controller.addShapeToCollisionDetector(aabb, 0);
             }
         }
     }
@@ -231,7 +230,7 @@ public class Game extends Context{
                 double yPos = offsetY;
                 PolygonEntity polygon = new PolygonEntity(xPos, yPos, minRadius, maxRadius, minPoints, maxPoints);
                 polygons.add(polygon);
-                collisionDetector.addShape(polygon.getPolygonShape(), 0);
+                controller.addShapeToCollisionDetector(polygon.getPolygonShape(), 0);
             }
         }
     }
@@ -256,7 +255,7 @@ public class Game extends Context{
                 CircleEntity circle = new CircleEntity(xPos, yPos, radius);
                 circles.add(circle);
                 CircleShape circleShape = new CircleShape(xPos, yPos, 0, 0, radius, circle);
-                collisionDetector.addShape(circleShape, 0);
+                controller.addShapeToCollisionDetector(circleShape, 0);
             }
         }
     }

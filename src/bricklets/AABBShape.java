@@ -1,6 +1,5 @@
 package bricklets;
 
-import gameengine.Context;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
@@ -15,8 +14,8 @@ public class AABBShape extends Shape{
         return Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight);
     }
     
-    public AABBShape(double x, double y, double width, double height, Entity parentEntity){
-        super(x, y, 0, 0, calcRadius(width / 2, height / 2), parentEntity);
+    public AABBShape(double x, double y, double width, double height, Entity parentEntity, Material material){
+        super(x, y, calcRadius(width / 2, height / 2), parentEntity,material);
         this.width = width;
         this.height = height;
         halfWidth = width / 2;
@@ -47,6 +46,6 @@ public class AABBShape extends Shape{
     @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color);
-        g.fillRect((int)(x - halfWidth), (int)(y - halfHeight), (int) width, (int) height);
+        g.drawRect((int)(x - halfWidth), (int)(y - halfHeight), (int) width, (int) height);
     }
 }

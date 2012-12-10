@@ -16,7 +16,9 @@ public class PolygonEntity extends Entity{
     
     public PolygonEntity(double x, double y, double minRadius, double maxRadius, int minPoints, int maxPoints){
         super(x, y, Color.BLACK);
-        polygon = Polygon.getRandomConvexPolygon(x, y, minRadius, maxRadius, minPoints, maxPoints, this);
+        Material material = Material.createCustomMaterial(0.2, 1);
+        polygon = Polygon.getRectanglePolygon(x, y, maxRadius, maxRadius, this, material);
+//        polygon = Polygon.getRandomConvexPolygon(x, y, minRadius, maxRadius, minPoints, maxPoints, this, material);
     }
     
     public Polygon getPolygonShape(){
@@ -37,10 +39,8 @@ public class PolygonEntity extends Entity{
     public void draw(Graphics2D g) {
         polygon.draw(g, color);
         g.setColor(Color.ORANGE);
-        double scale = 100000;
+        double scale = 1000;
         g.drawLine((int)(x), (int)(y), (int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale));
-//        g.setColor(Color.RED);
-//        g.drawLine((int)(x), (int)(y), (int)(x + dx * scale), (int)(y + dy * scale));
     }
     
 }

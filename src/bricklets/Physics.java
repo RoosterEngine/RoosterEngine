@@ -1,7 +1,5 @@
 package bricklets;
 
-import java.awt.Color;
-
 /**
  *
  * @author davidrusu
@@ -10,7 +8,6 @@ public class Physics {
 
     private static Vector2D unitY = new Vector2D();
     private static Vector2D unitX = new Vector2D();
-    private static Vector2D normal = new Vector2D();
     
     private Physics(){
     }
@@ -30,62 +27,48 @@ public class Physics {
         double displacement = new Vector2D(a).subtract(b).length() - restingLength;
         return displacement * k;
     }
-
-//    public static void performCollision(Collision collision, double collisionRate){
-//        Entity a = collision.getA().getParentEntity();
-//        Entity b = collision.getB().getParentEntity();
-//        performCollision(collision, Math.sqrt(a.getFriction() + b.getFriction()), Math.sqrt(a.getRestitution() + b.getRestitution()), collisionRate);
-//    }
     
-    public static void performCollision(Collision collision, double friction, double restitution, double collisionRate){
+    public static void performCollision(Collision collision){
         unitY.set(collision.getCollisionNormal());
         unitX.set(-unitY.getY(), unitY.getX());
-        Entity a = collision.getA().getParentEntity();
-        Entity b = collision.getB().getParentEntity();
+        Shape shapeA = collision.getA();
+        Shape shapeB = collision.getB();
+        double friction = Material.getFriction(shapeA.getMaterial(), shapeB.getMaterial());
+        double restitution = Material.getRestitution(shapeA.getMaterial(), shapeB.getMaterial());
+        Entity a = shapeA.getParentEntity();
+        Entity b = shapeB.getParentEntity();
         
         double xLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitX);
         double yLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitY);
         double xLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitX);
         double yLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitY);
-        
+
+        double aMass = a.getMass();
+        double bMass = b.getMass();
+        boolean isMassAInfinite = aMass == Double.POSITIVE_INFINITY;
+        boolean isMassBInfinite = bMass == Double.POSITIVE_INFINITY;
+        if (isMassAInfinite && isMassBInfinite) {
+            a.setVelocity(unitX.getX() * xLengthA, unitX.getY() * xLengthA);
+            b.setVelocity(unitX.getX() * xLengthB, unitX.getY() * xLengthB);
+            return;
+        } else if (isMassAInfinite) {
+            performInfiniteMassCollision(b, friction, restitution, unitX, unitY, yLengthA, xLengthB, yLengthB);
+            return;
+        } else if (isMassBInfinite){
+            performInfiniteMassCollision(a, friction, restitution, unitX, unitY, yLengthB, xLengthA, yLengthA);
+            return;
+        }
+
         double yVelDiff = yLengthB - yLengthA;
-        double xVelDiff = xLengthB - xLengthA;
 
 //        double collisionsThresh = 0.1;
 //        if(collisionRate > collisionsThresh && Math.abs(velDiff) < 0.3){
 //            restitution *= 1 + collisionRate / 2;
 //        }
-        double combinedMomentum = yLengthB * b.getMass() + yLengthA * a.getMass();
-        double combinedMass = b.getMass() + a.getMass();
-        double yFinalA = (restitution * b.getMass() * yVelDiff + combinedMomentum) / combinedMass;
-        double yFinalB = (combinedMomentum - restitution * a.getMass() * yVelDiff) / combinedMass;
-        double frictionA = friction * Math.abs(yFinalA - yLengthA);
-        double frictionB = friction * Math.abs(yFinalB - yLengthB);
-//        xLengthA += friction * 5 * (yFinalA - yLengthA);// * b.getMass() / combinedMass;
-//        xLengthB -= friction * 5 * (yFinalB - yLengthB);// * a.getMass() / combinedMass;
-        if(xVelDiff < 0){
-            if(frictionA > xLengthA){
-                xLengthA = 0;
-            }else{
-                xLengthA -= frictionA;
-            }
-            if(frictionB > xLengthB){
-                xLengthB = 0;
-            }else{
-                xLengthB -= frictionB;
-            }
-        } else if(xVelDiff > 0){
-            if(frictionA < -xLengthA){
-                xLengthA = 0;
-            }else{
-                xLengthA += frictionA;
-            }
-            if(frictionB < -xLengthB){
-                xLengthB = 0;
-            }else{
-                xLengthB += frictionB;
-            }
-        }
+        double combinedMomentum = yLengthB * b.getMass() + yLengthA * aMass;
+        double combinedMass = bMass + aMass;
+        double yFinalA = (restitution * bMass * yVelDiff + combinedMomentum) / combinedMass;
+        double yFinalB = (combinedMomentum - restitution * aMass * yVelDiff) / combinedMass;
 
         double xA = unitY.getX() * yFinalA + unitX.getX() * xLengthA;
         double yA = unitY.getY() * yFinalA + unitX.getY() * xLengthA;
@@ -94,6 +77,14 @@ public class Physics {
         
         a.setVelocity(xA, yA);
         b.setVelocity(xB, yB);
-        
+    }
+
+    private static void performInfiniteMassCollision(Entity b, double friction, double restitution,
+                                                     Vector2D unitX, Vector2D unitY, double yLengthA,
+                                                     double xLengthB, double yLengthB) {
+        double yFinalB = yLengthA * (1 + restitution) - restitution * yLengthB;
+        double xB = unitY.getX() * yFinalB + unitX.getX() * xLengthB;
+        double yB = unitY.getY() * yFinalB + unitX.getY() * xLengthB;
+        b.setVelocity(xB, yB);
     }
 }

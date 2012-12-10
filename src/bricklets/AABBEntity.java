@@ -12,8 +12,8 @@ import java.awt.Graphics2D;
  * @author david
  */
 public class AABBEntity extends Entity{
-    private double width, height, halfWidth, halfHeight;
-    
+    protected double width, height, halfWidth, halfHeight;
+
     public AABBEntity(double x, double y, double width, double height){
         super(x, y, Color.BLACK);
         this.width = width;
@@ -21,15 +21,23 @@ public class AABBEntity extends Entity{
         halfWidth = width / 2;
         halfHeight = height / 2;
     }
-    
+
+    public double getWidth(){
+        return width;
+    }
+
+    public double getHeight(){
+        return height;
+    }
+
     @Override
     public void update(double elapsedTime) {
         x += dx * elapsedTime;
         y += dy * elapsedTime;
         dx += ddx * elapsedTime;
         dy += ddy * elapsedTime;
-        ddy = g * elapsedTime;
         ddx = 0;
+        ddy = 0;//g * elapsedTime;
     }
 
     @Override

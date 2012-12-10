@@ -141,4 +141,12 @@ public class CollisionData {
     public void setNoCollision(){
         entryTime = NO_COLLISION;
     }
+
+    public void setOverlapNormal(Vector2D overlapNormal) {
+        this.overlapNormal = overlapNormal;
+    }
+
+    public void setTempOverlapNormal(Vector2D tempOverlapNormal) {
+        this.tempOverlapNormal = tempOverlapNormal;
+    }
 }

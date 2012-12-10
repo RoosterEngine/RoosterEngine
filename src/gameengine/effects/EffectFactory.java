@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package gameengine.effects;
 
 import gameengine.GameController;
@@ -21,7 +17,7 @@ public class EffectFactory {
         for (Effectable effectable1 : effectables) {
             k *= 0.7;
             Effectable effectable = effectable1;
-            effectable.setEffect(new HorizontalSlide(startX, effectable.getY(), destinationX,
+            effectable.setPositionEffect(new HorizontalSlide(startX, effectable.getY(), destinationX,
                     new SpringMotion(k, dampening)));
         }
     }
@@ -38,7 +34,7 @@ public class EffectFactory {
             }else{ // coming in from left
                 initialX = -effectable.getWidth() / 2;
             }
-            effectable.setEffect(new HorizontalSlide(initialX, effectable.getY(), destinationX,
+            effectable.setPositionEffect(new HorizontalSlide(initialX, effectable.getY(), destinationX,
                     new SpringMotion(k, dampening)));
         }
     }
@@ -54,7 +50,7 @@ public class EffectFactory {
             }else{ // coming in from left
                 initialX = -effectable.getWidth() / 2 * (i + 1) * 0.5;
             }
-            effectable.setEffect(new HorizontalSlide(initialX, effectable.getY(), destinationX,
+            effectable.setPositionEffect(new HorizontalSlide(initialX, effectable.getY(), destinationX,
                     new LinearMotion(speed)));
         }
     }
@@ -65,7 +61,7 @@ public class EffectFactory {
         double decay = 1;
         for (Effectable effectable : effectables) {
             double initialY = -effectable.getHeight() / 2;
-            effectable.setEffect(new VerticalSlide(effectable.getX(), initialY, effectable.getY(),
+            effectable.setPositionEffect(new VerticalSlide(effectable.getX(), initialY, effectable.getY(),
                     new SpringMotion(k, dampening)));
             k *= decay;
         }
@@ -78,7 +74,7 @@ public class EffectFactory {
         for(int i = 0; i < effectables.length; i++){
             Effectable effectable = effectables[effectables.length - i - 1];
             double initialY = -effectable.getHeight() / 2 * (i + 1) * 5;
-            effectable.setEffect(new VerticalSlide(effectable.getX(), initialY, effectable.getY(),
+            effectable.setPositionEffect(new VerticalSlide(effectable.getX(), initialY, effectable.getY(),
                     new SpringMotion(k, dampening)));
             k *= decay;
         }
@@ -86,7 +82,7 @@ public class EffectFactory {
 
     public static void setSlideFromRightEffect(Effectable effectable, double destinationX,
                                                double speedMultiplier, GameController controller){
-        effectable.setEffect(
+        effectable.setPositionEffect(
                 new HorizontalSlide(controller.getWidth() + effectable.getWidth() / 2, effectable.getY(), destinationX,
                         new SpringMotion(0.00001 * speedMultiplier, 1)));
     }

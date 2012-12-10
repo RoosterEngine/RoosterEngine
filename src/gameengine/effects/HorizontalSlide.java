@@ -8,8 +8,9 @@ package gameengine.effects;
  *
  * @author davidrusu
  */
-public class HorizontalSlide implements Effect{
+public class HorizontalSlide implements PositionEffect, VelocityEffect{
     private double destinationX, initialX, initialY, x;
+    private double deltaVelocity, currentVelocity;
     private MotionGenerator motion;
     
     public HorizontalSlide(double initialX, double initialY, double destinationX, MotionGenerator motion){
@@ -29,6 +30,26 @@ public class HorizontalSlide implements Effect{
     public double getY(){
         return initialY;
     }
+
+    @Override
+    public double getDeltaVelocityX() {
+        return deltaVelocity;
+    }
+
+    @Override
+    public double getDeltaVelocityY() {
+        return 0;
+    }
+
+    @Override
+    public double getVelocityX() {
+        return currentVelocity;
+    }
+
+    @Override
+    public double getVelocityY() {
+        return 0;
+    }
     
     @Override
     public void reset(double x, double y){
@@ -36,16 +57,23 @@ public class HorizontalSlide implements Effect{
         initialX = x;
         initialY = y;
         motion.reset();
+        deltaVelocity = 0;
+        currentVelocity = 0;
     }
     
     @Override
     public final void reset(){
         x = initialX;
         motion.reset();
+        deltaVelocity = 0;
+        currentVelocity = 0;
     }
     
     @Override
     public void update(double elapsedTime) {
-        x += motion.getVelocity(x, destinationX, elapsedTime) * elapsedTime;
+        double newVelocity = motion.getVelocity(x, destinationX, elapsedTime);
+        deltaVelocity = newVelocity - currentVelocity;
+        currentVelocity =   newVelocity;
+        x += currentVelocity * elapsedTime;
     }
 }

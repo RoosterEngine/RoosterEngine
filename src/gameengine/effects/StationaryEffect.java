@@ -1,17 +1,13 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package gameengine.effects;
 
 /**
  *
  * @author davidrusu
  */
-public class NoEffect implements Effect{
+public class StationaryEffect implements PositionEffect, VelocityEffect {
     private double x, y;
     
-    public NoEffect(double x, double y){
+    public StationaryEffect(double x, double y){
         this.x = x;
         this.y = y;
     }
@@ -24,6 +20,26 @@ public class NoEffect implements Effect{
     @Override
     public double getY() {
         return y;
+    }
+
+    @Override
+    public double getDeltaVelocityX() {
+        return 0;
+    }
+
+    @Override
+    public double getDeltaVelocityY() {
+        return 0;
+    }
+
+    @Override
+    public double getVelocityX() {
+        return 0;
+    }
+
+    @Override
+    public double getVelocityY() {
+        return 0;
     }
 
     @Override

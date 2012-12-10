@@ -1,8 +1,9 @@
 package gameengine;
 
-import gameengine.effects.Effect;
+import gameengine.effects.StationaryEffect;
+import gameengine.effects.PositionEffect;
 import gameengine.effects.Effectable;
-import gameengine.effects.NoEffect;
+
 import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -13,16 +14,16 @@ import java.awt.Graphics2D;
  */
 public class BasicButton implements Effectable{
     private String text;
-    private double width, height, xPadding, yPadding;
+    private double width, height;
     private double padding = 0.5;
     private boolean selected = false, isPressed = false;
     private Graphic upGraphic, pressedGraphic, selectedGraphic, currentGraphic;
-    private Effect effect;
+    private PositionEffect positionEffect;
     
     public BasicButton(String text){
-        this(text, new SolidColorGraphic(new Color(205, 179, 128), 0, 0),
-                   new SolidColorGraphic(new Color(103, 54, 73), 0, 0),
-                   new SolidColorGraphic(new Color(3, 101, 100), 0, 0));
+        this(text, new SolidColorGraphic(new Color(177,70,35), 0, 0),
+                   new SolidColorGraphic(new Color(62,28,51), 0, 0),
+                   new SolidColorGraphic(new Color(96,39,73), 0, 0));
     }
     
     public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic){
@@ -31,17 +32,13 @@ public class BasicButton implements Effectable{
         this.pressedGraphic = downGraphic;
         this.selectedGraphic = selectedGraphic;
         currentGraphic = upGraphic;
-        xPadding = (int)(width * padding);
-        yPadding = (int)(height * padding);
-        effect = new NoEffect(0, 0);
+        positionEffect = new StationaryEffect(0, 0);
     }
     
     public void initialize(double x, double y, double width, double height){
-        effect.reset(x, y);
+        positionEffect.reset(x, y);
         this.width = width;
         this.height = height;
-        xPadding = (int)(width * padding);
-        yPadding = (int)(height * padding);
         upGraphic.resize((int)width, (int)height);
         pressedGraphic.resize((int)width, (int)height);
         selectedGraphic.resize((int)width, (int)height);
@@ -49,7 +46,7 @@ public class BasicButton implements Effectable{
     }
     
     public void setPosition(double x, double y){
-        effect.reset(x, y);
+        positionEffect.reset(x, y);
     }
     
     public void select(){
@@ -86,21 +83,21 @@ public class BasicButton implements Effectable{
     
     public void update(double elapsedTime){
         currentGraphic.update(elapsedTime);
-        effect.update(elapsedTime);
+        positionEffect.update(elapsedTime);
     }
     
     public void reset(){
-        effect.reset();
+        positionEffect.reset();
     }
 
     @Override
     public double getX() {
-        return effect.getX();
+        return positionEffect.getX();
     }
 
     @Override
     public double getY() {
-        return effect.getY();
+        return positionEffect.getY();
     }
 
     @Override
@@ -114,24 +111,24 @@ public class BasicButton implements Effectable{
     }
 
     @Override
-    public Effect getCurrentEffect() {
-        return effect;
+    public PositionEffect getCurrentEffect() {
+        return positionEffect;
     }
 
     @Override
-    public void setEffect(Effect effect) {
-        this.effect = effect;
+    public void setPositionEffect(PositionEffect positionEffect) {
+        this.positionEffect = positionEffect;
     }
     
     public boolean contains(double x, double y){
-        double leftEdge = effect.getX() - width / 2;
-        double topEdge = effect.getY() - height / 2;
+        double leftEdge = positionEffect.getX() - width / 2;
+        double topEdge = positionEffect.getY() - height / 2;
         return x >= leftEdge && x <= leftEdge + width && y >= topEdge && y <= topEdge + height;
     }
     
     public void draw(Graphics2D g){
-        double x = effect.getX();
-        double y = effect.getY();
+        double x = positionEffect.getX();
+        double y = positionEffect.getY();
         currentGraphic.draw(g, (int)(x - width / 2), (int)(y - height / 2));
         FontMetrics metrics = g.getFontMetrics();
         int textWidth = metrics.stringWidth(text);

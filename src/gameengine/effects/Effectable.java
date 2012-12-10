@@ -18,8 +18,8 @@ public interface Effectable {
     
     public double getHeight();
     
-    public Effect getCurrentEffect();
+    public PositionEffect getCurrentEffect();
     
-    public void setEffect(Effect effect);
+    public void setPositionEffect(PositionEffect positionEffect);
     
 }

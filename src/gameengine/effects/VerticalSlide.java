@@ -1,15 +1,12 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package gameengine.effects;
 
 /**
  *
  * @author davidrusu
  */
-public class VerticalSlide implements Effect{
+public class VerticalSlide implements PositionEffect, VelocityEffect{
     private double destinationY, initialX, initialY, y;
+    private double deltaVelocity, currentVelocity;
     private MotionGenerator motion;
     
     public VerticalSlide(double initialX, double initialY, double destinationY, MotionGenerator motion){
@@ -29,23 +26,50 @@ public class VerticalSlide implements Effect{
     public double getY(){
         return y;
     }
-    
+
     @Override
-    public final void reset(){
-        y = initialY;
-        motion.reset();
+    public double getDeltaVelocityX() {
+        return deltaVelocity;
     }
-    
+
     @Override
-    public final void reset(double x, double y){
+    public double getDeltaVelocityY() {
+        return 0;
+    }
+
+    @Override
+    public double getVelocityX() {
+        return currentVelocity;
+    }
+
+    @Override
+    public double getVelocityY() {
+        return 0;
+    }
+
+    @Override
+    public void reset(double x, double y){
         this.y = y;
         initialX = x;
         initialY = y;
         motion.reset();
+        deltaVelocity = 0;
+        currentVelocity = 0;
     }
-    
+
+    @Override
+    public final void reset(){
+        y = initialY;
+        motion.reset();
+        deltaVelocity = 0;
+        currentVelocity = 0;
+    }
+
     @Override
     public void update(double elapsedTime) {
-        y += motion.getVelocity(y, destinationY, elapsedTime) * elapsedTime;
+        double newVelocity = motion.getVelocity(y, destinationY, elapsedTime);
+        deltaVelocity = newVelocity - currentVelocity;
+        currentVelocity =   newVelocity;
+        y += currentVelocity * elapsedTime;
     }
 }

@@ -13,8 +13,8 @@ import java.awt.Graphics2D;
  */
 public class CircleShape extends Shape{
     
-    public CircleShape(double x, double y, double dx, double dy, double radius, Entity parentEntity){
-        super(x, y, dx, dy, radius, parentEntity);
+    public CircleShape(double x, double y, double radius, Entity parentEntity, Material material){
+        super(x, y, radius, parentEntity, material);
         System.out.println(dx + " " + dy);
     }
     
@@ -26,7 +26,7 @@ public class CircleShape extends Shape{
     @Override
     public void draw(Graphics2D g, Color color){
         g.setColor(color);
-        g.fillOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
+        g.drawOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
     }
     
 }

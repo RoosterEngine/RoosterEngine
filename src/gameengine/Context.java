@@ -11,11 +11,12 @@ public abstract class Context implements MouseMovedHandler {
     //TODO switch to EnumMap
     private HashMap<Action, ActionHandler> actionHandlers;
     private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
+    protected boolean paused = false;
     protected GameController controller;
     protected ContextType contextType;
     protected int width, height;
     protected double timeScale = 1;
-    
+
     /**
      * Constructs a Context
      * @param controller 
@@ -34,7 +35,15 @@ public abstract class Context implements MouseMovedHandler {
         actionHandlers = new HashMap<Action, ActionHandler>();
         setSize(controller.getWidth(), controller.getHeight());
     }
-    
+
+    public boolean isPaused(){
+        return paused;
+    }
+
+    public void togglePause(){
+        paused = !paused;
+    }
+
     public boolean isRelativeMouseMovedEnabled(){
         return isRelativeMouseMovedEnabled;
     }

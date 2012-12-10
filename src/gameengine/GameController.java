@@ -1,6 +1,7 @@
 package gameengine;
 
 import bricklets.CollisionDetector;
+import bricklets.Entity;
 import bricklets.Shape;
 import gameengine.input.*;
 
@@ -330,12 +331,19 @@ public class GameController {
     }
 
     public void update(double elapsedTime) {
-//        currentContext.update(elapsedTime);
         collisionDetector.update(elapsedTime, currentContext);
     }
 
     public void addShapeToCollisionDetector(Shape shape, int collisionCategory){
         collisionDetector.addShape(shape, collisionCategory);
+    }
+
+    public void removeShapeFromCollisionDetector(Shape shape, int collisionCategory){
+        collisionDetector.removeShape(shape, collisionCategory);
+    }
+
+    public void removeChildrenFromCollisionDetector(Entity parent){
+        collisionDetector.removeChildren(parent);
     }
 
     public void setCollisionPair(int collisionCategoryA, int collisionCategoryB){
@@ -349,7 +357,7 @@ public class GameController {
     public Graphic loadImage(String path) throws IOException {
         BufferedImage im = ImageIO.read(getClass().getResource(path));
         Graphic result = new ImageGraphic(screen.getCompatibleImageVersion(im));
-        im.flush();//to save some memmory right away
+        im.flush();//to save some memory right away
         return result;
     }
 

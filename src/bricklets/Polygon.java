@@ -16,18 +16,9 @@ public class Polygon extends Shape{
     private double width, height, minX, maxX, minY, maxY;
     private int numPoints;
     private boolean usingBoundingBox = true;
-    
-    /**
-     * Constructs a polygon shape. the points must be relative to the center
-     * @param x
-     * @param y
-     * @param dx
-     * @param dy
-     * @param xPoints
-     * @param yPoints 
-     */
-    public Polygon(double x, double y, double dx, double dy, double[] xPoints, double[] yPoints, Entity parentEntity){
-        super(x, y, dx, dy, getRadius(xPoints, yPoints), parentEntity);
+
+    public Polygon(double x, double y, double[] xPoints, double[] yPoints, Entity parentEntity, Material material){
+        super(x, y, getRadius(xPoints, yPoints), parentEntity, material);
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
         normals = new Vector2D[numPoints];
@@ -49,13 +40,13 @@ public class Polygon extends Shape{
         }
     }
     
-    public static Polygon getRectanglePolygon(double x, double y, double width, double height, Entity parentEntity){
+    public static Polygon getRectanglePolygon(double x, double y, double width, double height, Entity parentEntity, Material material){
         double[] xPoints = {0, width, width, 0};
         double[] yPoints = {0, 0, height, height};
-        return new Polygon(x, y, 0, 0, xPoints, yPoints, parentEntity);
+        return new Polygon(x, y, xPoints, yPoints, parentEntity, material);
     }
     
-    public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, Entity parentEntity){
+    public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, Entity parentEntity, Material material){
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
         int numPoints = (int)(rand.nextDouble() * (numPointsMax - numPointsMin)) + numPointsMin;
         double[] xPoints = new double[numPoints];
@@ -70,7 +61,7 @@ public class Polygon extends Shape{
             xPoints[p] = pX;
             yPoints[p] = pY;
         }
-        return new Polygon(x, y, 0, 0, xPoints, yPoints, parentEntity);
+        return new Polygon(x, y, xPoints, yPoints, parentEntity, material);
     }
     
     private static double getRadius(double[] xPoints, double[] yPoints){
@@ -162,76 +153,6 @@ public class Polygon extends Shape{
     public void setColor(Color color){
         this.color = color;
     }
-
-    public boolean isIntersectingBounding(Polygon polygon){
-        if(usingBoundingBox){
-            if(polygon.usingBoundingBox){
-                if((maxX < polygon.minX || minX > polygon.maxX) && (maxY < polygon.minY || minY > polygon.maxY)){
-                    return false;
-                }
-            }else{ // polygon is using bounding circle
-                if((polygon.x + polygon.radius < minX || polygon.x - polygon.radius > maxX) && (polygon.y + polygon.radius < minY || polygon.y - polygon.radius > maxY)){
-                    return false;
-                }
-            }
-        }else{
-            if(polygon.usingBoundingBox){
-                // not accurate circle is treated as a square
-                if((x + radius < polygon.minX || x - radius > polygon.maxX) && (y + radius < polygon.minY || y - radius > polygon.maxY)){
-                    return false;
-                }
-            }else{ // both polygons are using bounding circle
-                double dx = polygon.x - x;
-                double dy = polygon.y - y;
-                double combinedRadius = radius + polygon.radius;
-                if(dx * dx + dy * dy >= combinedRadius * combinedRadius){
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-    
-    public boolean isIntersecting(Polygon polygon){
-        if(!isIntersectingBounding(polygon)){
-            return false;
-        }
-        Polygon poly1 = this, poly2 = polygon;
-        if(numPoints < polygon.numPoints){
-            poly1 = polygon;
-            poly2 = this;
-        }
-        int numPoints = poly2.numPoints;
-        for(int p = 0; p < numPoints; p++){
-            Vector2D normal = poly2.normals[p];
-            double min = Double.MAX_VALUE;
-            double max = -Double.MAX_VALUE;
-            for(int q = 0; q < poly1.numPoints; q++){
-                double dist = poly1.points[q].unitScalarProject(normal);
-                if(dist < min){
-                    min = dist;
-                }
-                if(dist > max){
-                    max = dist;
-                }
-            }
-            
-            double poly1Dist = Vector2D.unitScalarProject(poly1.x, poly1.y, normal);
-            double poly2Dist = Vector2D.unitScalarProject(poly2.x, poly2.y, normal);
-            if(poly1Dist < poly2Dist){
-                double distBetween = poly2Dist - poly1Dist;
-                if(max - poly2.normalMins[p] < distBetween){
-                    return false;
-                }
-            }else{
-                double distBetween = poly1Dist - poly2Dist;
-                if(poly2.normalMaxs[p] - min < distBetween){
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
     
     @Override
     public void draw(Graphics2D g, Color color){
@@ -241,12 +162,8 @@ public class Polygon extends Shape{
         }
         g.setColor(color);
         g.fillPolygon(xInts, yInts, numPoints);
-        g.setColor(Color.GRAY);
-        double scale = 300;
-        for(int i = 0; i < numPoints; i++){
-            g.drawLine((int)(normals[i].getX() * scale + x), (int)(normals[i].getY() * scale + y), (int)x, (int)y);
-        }
         drawBounding(g);
+        drawNormals(g, Color.RED);
     }
     
     private void drawBounding(Graphics2D g){
@@ -255,6 +172,14 @@ public class Polygon extends Shape{
             g.drawRect((int)(x + minX), (int)(y + minY), (int)(width), (int)(height));
         }else{
             g.drawOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
+        }
+    }
+
+    private void drawNormals(Graphics2D g, Color color){
+        double scale = 100;
+        g.setColor(color);
+        for(Vector2D normal: normals){
+            g.drawLine((int)(x), (int)(y), (int)(x + normal.getX() * scale), (int)(y + normal.getY() * scale));
         }
     }
     
@@ -309,7 +234,7 @@ public class Polygon extends Shape{
             lastY = y;
             
             //finding the min and max when each point is projected onto the normal
-            //used when checking if there is an intersection
+            //used for collision detection
             double min = Double.MAX_VALUE;
             double max = -Double.MAX_VALUE;
             for(int q = 0; q < numPoints; q++){

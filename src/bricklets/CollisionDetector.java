@@ -14,6 +14,7 @@ public class CollisionDetector {
     private double[] collisionTimes = new double[16];
     private int back = 0, numCollision = 0;
     private double currentGameTime = 0;
+
     /**
      * Constructs a CollisionDetector with the specified number of
      * collision categories.
@@ -56,6 +57,27 @@ public class CollisionDetector {
         return false;
     }
 
+    public void removeChildren(Entity parent){
+        for(CollisionCategoryPair pair: collisionPairs){
+            ArrayList<Shape> listA = categories[pair.getA()];
+            ArrayList<Shape> listB = categories[pair.getB()];
+
+            for (int i = 0; i < listA.size(); i++){
+                Shape shape = listA.get(i);
+                if(shape.getParentEntity() == parent){
+                    listA.remove(shape);
+                }
+            }
+
+            for (int i = 0; i < listB.size(); i++){
+                Shape shape = listB.get(i);
+                if(shape.getParentEntity() == parent){
+                    listB.remove(shape);
+                }
+            }
+        }
+    }
+
     public void setCollisionPair(int collisionCategoryA, int collisionCategoryB) {
         int i = 0;
         boolean foundDuplicate = false;
@@ -95,14 +117,15 @@ public class CollisionDetector {
     }
 
     public Collision getNextCollision(double maxTime) {
+        for(ArrayList<Shape> list: categories){
+            for(Shape shape: list){
+                shape.update();
+            }
+        }
         Collision nextCollision = new Collision();
         for (CollisionCategoryPair pair : collisionPairs) {
             ArrayList<Shape> listA = categories[pair.getA()];
             ArrayList<Shape> listB = categories[pair.getB()];
-
-            for (Shape b : listB) {
-                b.update();
-            }
 
             if (listA == listB) {
                 checkCollisionsInSingleList(listA, maxTime, nextCollision);
@@ -133,7 +156,6 @@ public class CollisionDetector {
         double shortestTimeTillNextCollision = Double.MAX_VALUE;
         Collision testCollision = new Collision(); //TODO can be moved to the calling method and passed as an argument to save object creation
         for (Shape a : listA) {
-            a.update();
             for (Shape b : listB) {
                 if (a != b) {
                     getTimeToCollision(a, b, maxTime, testCollision);
@@ -171,20 +193,26 @@ public class CollisionDetector {
     public void update(double elapsedTime, Context context) {
         double timeLeft = elapsedTime * context.getTimeScale();
 
-        while(timeLeft > 0){
+        while(timeLeft > 0 && !context.isPaused()){
             Collision collision = getNextCollision(timeLeft);
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
             currentGameTime += updateTime;
-            if(updateTime > 0){
+//            if(updateTime > 0){
                 context.update(updateTime);
-            }
-            if(collision.getTimeToCollision() != Shape.NO_COLLISION
-               && collision.getTimeToCollision() <= timeLeft){
+//            }
+            if(collision.getTimeToCollision() != Shape.NO_COLLISION && collision.getTimeToCollision() <= timeLeft){
                 collisionTimes[back] = currentGameTime;
-                int front = (back + 1) % collisionTimes.length;
-                double dt = collisionTimes[back] - collisionTimes[front];
-                back = front;
-                double collisionRate = collisionTimes.length / dt;
+                double collisionRate;
+                if(numCollision >= collisionTimes.length - 1){
+                    int front = (back + 1) % collisionTimes.length;
+                    double dt = collisionTimes[back] - collisionTimes[front];
+                    back = front;
+                    collisionRate = collisionTimes.length / dt;
+                } else {
+                    double dt = collisionTimes[back] - collisionTimes[0];
+                    back = (back + 1) % collisionTimes.length;
+                    collisionRate = collisionTimes.length / dt;
+                }
                 context.handleCollision(collision, collisionRate);
             }
             timeLeft -= updateTime;

@@ -9,7 +9,7 @@ import java.awt.Graphics2D;
  */
 public abstract class Entity {
     
-    protected static double air = 1, g = 0;
+    protected static double air = 1, g = 0.0000;
     protected double x, y, dx, dy, ddx, ddy;
     protected double restitution, mass, friction;
     protected Color color;
@@ -29,7 +29,7 @@ public abstract class Entity {
         this.mass = mass;
         this.color = color;
     }
-    
+
     public void setDebugVector(Vector2D debugVector){
         this.debugVector.set(debugVector);
     }
@@ -48,6 +48,14 @@ public abstract class Entity {
     
     public double getDY(){
         return dy;
+    }
+
+    public double getDDX(){
+        return ddx;
+    }
+
+    public double getDDY(){
+        return ddy;
     }
 
     public void setMass(double mass) {
@@ -79,9 +87,25 @@ public abstract class Entity {
         dy = y;
     }
 
+    public void setVelocityX(double dx) {
+        this.dx = dx;
+    }
+
+    public void setVelocityY(double dy) {
+        this.dy = dy;
+    }
+
+    public void addVelocityX(double dx) {
+        this.dx += dx;
+    }
+
+    public void addVelocityY(double dy) {
+        this.dy += dy;
+    }
+
     public void addForce(double x, double y){
-        ddx += x;
-        ddy += y;
+        ddx += x / mass;
+        ddy += y / mass;
     }
 
     public void setColor(Color color){
@@ -96,4 +120,13 @@ public abstract class Entity {
 
     public abstract void draw(Graphics2D g);
 
+    public void setPosition(double x, double y){
+        this.x = x;
+        this.y = y;
+    }
+
+    public void setAcceleration(double x, double y){
+        ddx = x;
+        ddy = y;
+    }
 }

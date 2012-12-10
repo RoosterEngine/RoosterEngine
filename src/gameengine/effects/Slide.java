@@ -4,17 +4,18 @@ package gameengine.effects;
  *
  * @author davidrusu
  */
-public class Slide implements Effect{
-    private double x, y, dx, dy, destinationX, destinationY, k, dampeningFactor;
-    private double initialX, initialY;
-    public Slide(double initialX, double initialY, double destinationX, double destinationY, double k, double dampeningRatio){
+public class Slide implements PositionEffect, VelocityEffect {
+    private double x, y, destinationX, destinationY, initialX, initialY;
+    private double deltaVelocityX, deltaVelocityY, currentVelocityX, currentVelocityY;
+    private MotionGenerator motion;
+
+    public Slide(double initialX, double initialY, double destinationX, double destinationY, MotionGenerator motion){
         this.destinationX = destinationX;
         this.destinationY = destinationY;
-        this.k = k;
         this.initialX = initialX;
         this.initialY = initialY;
+        this.motion = motion;
         reset();
-        dampeningFactor = dampeningRatio * 2 * Math.sqrt(k);
     }
 
     @Override
@@ -26,13 +27,36 @@ public class Slide implements Effect{
     public double getY(){
         return y;
     }
-    
+
+    @Override
+    public double getDeltaVelocityX(){
+        return deltaVelocityX;
+    }
+
+    @Override
+    public double getDeltaVelocityY() {
+        return deltaVelocityY;
+    }
+
+    @Override
+    public double getVelocityX() {
+        return currentVelocityX;
+    }
+
+    @Override
+    public double getVelocityY() {
+        return currentVelocityY;
+    }
+
     @Override
     public void reset(){
         x = initialX;
         y = initialY;
-        dx = 0;
-        dy = 0;
+        deltaVelocityX = 0;
+        deltaVelocityY = 0;
+        currentVelocityX = 0;
+        currentVelocityY = 0;
+        motion.reset();
     }
     
     @Override
@@ -41,15 +65,22 @@ public class Slide implements Effect{
         this.y = y;
         initialX = x;
         initialY = y;
-        dx = 0;
-        dy = 0;
+        deltaVelocityX = 0;
+        deltaVelocityY = 0;
+        currentVelocityX = 0;
+        currentVelocityY = 0;
+        motion.reset();
     }
     
     @Override
     public void update(double elapsedTime) {
-        dx += ((destinationX - x) * k - dampeningFactor * dx) * elapsedTime;
-        dy += ((destinationY - y) * k - dampeningFactor * dy) * elapsedTime;
-        x += dx * elapsedTime;
-        y += dy * elapsedTime;
+        double newVelocityX = motion.getVelocity(x, destinationX, elapsedTime);
+        double newVelocityY = motion.getVelocity(y, destinationY, elapsedTime);
+        deltaVelocityX = newVelocityX - currentVelocityX;
+        deltaVelocityY = newVelocityY - currentVelocityY;
+        currentVelocityX = newVelocityX;
+        currentVelocityY = newVelocityY;
+        x += currentVelocityX * elapsedTime;
+        y += currentVelocityY * elapsedTime;
     }
 }

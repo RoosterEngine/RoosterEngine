@@ -1,7 +1,7 @@
 package gameengine.input;
 
 /**
- * Wrapper class that stores a mapping between {@link InputCode} and {@link Actions}
+ * Stores a mapping between {@link InputCode} and {@link Action}
  * @author davidrusu
  */
 public class InputMapping {

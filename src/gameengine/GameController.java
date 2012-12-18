@@ -3,6 +3,7 @@ package gameengine;
 import bricklets.CollisionDetector;
 import bricklets.Entity;
 import bricklets.Shape;
+import gameengine.effects.MouseMotion;
 import gameengine.input.*;
 
 import javax.imageio.ImageIO;
@@ -12,10 +13,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-public class GameController {
-
+public class GameController implements MouseMovedHandler{
     private EnumMap<ContextType, ArrayList<InputMapping>> contextTypeContextControlsMap;
     private EnumMap<ContextType, HashMap<Integer, Action>> contextTypeControlsMap;
+    private HashMap<Context, CollisionDetector> collisionDetectorHashMap;
+    private CollisionDetector currentCollisionDetector;
     private HashMap<Integer, Action> currentControls;
     private InputManager input;
     private ScreenManager screen;
@@ -26,7 +28,6 @@ public class GameController {
     private Context currentContext;
     private ActionHandler singleHandler;
     private boolean inSingleHandlerMode = false, showingMouseCursor = true;
-    private CollisionDetector collisionDetector;
 
     public GameController() {
         this(120, 60);
@@ -80,11 +81,10 @@ public class GameController {
         }
         timer = new GameTimer(this, updateRate, desiredFrameRate, minFrameRate);
         gameThread = new Thread(timer);
-        collisionDetector = new CollisionDetector(10);
+        collisionDetectorHashMap = new HashMap<Context, CollisionDetector>();
     }
 
     public void startGame() {
-        System.out.println("starting game");
         addInputListeners(screen.getFullScreenWindow());
         gameThread.start();
     }
@@ -155,13 +155,18 @@ public class GameController {
         } else {
             input.disableRelativeMouseMove();
         }
+
         contextStack.push(context);
         currentContext = context;
+
         currentControls = contextTypeControlsMap.get(context.getContextType());
         if (currentControls == null) {
             currentControls = getControlsMap(currentProfile, currentContext.getContextType());
             contextTypeControlsMap.put(context.getContextType(), currentControls);
         }
+
+        currentCollisionDetector = getCollisionDetector(currentContext);
+        mouseMoved(0, 0, 0, 0);
     }
 
     private static void setInvisibleMouseCursor(Window window) {
@@ -194,7 +199,7 @@ public class GameController {
      * @return MouseMovedHandler
      */
     public MouseMovedHandler getMouseMovedHandler() {
-        return currentContext;
+        return this;
     }
 
     /**
@@ -331,27 +336,41 @@ public class GameController {
     }
 
     public void update(double elapsedTime) {
-        collisionDetector.update(elapsedTime, currentContext);
+        currentCollisionDetector.update(elapsedTime, currentContext);
     }
 
-    public void addShapeToCollisionDetector(Shape shape, int collisionCategory){
+    public void addShapeToCollisionDetector(Context context, Shape shape, int collisionCategory) {
+        CollisionDetector collisionDetector = getCollisionDetector(context);
         collisionDetector.addShape(shape, collisionCategory);
     }
 
-    public void removeShapeFromCollisionDetector(Shape shape, int collisionCategory){
+    public void removeShapeFromCollisionDetector(Context context, Shape shape, int collisionCategory) {
+        CollisionDetector collisionDetector = getCollisionDetector(context);
         collisionDetector.removeShape(shape, collisionCategory);
     }
 
-    public void removeChildrenFromCollisionDetector(Entity parent){
+    public void removeChildrenFromCollisionDetector(Context context, Entity parent) {
+        CollisionDetector collisionDetector = getCollisionDetector(context);
         collisionDetector.removeChildren(parent);
     }
 
-    public void setCollisionPair(int collisionCategoryA, int collisionCategoryB){
+    public void setCollisionPair(Context context, int collisionCategoryA, int collisionCategoryB) {
+        CollisionDetector collisionDetector = getCollisionDetector(context);
         collisionDetector.setCollisionPair(collisionCategoryA, collisionCategoryB);
     }
 
-    public void clearCollisions(){
+    public void clearCollisions(Context context) {
+        CollisionDetector collisionDetector = getCollisionDetector(context);
         collisionDetector.clearCollisions();
+    }
+
+    private CollisionDetector getCollisionDetector(Context context) {
+        CollisionDetector collisionDetector = collisionDetectorHashMap.get(context);
+        if (collisionDetector == null) {
+            collisionDetector = new CollisionDetector();
+            collisionDetectorHashMap.put(context, collisionDetector);
+        }
+        return collisionDetector;
     }
 
     public Graphic loadImage(String path) throws IOException {
@@ -377,5 +396,10 @@ public class GameController {
         //clean up the graphics object and update the screen
         g2D.dispose();
         screen.updateGraphics();
+    }
+
+    @Override
+    public void mouseMoved(double x, double y, double velocityX, double velocityY) {
+        MouseMotion.mouseMoved(velocityX, velocityY);
     }
 }

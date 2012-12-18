@@ -4,9 +4,6 @@ import gameengine.Context;
 
 import java.util.ArrayList;
 
-/**
- * @author davidrusu
- */
 public class CollisionDetector {
     public static final int MAX_COLLISION_CATEGORIES = 10;
     private ArrayList<Shape>[] categories;
@@ -30,16 +27,10 @@ public class CollisionDetector {
      * enemy plane and bullets to collide with the player so we must set a
      * collision pair (1, 2) if we want enemy bullets to collide with each other
      * and enemy planes we must set the collision pair (1, 1)
-     *
-     * @param numOfCollisionCategories must not exceed MAX_COLLISION_CATEGORIES or be less than 1
      */
-    public CollisionDetector(int numOfCollisionCategories) {
-        if (numOfCollisionCategories > MAX_COLLISION_CATEGORIES || numOfCollisionCategories < 1) {
-            throw new IllegalArgumentException("numOfCollisions must not exceed MAX_COLLISION_CATEGORIES or be less than 1, numOfCollisionCategories: " + numOfCollisionCategories);
-        }
-
-        categories = new ArrayList[numOfCollisionCategories];
-        for (int i = 0; i < numOfCollisionCategories; i++) {
+    public CollisionDetector() {
+        categories = new ArrayList[MAX_COLLISION_CATEGORIES];
+        for (int i = 0; i < categories.length; i++) {
             categories[i] = new ArrayList<Shape>();
         }
     }
@@ -193,12 +184,14 @@ public class CollisionDetector {
     public void update(double elapsedTime, Context context) {
         double timeLeft = elapsedTime * context.getTimeScale();
 
+        context.updateMotionGenerators(elapsedTime);
+
         while(timeLeft > 0 && !context.isPaused()){
             Collision collision = getNextCollision(timeLeft);
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
             currentGameTime += updateTime;
 //            if(updateTime > 0){
-                context.update(updateTime);
+            context.updatePositions(updateTime);
 //            }
             if(collision.getTimeToCollision() != Shape.NO_COLLISION && collision.getTimeToCollision() <= timeLeft){
                 collisionTimes[back] = currentGameTime;
@@ -216,6 +209,9 @@ public class CollisionDetector {
                 context.handleCollision(collision, collisionRate);
             }
             timeLeft -= updateTime;
+//            context.update(updateTime);
         }
+        context.update(elapsedTime);
+//        context.updateMotionGenerators(elapsedTime);
     }
 }

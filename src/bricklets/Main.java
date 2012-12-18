@@ -5,10 +5,6 @@ import gameengine.input.Action;
 import gameengine.input.InputCode;
 import java.awt.Color;
 
-/**
- *
- * @author davidrusu
- */
 public class Main implements ButtonHandler{
     private GameController controller;
     private BasicButton gameButton = new BasicButton("Start");

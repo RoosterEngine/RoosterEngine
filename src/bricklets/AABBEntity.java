@@ -7,46 +7,22 @@ package bricklets;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-/**
- *
- * @author david
- */
 public class AABBEntity extends Entity{
-    protected double width, height, halfWidth, halfHeight;
+    protected Color color;
 
-    public AABBEntity(double x, double y, double width, double height){
-        super(x, y, Color.BLACK);
-        this.width = width;
-        this.height = height;
-        halfWidth = width / 2;
-        halfHeight = height / 2;
-    }
-
-    public double getWidth(){
-        return width;
-    }
-
-    public double getHeight(){
-        return height;
+    public AABBEntity(double x, double y, double width, double height) {
+        super(x, y, width, height);
+        color = Color.BLACK;
     }
 
     @Override
     public void update(double elapsedTime) {
-        x += dx * elapsedTime;
-        y += dy * elapsedTime;
-        dx += ddx * elapsedTime;
-        dy += ddy * elapsedTime;
-        ddx = 0;
-        ddy = 0;//g * elapsedTime;
     }
 
     @Override
     public void draw(Graphics2D g) {
         g.setColor(color);
         g.fillRect((int)(x - halfWidth), (int)(y - halfHeight), (int)width, (int)height);
-        g.setColor(Color.ORANGE);
-        double scale = 100;
-        g.drawLine((int)(x + debugVector.getX() * scale), (int)(y + debugVector.getY() * scale), (int)x, (int)y);
     }
     
 }

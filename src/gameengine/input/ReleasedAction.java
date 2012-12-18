@@ -25,14 +25,6 @@ public class ReleasedAction extends InputAction {
         return new ReleasedAction(null, 0, 0);
     }
 
-    /**
-     * Used to get a ReleasedAction instance.
-     *
-     * @param handler the handler for this released input action
-     * @param inputCode the input code of the event (input codes can be acquired from {@link InputCode})
-     * @return a ReleasedAction instance
-     */
-    
     @Override
     public void clearHandler(){
         handler = null;

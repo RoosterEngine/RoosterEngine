@@ -1,37 +1,53 @@
 package bricklets;
 
-import java.awt.Color;
+import gameengine.effects.MotionEffect;
+import gameengine.effects.NoMotionEffect;
+
 import java.awt.Graphics2D;
 
-/**
- *
- * @author davidrusu
- */
 public abstract class Entity {
-    
-    protected static double air = 1, g = 0.0000;
-    protected double x, y, dx, dy, ddx, ddy;
-    protected double restitution, mass, friction;
-    protected Color color;
-    protected Vector2D debugVector = new Vector2D();
-    
-    public Entity(double x, double y, Color color){
-        this(x, y, 0, 0, 1, 1, 1, color);
+    protected double x, y, dx, dy, ddx, ddy, width, height, halfWidth, halfHeight;
+    protected double mass;
+    private MotionEffect motionEffect;
+
+    public Entity(double x, double y, double width, double height){
+        this(x, y, width, height, 1);
     }
     
-    public Entity(double x, double y, double dx, double dy, double restitution, double friction, double mass, Color color){
+    public Entity(double x, double y, double width, double height, double mass){
         this.x = x;
         this.y = y;
-        this.dx = dx;
-        this.dy = dy;
-        this.restitution = restitution;
-        this.friction = friction;
+        this.width = width;
+        this.height = height;
+        halfWidth = width / 2;
+        halfHeight = height / 2;
         this.mass = mass;
-        this.color = color;
+        motionEffect = new NoMotionEffect();
     }
 
-    public void setDebugVector(Vector2D debugVector){
-        this.debugVector.set(debugVector);
+    public MotionEffect getMotionEffect(){
+        return motionEffect;
+    }
+
+    public void setMotionEffect(MotionEffect motionEffect){
+        this.motionEffect = motionEffect;
+        dx += motionEffect.getVelocityX();
+        dy += motionEffect.getVelocityY();
+    }
+
+    public void updateMotionGenerator(double elapsedTime) {
+        motionEffect.update(elapsedTime);
+        dx += motionEffect.getDeltaVelocityX();
+        dy += motionEffect.getDeltaVelocityY();
+    }
+
+    public void resetMotionEffect(){
+        motionEffect.reset();
+    }
+
+    public void updatePosition(double elapsedTime) {
+        x += dx * elapsedTime;
+        y += dy * elapsedTime;
     }
     
     public double getX() {
@@ -50,12 +66,22 @@ public abstract class Entity {
         return dy;
     }
 
-    public double getDDX(){
-        return ddx;
+    public double getWidth(){
+        return width;
     }
 
-    public double getDDY(){
-        return ddy;
+    public double getHeight(){
+        return height;
+    }
+
+    public void setWidth(double width){
+        this.width = width;
+        halfWidth = width / 2;
+    }
+
+    public void setHeight(double height){
+        this.height = height;
+        halfHeight = height / 2;
     }
 
     public void setMass(double mass) {
@@ -64,22 +90,6 @@ public abstract class Entity {
 
     public double getMass(){
         return mass;
-    }
-
-    public void setRestitution(double restitution){
-        this.restitution = restitution;
-    }
-
-    public double getRestitution(){
-        return restitution;
-    }
-
-    public void setFriction(double friction){
-        this.friction = friction;
-    }
-
-    public double getFriction(){
-        return friction;
     }
 
     public void setVelocity(double x, double y){
@@ -103,17 +113,14 @@ public abstract class Entity {
         this.dy += dy;
     }
 
+    public void addVelocity(double dx, double dy){
+        this.dx += dx;
+        this.dy += dy;
+    }
+
     public void addForce(double x, double y){
         ddx += x / mass;
         ddy += y / mass;
-    }
-
-    public void setColor(Color color){
-        this.color = color;
-    }
-
-    public Color getColor(){
-        return color;
     }
 
     public abstract void update(double elapsedTime);

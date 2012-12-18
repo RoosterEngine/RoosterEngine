@@ -1,5 +1,6 @@
 package gameengine.effects;
 
+import bricklets.Entity;
 import gameengine.GameController;
 
 /**
@@ -10,80 +11,78 @@ public class EffectFactory {
     
     private EffectFactory(){}
 
-    public static void setCurtainEffect(Effectable[] effectables, double startX, double destinationX,
-                                        double speedMultiplier){
+    public static void setCurtainEffect(Entity[] entitys, double startX, double destinationX, double speedMultiplier){
         double k = 0.0002 * speedMultiplier;
         double dampening = 0.6;
-        for (Effectable effectable1 : effectables) {
+        for (Entity entity : entitys) {
             k *= 0.7;
-            Effectable effectable = effectable1;
-            effectable.setPositionEffect(new HorizontalSlide(startX, effectable.getY(), destinationX,
-                    new SpringMotion(k, dampening)));
+            entity.setPosition(startX, entity.getY());
+            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new SpringMotion(k, dampening)));
         }
     }
 
-    public static void setIntersectingEffect(Effectable[] effectables, double destinationX, double width,
+    public static void setIntersectingEffect(Entity[] entitys, double destinationX, double width,
                                              double speedMultiplier){
         double k = 0.0001 * speedMultiplier;
         double dampening = 0.8;
-        for(int i = 0; i < effectables.length; i++){
+        for(int i = 0; i < entitys.length; i++){
             double initialX;
-            Effectable effectable = effectables[i];
+            Entity entity = entitys[i];
             if(i % 2 == 0){ // coming in from right
-                initialX = effectable.getWidth() / 2 + width;
+                initialX = entity.getWidth() / 2 + width;
             }else{ // coming in from left
-                initialX = -effectable.getWidth() / 2;
+                initialX = -entity.getWidth() / 2;
             }
-            effectable.setPositionEffect(new HorizontalSlide(initialX, effectable.getY(), destinationX,
-                    new SpringMotion(k, dampening)));
+            entity.setPosition(initialX, entity.getY());
+            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new SpringMotion(k, dampening)));
         }
     }
     
-    public static void setZipperEffect(Effectable[] effectables, double destinationX, double width,
-                                       double speedMultiplier){
+    public static void setZipperEffect(Entity[] entities, double destinationX, double width, double speedMultiplier){
         double speed = 3.5 * speedMultiplier;
-        for(int i = 0; i < effectables.length; i++){
+        for(int i = 0; i < entities.length; i++){
             double initialX;
-            Effectable effectable = effectables[i];
+            Entity entity = entities[i];
             if(i % 2 == 0){ // coming in from right
-                initialX = effectable.getWidth() / 2 * (i + 1) * 0.5+ width;
+                initialX = entity.getWidth() / 2 * (i + 1) + width;
             }else{ // coming in from left
-                initialX = -effectable.getWidth() / 2 * (i + 1) * 0.5;
+                initialX = -entity.getWidth() / 2 * (i + 1) * 0.5 - width;
             }
-            effectable.setPositionEffect(new HorizontalSlide(initialX, effectable.getY(), destinationX,
-                    new LinearMotion(speed)));
+            entity.setPosition(initialX, entity.getY());
+            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new LinearMotion(speed)));
+//            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new SpringMotion(0.0001, 0.7)));
         }
     }
     
-    public static void setCurtainDropEffect(Effectable[] effectables, double speedMultiplier){
+    public static void setCurtainDropEffect(Entity[] entitys, double speedMultiplier){
         double k = 0.0001 * speedMultiplier;
         double dampening = 0.5;
         double decay = 1;
-        for (Effectable effectable : effectables) {
-            double initialY = -effectable.getHeight() / 2;
-            effectable.setPositionEffect(new VerticalSlide(effectable.getX(), initialY, effectable.getY(),
-                    new SpringMotion(k, dampening)));
+        for (Entity entity : entitys) {
+            double initialY = -entity.getHeight() / 2;
+            entity.setMotionEffect(new VerticalSpring(entity, entity.getY(), new SpringMotion(k, dampening)));
+            entity.setPosition(entity.getX(), initialY);
             k *= decay;
         }
     }
     
-    public static void setSlideDownEffect(Effectable[] effectables, double speedMultiplier){
+    public static void setSlideDownEffect(Entity[] entitys, double speedMultiplier){
         double k = 0.00005 * speedMultiplier;
         double dampening = 0.5;
         double decay = 1;
-        for(int i = 0; i < effectables.length; i++){
-            Effectable effectable = effectables[effectables.length - i - 1];
-            double initialY = -effectable.getHeight() / 2 * (i + 1) * 5;
-            effectable.setPositionEffect(new VerticalSlide(effectable.getX(), initialY, effectable.getY(),
-                    new SpringMotion(k, dampening)));
+        for(int i = 0; i < entitys.length; i++){
+            Entity entity = entitys[entitys.length - i - 1];
+            double initialY = -entity.getHeight() / 2 * (i + 1) * 5;
+            entity.setMotionEffect(new VerticalSpring(entity, entity.getY(), new SpringMotion(k, dampening)));
+            entity.setPosition(entity.getX(), initialY);
             k *= decay;
         }
     }
 
-    public static void setSlideFromRightEffect(Effectable effectable, double destinationX,
+    public static void setSlideFromRightEffect(Entity entity, double destinationX,
                                                double speedMultiplier, GameController controller){
-        effectable.setPositionEffect(
-                new HorizontalSlide(controller.getWidth() + effectable.getWidth() / 2, effectable.getY(), destinationX,
-                        new SpringMotion(0.00001 * speedMultiplier, 1)));
+        entity.setMotionEffect(
+                new HorizontalSpring(entity, destinationX, new SpringMotion(0.00001 * speedMultiplier, 1)));
+        entity.setPosition(controller.getWidth() + entity.getWidth() / 2, entity.getY());
     }
 }

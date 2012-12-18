@@ -8,14 +8,9 @@ package gameengine.effects;
  *
  * @author davidrusu
  */
-public class JumpMotion implements MotionGenerator{
+public class JumpMotion implements Integrator {
     private double jumpDistance, timeBetweenJumps, timeTillNextJump;
-    
-    /**
-     * 
-     * @param numJumps the number of jumps to get to the destination
-     * @param totalTime the time in milliseconds to get to the destination
-     */
+
     public JumpMotion(double jumpDistance, double timeBetweenJumps){
         this.jumpDistance = jumpDistance;
         this.timeBetweenJumps = timeBetweenJumps;
@@ -23,7 +18,7 @@ public class JumpMotion implements MotionGenerator{
     }
     
     @Override
-    public double getVelocity(double currentPosition, double destinationPosition, double elapsedTime) {
+    public double getVelocity(double currentPosition, double destinationPosition, double velocity, double mass, double elapsedTime) {
         timeTillNextJump -= elapsedTime;
         if(timeTillNextJump > 0){
             return 0;

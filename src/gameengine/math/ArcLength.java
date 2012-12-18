@@ -18,8 +18,8 @@ public class ArcLength implements Function{
         double dy = function.dyValueAt(t);
         return Math.sqrt(dx * dx + dy * dy);
     }
-    
-    public double getArcLength(double from, double to, int numSteps){
-        return Utilities.simpsonsRule(from, to, numSteps, this);
+
+    public double getArcLength(double from, double to, double eps){
+        return Utilities.adaptiveSimpsonsRule(this, from, to, eps);
     }
 }

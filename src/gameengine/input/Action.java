@@ -15,11 +15,8 @@ public enum Action {
     MENU_UP,
     MENU_DOWN,
     MENU_SELECT,
-    MENU_MOUSE_SELECT
-,   NEW_SHAPE,
+    MENU_MOUSE_SELECT,
     RESTART_GAME,
-    PAN_GAME,
-    ZOOM_OUT_GAME,
     GAME_UNDO,
-    ZOOM_IN_GAME
+    MOUSE_CLICK,
 }

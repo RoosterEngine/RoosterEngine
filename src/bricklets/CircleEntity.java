@@ -3,21 +3,22 @@ package bricklets;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-/**
- *
- * @author david
- */
 public class CircleEntity extends Entity{
     protected double radius;
+    protected Color color = Color.WHITE;
     
     public CircleEntity(double x, double y, double radius){
-        super(x, y, Color.BLACK);
+        super(x, y, radius * 2, radius * 2);
         this.radius = radius;
     }
 
     public CircleEntity(Entity entity, double radius){
-        super(entity.x, entity.y, entity.dx, entity.dy, entity.restitution, entity.friction, entity.mass, entity.color);
+        super(entity.x, entity.y, radius, radius, entity.mass);
         this.radius = radius;
+    }
+
+    public CircleShape getShape(Material material) {
+        return new CircleShape(x, y, radius, this, material);
     }
     
     public double getRadius(){
@@ -26,20 +27,21 @@ public class CircleEntity extends Entity{
     
     @Override
     public void update(double elapsedTime) {
-        x += dx * elapsedTime;
-        y += dy * elapsedTime;
-        dx += ddx * elapsedTime;
-        dy += ddy * elapsedTime;
-        ddy = g * elapsedTime;
-        ddx = 0;
+    }
+
+    private void enforceMaxSpeed(){
+        double maxSpeed = 2;
+        double currentVel = Math.sqrt(dx * dx + dy * dy);
+        if(currentVel > maxSpeed){
+            double ratio = maxSpeed / currentVel;
+            dx *= ratio;
+            dy *= ratio;
+        }
     }
 
     @Override
     public void draw(Graphics2D g) {
         g.setColor(color);
         g.fillOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
-        g.setColor(color.darker());
-        double scale = radius * 2;
-        g.drawLine((int)x, (int)y, (int)(x + dx * scale), (int)(y + dy * scale));
     }
 }

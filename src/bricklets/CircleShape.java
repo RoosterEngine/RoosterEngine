@@ -7,15 +7,10 @@ package bricklets;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-/**
- *
- * @author david
- */
 public class CircleShape extends Shape{
     
     public CircleShape(double x, double y, double radius, Entity parentEntity, Material material){
         super(x, y, radius, parentEntity, material);
-        System.out.println(dx + " " + dy);
     }
     
     @Override

@@ -4,37 +4,37 @@
  */
 package gameengine.effects;
 
+import javax.swing.plaf.synth.SynthTextAreaUI;
+
 /**
  *
  * @author davidrusu
  */
-public class LinearMotion implements MotionGenerator{
-    private double velocity, initialVelocity;
-    
-    /**
-     * 
-     * @param totalTime must be greater than 0
-     */
-    public LinearMotion(double velocity){
-        this.velocity = velocity;
-        initialVelocity = velocity;
+public class LinearMotion implements Integrator {
+    private double constantVelocity, initialVelocity;
+
+    public LinearMotion(double constantVelocity){
+        this.constantVelocity = constantVelocity;
+        initialVelocity = constantVelocity;
     }
     
     @Override
-    public double getVelocity(double currentPosition, double destinationPosition, double elapsedTime) {
+    public double getVelocity(double currentPosition, double destinationPosition, double velocity, double mass, double elapsedTime) {
         double delta = destinationPosition - currentPosition;
-        if(delta >= 0 != velocity >= 0){
-            velocity = -velocity;
+
+        if(delta >= 0 != constantVelocity >= 0){
+            constantVelocity = -constantVelocity;
         }
-        double travelDist = velocity * elapsedTime;
+        double travelDist = constantVelocity * elapsedTime;
         if(Math.abs(delta) < Math.abs(travelDist)){
-            return delta / elapsedTime;
+            double vel = delta / elapsedTime;
+            return vel;
         }
-        return velocity;
+        return constantVelocity;
     }
 
     @Override
     public void reset() {
-        velocity = initialVelocity;
+        constantVelocity = initialVelocity;
     }
 }

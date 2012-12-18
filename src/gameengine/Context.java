@@ -1,16 +1,21 @@
 package gameengine;
 
 import bricklets.Collision;
+import bricklets.Entity;
+import bricklets.Group;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
-import gameengine.input.MouseMovedHandler;
 import java.awt.Graphics2D;
+import java.util.ArrayList;
 import java.util.HashMap;
 
-public abstract class Context implements MouseMovedHandler {
+public abstract class Context{
     //TODO switch to EnumMap
     private HashMap<Action, ActionHandler> actionHandlers;
     private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
+
+    protected ArrayList<Entity> entities = new ArrayList<Entity>();
+    protected ArrayList<Group> groups = new ArrayList<Group>();
     protected boolean paused = false;
     protected GameController controller;
     protected ContextType contextType;
@@ -34,6 +39,13 @@ public abstract class Context implements MouseMovedHandler {
         isRelativeMouseMovedEnabled = enableRelativeMouseMoved;
         actionHandlers = new HashMap<Action, ActionHandler>();
         setSize(controller.getWidth(), controller.getHeight());
+    }
+
+    public void reset(){
+        entities.clear();
+        groups.clear();
+        paused = false;
+        timeScale = 1;
     }
 
     public boolean isPaused(){
@@ -93,6 +105,22 @@ public abstract class Context implements MouseMovedHandler {
      */
     protected final void bindAction(Action action, ActionHandler handler) {
         actionHandlers.put(action, handler);
+    }
+
+    public void updatePositions(double elapsedTime) {
+        for (Entity entity : entities) {
+            entity.updatePosition(elapsedTime);
+        }
+    }
+
+    public void updateMotionGenerators(double elapsedTime) {
+//        for (Group group : groups) {
+//            group.updateEnvironmentMotionGenerator(elapsedTime);
+//        }
+        for (Entity entity : entities) {
+            entity.updateMotionGenerator(elapsedTime);
+        }
+
     }
     
     public abstract void update(double elapsedTime);

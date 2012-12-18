@@ -1,12 +1,14 @@
 package gameengine;
 
 import bricklets.Collision;
+import bricklets.Entity;
 import gameengine.effects.EffectFactory;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.util.Collections;
 
 /**
  *
@@ -15,13 +17,12 @@ import java.awt.Graphics2D;
 public class BasicMenu extends Context{
     
     private BasicButton[] buttons;
+    private Pointer pointer = new Pointer(new OvalGraphic(10, 10, new Color(23, 44, 80)));
     private int selectedIndex;
-    private double mouseX, mouseY;
-    private boolean isMousePressed = false, exiting;
     private ButtonHandler buttonHandler;
     private Graphic background;
-    private long exitAnimationTime = 1000000000, exitTime = System.nanoTime();
-    
+    private boolean isMousePressed = false;
+
     public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons,
                      ButtonHandler handler, Graphic background){
         this(controller, type, buttons, handler, background, 0.25, 0.25, 0.1, 0.25, 0.25);
@@ -32,6 +33,9 @@ public class BasicMenu extends Context{
                      double topBorderRatio, double bottomBorderRatio, double paddingRatio){
         super(controller, type, false, false);
         this.buttons = buttons;
+        Collections.addAll(entities, buttons);
+        entities.add(pointer);
+
         this.background = background;
         setupButtons(leftBorderRatio, rightBorderRatio, topBorderRatio, bottomBorderRatio, paddingRatio);
         selectedIndex = 0;
@@ -48,17 +52,15 @@ public class BasicMenu extends Context{
     
     @Override
     public void update(double elapsedTime) {
-        for(BasicButton button: buttons){
-            button.update(elapsedTime);
+        updateButtons();
+        for (Entity entity : entities) {
+            entity.update(elapsedTime);
         }
         background.update(elapsedTime);
     }
 
-    @Override
-    public void mouseMoved(double x, double y, double velocityX, double velocityY) {
-        mouseX = x;
-        mouseY = y;
-        int buttonIndex = getButtonIndex(x, y);
+    private void updateButtons(){
+        int buttonIndex = getButtonIndex(pointer.getX(), pointer.getY());
         if(buttonIndex >= 0){
             changeSelectedButton(buttonIndex);
             BasicButton button = buttons[selectedIndex];
@@ -75,12 +77,9 @@ public class BasicMenu extends Context{
     @Override
     public void draw(Graphics2D g) {
         background.draw(g, 0, 0);
-        for(BasicButton button: buttons){
-            button.draw(g);
+        for (Entity entity : entities) {
+            entity.draw(g);
         }
-        double cursorRadius = 10;
-        g.setColor(new Color(80, 10, 70));
-        g.fillOval((int)(mouseX - cursorRadius), (int)(mouseY - cursorRadius), (int)(cursorRadius * 2), (int)(cursorRadius * 2));
     }
 
     @Override
@@ -194,9 +193,8 @@ public class BasicMenu extends Context{
 
             @Override
             public void startAction(int inputCode) {
-                int buttonIndex = getButtonIndex(mouseX, mouseY);
-                if(buttonIndex >= 0){
-                    BasicButton button = buttons[buttonIndex];
+                if(selectedIndex >= 0){
+                    BasicButton button = buttons[selectedIndex];
                     button.setPressed();
                 }
                 isMousePressed = true;
@@ -204,9 +202,8 @@ public class BasicMenu extends Context{
 
             @Override
             public void stopAction(int inputCode) {
-                int buttonIndex = getButtonIndex(mouseX, mouseY);
-                if(buttonIndex >= 0){
-                    BasicButton button = buttons[buttonIndex];
+                if(selectedIndex >= 0){
+                    BasicButton button = buttons[selectedIndex];
                     buttonHandler.buttonActivated(button);
                     button.setUnpressed();
                 }

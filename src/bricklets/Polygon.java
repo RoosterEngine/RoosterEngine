@@ -4,12 +4,8 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.Random;
 
-/**
- * @author davidrusu
- */
 public class Polygon extends Shape{
     private static Random rand = new Random(0);
-    private Color color = Color.orange;
     private Vector2D[] normals, points; // points are relative to the center
     private double[] normalMins, normalMaxs;
     private int[] xInts, yInts;
@@ -27,6 +23,10 @@ public class Polygon extends Shape{
         xInts = new int[numPoints];
         yInts = new int[numPoints];
         setupPoints(xPoints, yPoints);
+        setup();
+    }
+
+    public void setup(){
         setupMaxMin();
         setupNormalsAndShadows();
         setupBounding();
@@ -38,12 +38,6 @@ public class Polygon extends Shape{
         }else{
             rand.setSeed(seed);
         }
-    }
-    
-    public static Polygon getRectanglePolygon(double x, double y, double width, double height, Entity parentEntity, Material material){
-        double[] xPoints = {0, width, width, 0};
-        double[] yPoints = {0, 0, height, height};
-        return new Polygon(x, y, xPoints, yPoints, parentEntity, material);
     }
     
     public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, Entity parentEntity, Material material){
@@ -150,10 +144,6 @@ public class Polygon extends Shape{
         return Math.abs(sum * 0.5);
     }
     
-    public void setColor(Color color){
-        this.color = color;
-    }
-    
     @Override
     public void draw(Graphics2D g, Color color){
         for(int i = 0; i < numPoints; i++){
@@ -162,10 +152,19 @@ public class Polygon extends Shape{
         }
         g.setColor(color);
         g.fillPolygon(xInts, yInts, numPoints);
-        drawBounding(g);
-        drawNormals(g, Color.RED);
+        drawPoints(g, Color.RED);
+//        drawBounding(g);
+//        drawNormals(g, Color.RED);
     }
-    
+
+    private void drawPoints(Graphics2D g, Color color){
+        int width = 2;
+        g.setColor(color);
+        for (int i = 0; i < numPoints; i++) {
+            g.fillOval(xInts[i], yInts[i], width, width);
+        }
+    }
+
     private void drawBounding(Graphics2D g){
         g.setColor(Color.ORANGE);
         if(usingBoundingBox){

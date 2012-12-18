@@ -1,8 +1,6 @@
 package gameengine;
 
-import gameengine.effects.StationaryEffect;
-import gameengine.effects.PositionEffect;
-import gameengine.effects.Effectable;
+import bricklets.Entity;
 
 import java.awt.Color;
 import java.awt.FontMetrics;
@@ -12,13 +10,11 @@ import java.awt.Graphics2D;
  *
  * @author davidrusu
  */
-public class BasicButton implements Effectable{
+public class BasicButton extends Entity {
     private String text;
-    private double width, height;
-    private double padding = 0.5;
     private boolean selected = false, isPressed = false;
     private Graphic upGraphic, pressedGraphic, selectedGraphic, currentGraphic;
-    private PositionEffect positionEffect;
+    private double initialX, initialY;
     
     public BasicButton(String text){
         this(text, new SolidColorGraphic(new Color(177,70,35), 0, 0),
@@ -27,26 +23,26 @@ public class BasicButton implements Effectable{
     }
     
     public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic){
+        super(0, 0, 0, 0);
         this.text = text;
         this.upGraphic = upGraphic;
         this.pressedGraphic = downGraphic;
         this.selectedGraphic = selectedGraphic;
         currentGraphic = upGraphic;
-        positionEffect = new StationaryEffect(0, 0);
     }
     
     public void initialize(double x, double y, double width, double height){
-        positionEffect.reset(x, y);
-        this.width = width;
-        this.height = height;
+        resetMotionEffect();
+        this.x = x;
+        this.y = y;
+        initialX = x;
+        initialY = y;
+        setWidth(width);
+        setHeight(height);
         upGraphic.resize((int)width, (int)height);
         pressedGraphic.resize((int)width, (int)height);
         selectedGraphic.resize((int)width, (int)height);
         
-    }
-    
-    public void setPosition(double x, double y){
-        positionEffect.reset(x, y);
     }
     
     public void select(){
@@ -80,55 +76,46 @@ public class BasicButton implements Effectable{
         currentGraphic.reset();
         isPressed = false;
     }
-    
+
+    @Override
     public void update(double elapsedTime){
         currentGraphic.update(elapsedTime);
-        positionEffect.update(elapsedTime);
     }
     
     public void reset(){
-        positionEffect.reset();
+        resetMotionEffect();
+        x = initialX;
+        y = initialY;
+        dx = 0;
+        dy = 0;
     }
 
     @Override
     public double getX() {
-        return positionEffect.getX();
+        return x;
     }
 
     @Override
     public double getY() {
-        return positionEffect.getY();
+        return y;
     }
 
-    @Override
     public double getWidth() {
         return width;
     }
 
-    @Override
     public double getHeight() {
         return height;
     }
-
-    @Override
-    public PositionEffect getCurrentEffect() {
-        return positionEffect;
-    }
-
-    @Override
-    public void setPositionEffect(PositionEffect positionEffect) {
-        this.positionEffect = positionEffect;
-    }
     
     public boolean contains(double x, double y){
-        double leftEdge = positionEffect.getX() - width / 2;
-        double topEdge = positionEffect.getY() - height / 2;
+        double leftEdge = this.x - width / 2;
+        double topEdge = this.y - height / 2;
         return x >= leftEdge && x <= leftEdge + width && y >= topEdge && y <= topEdge + height;
     }
-    
+
+    @Override
     public void draw(Graphics2D g){
-        double x = positionEffect.getX();
-        double y = positionEffect.getY();
         currentGraphic.draw(g, (int)(x - width / 2), (int)(y - height / 2));
         FontMetrics metrics = g.getFontMetrics();
         int textWidth = metrics.stringWidth(text);

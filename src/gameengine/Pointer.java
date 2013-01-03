@@ -1,7 +1,7 @@
 package gameengine;
 
 import bricklets.Entity;
-import gameengine.effects.MouseMotion;
+import gameengine.effects.motions.MouseMotion;
 
 import java.awt.*;
 
@@ -15,10 +15,11 @@ import java.awt.*;
 public class Pointer extends Entity {
     Graphic graphic;
 
-    public Pointer(Graphic graphic){
+    public Pointer(Graphic graphic, double startX, double startY){
         super(0, 0, graphic.getWidth(), graphic.getHeight());
+        setPosition(startX, startY);
         this.graphic = graphic;
-        setMotionEffect(new MouseMotion());
+        setMotion(new MouseMotion());
     }
 
     @Override

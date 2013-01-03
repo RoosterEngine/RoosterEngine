@@ -184,15 +184,13 @@ public class CollisionDetector {
     public void update(double elapsedTime, Context context) {
         double timeLeft = elapsedTime * context.getTimeScale();
 
-        context.updateMotionGenerators(elapsedTime);
+        context.updateMotions(elapsedTime);
 
         while(timeLeft > 0 && !context.isPaused()){
             Collision collision = getNextCollision(timeLeft);
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
             currentGameTime += updateTime;
-//            if(updateTime > 0){
             context.updatePositions(updateTime);
-//            }
             if(collision.getTimeToCollision() != Shape.NO_COLLISION && collision.getTimeToCollision() <= timeLeft){
                 collisionTimes[back] = currentGameTime;
                 double collisionRate;
@@ -209,9 +207,7 @@ public class CollisionDetector {
                 context.handleCollision(collision, collisionRate);
             }
             timeLeft -= updateTime;
-//            context.update(updateTime);
         }
         context.update(elapsedTime);
-//        context.updateMotionGenerators(elapsedTime);
     }
 }

@@ -17,7 +17,7 @@ import java.util.Collections;
 public class BasicMenu extends Context{
     
     private BasicButton[] buttons;
-    private Pointer pointer = new Pointer(new OvalGraphic(10, 10, new Color(23, 44, 80)));
+    private Pointer pointer = new Pointer(new OvalGraphic(10, 10, new Color(23, 44, 80)), getWidth() / 2, getHeight() / 2);
     private int selectedIndex;
     private ButtonHandler buttonHandler;
     private Graphic background;

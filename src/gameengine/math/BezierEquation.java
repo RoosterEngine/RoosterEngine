@@ -10,10 +10,11 @@ import java.awt.Graphics2D;
  * Time: 5:43 PM
  * To change this template use File | Settings | File Templates.
  */
-public class BezierFunction extends ParametricFunction{
+public class BezierEquation extends ParametricEquation {
     private double x0, y0, x1, y1, x2, y2;
 
-    public BezierFunction(double x0, double y0, double x1, double y1, double x2, double y2){
+    public BezierEquation(double x0, double y0, double x1, double y1, double x2, double y2){
+        super(0, 1);
         setPoints(x0, y0, x1, y1, x2, y2);
     }
 
@@ -29,22 +30,22 @@ public class BezierFunction extends ParametricFunction{
     }
 
     @Override
-    public double xValueAt(double t) {
+    public double getX(double t) {
         return evalutate(x0, x1, x2, t);
     }
 
     @Override
-    public double yValueAt(double t) {
+    public double getY(double t) {
         return evalutate(y0, y1, y2, t);
     }
 
     @Override
-    public double dxValueAt(double t) {
+    public double getDX(double t) {
         return evaluateDerivative(x0, x1, x2, t);
     }
 
     @Override
-    public double dyValueAt(double t) {
+    public double getDY(double t) {
         return evaluateDerivative(y0, y1, y2, t);
     }
 
@@ -59,11 +60,11 @@ public class BezierFunction extends ParametricFunction{
 
     public void draw(Graphics2D g, Color color){
         g.setColor(color);
-        double lastX = xValueAt(0);
-        double lastY = yValueAt(0);
+        double lastX = getX(0);
+        double lastY = getY(0);
         for(double t = 0; t <= 1; t += 0.01){
-            double x = xValueAt(t);
-            double y = yValueAt(t);
+            double x = getX(t);
+            double y = getY(t);
             g.drawLine((int)lastX, (int)lastY, (int)x, (int)y);
             lastX = x;
             lastY = y;

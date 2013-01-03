@@ -32,7 +32,7 @@ public class BasicButton extends Entity {
     }
     
     public void initialize(double x, double y, double width, double height){
-        resetMotionEffect();
+        resetMotion();
         this.x = x;
         this.y = y;
         initialX = x;
@@ -44,7 +44,7 @@ public class BasicButton extends Entity {
         selectedGraphic.resize((int)width, (int)height);
         
     }
-    
+
     public void select(){
         currentGraphic = selectedGraphic;
         currentGraphic.reset();
@@ -83,7 +83,7 @@ public class BasicButton extends Entity {
     }
     
     public void reset(){
-        resetMotionEffect();
+        resetMotion();
         x = initialX;
         y = initialY;
         dx = 0;

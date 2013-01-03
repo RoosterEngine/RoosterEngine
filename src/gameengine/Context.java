@@ -59,11 +59,11 @@ public abstract class Context{
     public boolean isRelativeMouseMovedEnabled(){
         return isRelativeMouseMovedEnabled;
     }
-    
+
     public boolean isShowingMouseCursor(){
         return isShowingMouseCursor;
     }
-    
+
     public final void setSize(int width, int height){
         this.width = width;
         this.height = height;
@@ -113,12 +113,9 @@ public abstract class Context{
         }
     }
 
-    public void updateMotionGenerators(double elapsedTime) {
-//        for (Group group : groups) {
-//            group.updateEnvironmentMotionGenerator(elapsedTime);
-//        }
+    public void updateMotions(double elapsedTime) {
         for (Entity entity : entities) {
-            entity.updateMotionGenerator(elapsedTime);
+            entity.updateMotion(elapsedTime);
         }
 
     }

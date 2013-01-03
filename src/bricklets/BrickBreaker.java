@@ -4,13 +4,13 @@ import gameengine.Context;
 import gameengine.ContextType;
 import gameengine.GameController;
 import gameengine.effects.*;
+import gameengine.effects.motions.*;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -21,9 +21,6 @@ import java.util.Random;
  * To change this template use File | Settings | File Templates.
  */
 public class BrickBreaker extends Context {
-    private ArrayList<Entity>[] history = new ArrayList[50];
-    private int historyPosition = 0, historySize = 0;
-
     private ArrayList<Brick> bricks = new ArrayList<Brick>();
     private Paddle paddle;
     private ArrayList<CircleEntity> balls = new ArrayList<CircleEntity>();
@@ -46,9 +43,6 @@ public class BrickBreaker extends Context {
     }
 
     private void init(){
-        Arrays.fill(history, null);
-        historyPosition = 0;
-        historySize = 0;
         rand.setSeed(1);
         controller.clearCollisions(this);
         lives = 100;
@@ -79,9 +73,10 @@ public class BrickBreaker extends Context {
         initBounding();
 
         controlledEntity = paddle;
-        controlledEntity.setMotionEffect(new HorizontalMotion(new MouseMotion()));
+        controlledEntity.setMotion(new MotionCompositor(
+                new MouseMotion(),
+                new VerticalAttractMotion(paddle.getY(), 0.001, 1, controlledEntity.getMass())));
 
-        takeHistorySnapshot();
         setupInput();
     }
 
@@ -128,7 +123,7 @@ public class BrickBreaker extends Context {
                 double yPos = padding * (1 + y)  + brickHeight * y + brickHeight / 2 + yOffset;
                 Brick brick = new Brick(xPos, yPos, brickWidth, brickHeight);
                 brick.setMass(10);
-                brick.setMotionEffect(new SpringEffect(brick, xPos, yPos, new SpringMotion(0.0001, 0.3)));
+                brick.setMotion(new AttractMotion(xPos,  yPos, 0.001, 0.3, brick.getMass()));
                 bricks.add(brick);
                 entities.add(brick);
                 gravityGroup.addEntity(brick);
@@ -203,39 +198,6 @@ public class BrickBreaker extends Context {
                 init();
             }
         }
-
-        takeHistorySnapshot();
-    }
-
-    private void takeHistorySnapshot(){
-        ArrayList<Entity> snapshot = new ArrayList<Entity>(entities.size());
-        for(Entity entity: entities) {
-            snapshot.add(new CircleEntity(entity, 1));
-        }
-        history[historyPosition] = snapshot;
-        if(historySize < history.length){
-            historySize ++;
-        }
-        historyPosition = (historyPosition + 1) % history.length;
-    }
-
-    private void revertToPrevHistorySnapshot(){
-        if(historySize == 0){
-            return;
-        }
-        if(historyPosition == 0){
-            historyPosition = history.length - 1;
-        }else{
-            historyPosition--;
-        }
-        ArrayList<Entity> snapshot = history[historyPosition];
-        for(int i = 0; i < entities.size(); i++) {
-            Entity historyEntity = snapshot.get(i);
-            Entity entity = entities.get(i);
-            entity.setPosition(historyEntity.getX(), historyEntity.getY());
-            entity.setVelocity(historyEntity.getDX(), historyEntity.getDY());
-        }
-        historySize--;
     }
 
     private void setupInput(){
@@ -334,7 +296,6 @@ public class BrickBreaker extends Context {
 
             @Override
             public void stopAction(int inputCode) {
-                revertToPrevHistorySnapshot();
             }
         });
     }

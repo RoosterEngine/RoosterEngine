@@ -1,12 +1,8 @@
 package gameengine.effects;
 
 import bricklets.Entity;
-import gameengine.GameController;
+import gameengine.effects.motions.HorizontalAttractMotion;
 
-/**
- *
- * @author davidrusu
- */
 public class EffectFactory {
     
     private EffectFactory(){}
@@ -17,7 +13,7 @@ public class EffectFactory {
         for (Entity entity : entitys) {
             k *= 0.7;
             entity.setPosition(startX, entity.getY());
-            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new SpringMotion(k, dampening)));
+            entity.setMotion(new HorizontalAttractMotion(destinationX, k, dampening, entity.getMass()));
         }
     }
 
@@ -34,7 +30,7 @@ public class EffectFactory {
                 initialX = -entity.getWidth() / 2;
             }
             entity.setPosition(initialX, entity.getY());
-            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new SpringMotion(k, dampening)));
+            entity.setMotion(new HorizontalAttractMotion(destinationX, k, dampening, entity.getMass()));
         }
     }
     
@@ -49,40 +45,8 @@ public class EffectFactory {
                 initialX = -entity.getWidth() / 2 * (i + 1) * 0.5 - width;
             }
             entity.setPosition(initialX, entity.getY());
-            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new LinearMotion(speed)));
-//            entity.setMotionEffect(new HorizontalSpring(entity, destinationX, new SpringMotion(0.0001, 0.7)));
+            entity.setMotion(new HorizontalAttractMotion(destinationX, 0.0001, 0.3, entity.getMass()));
+//            entity.setMotionEffect(new HorizontalSpringMotion(entity, destinationX, new SpringIntegrator(0.0001, 0.7)));
         }
-    }
-    
-    public static void setCurtainDropEffect(Entity[] entitys, double speedMultiplier){
-        double k = 0.0001 * speedMultiplier;
-        double dampening = 0.5;
-        double decay = 1;
-        for (Entity entity : entitys) {
-            double initialY = -entity.getHeight() / 2;
-            entity.setMotionEffect(new VerticalSpring(entity, entity.getY(), new SpringMotion(k, dampening)));
-            entity.setPosition(entity.getX(), initialY);
-            k *= decay;
-        }
-    }
-    
-    public static void setSlideDownEffect(Entity[] entitys, double speedMultiplier){
-        double k = 0.00005 * speedMultiplier;
-        double dampening = 0.5;
-        double decay = 1;
-        for(int i = 0; i < entitys.length; i++){
-            Entity entity = entitys[entitys.length - i - 1];
-            double initialY = -entity.getHeight() / 2 * (i + 1) * 5;
-            entity.setMotionEffect(new VerticalSpring(entity, entity.getY(), new SpringMotion(k, dampening)));
-            entity.setPosition(entity.getX(), initialY);
-            k *= decay;
-        }
-    }
-
-    public static void setSlideFromRightEffect(Entity entity, double destinationX,
-                                               double speedMultiplier, GameController controller){
-        entity.setMotionEffect(
-                new HorizontalSpring(entity, destinationX, new SpringMotion(0.00001 * speedMultiplier, 1)));
-        entity.setPosition(controller.getWidth() + entity.getWidth() / 2, entity.getY());
     }
 }

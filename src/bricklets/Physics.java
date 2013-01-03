@@ -12,8 +12,8 @@ public class Physics {
     private Physics(){
     }
     
-    public static double getCriticallyDampedSpringConstant(double k){
-        return 2 * Math.sqrt(k);
+    public static double getCriticallyDampedSpringConstant(double k, double mass){
+        return 2 * Math.sqrt(k / mass);
     }
     
     public static double springForce(double x, double y, double restingX, double restingY, double k, double restingLength, double dampning){
@@ -70,10 +70,19 @@ public class Physics {
         double yFinalA = (restitution * bMass * yVelDiff + combinedMomentum) / combinedMass;
         double yFinalB = (combinedMomentum - restitution * aMass * yVelDiff) / combinedMass;
 
-        double xA = unitY.getX() * yFinalA + unitX.getX() * xLengthA;
-        double yA = unitY.getY() * yFinalA + unitX.getY() * xLengthA;
-        double xB = unitY.getX() * yFinalB + unitX.getX() * xLengthB;
-        double yB = unitY.getY() * yFinalB + unitX.getY() * xLengthB;
+        double impulse = (yFinalA - yLengthA) * aMass;
+        double xVelDiff = xLengthB - xLengthA;
+        double frictionImpulse = Math.min(friction * Math.abs(impulse), Math.abs(xVelDiff) * aMass * bMass / combinedMass);
+        double frictionDirection = Math.signum(xVelDiff);
+
+        double xFinalA = xLengthA + frictionDirection * frictionImpulse / aMass;
+        double xFinalB = xLengthB - frictionDirection * frictionImpulse / bMass;
+
+
+        double xA = unitY.getX() * yFinalA + unitX.getX() * xFinalA ;
+        double yA = unitY.getY() * yFinalA + unitX.getY() * xFinalA;
+        double xB = unitY.getX() * yFinalB + unitX.getX() * xFinalB;
+        double yB = unitY.getY() * yFinalB + unitX.getY() * xFinalB;
         
         a.setVelocity(xA, yA);
         b.setVelocity(xB, yB);

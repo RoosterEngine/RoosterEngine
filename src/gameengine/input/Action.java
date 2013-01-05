@@ -19,4 +19,5 @@ public enum Action {
     RESTART_GAME,
     GAME_UNDO,
     MOUSE_CLICK,
+    DEFAULT,
 }

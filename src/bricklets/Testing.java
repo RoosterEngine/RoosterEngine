@@ -9,7 +9,7 @@ import gameengine.input.InputCode;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-public class Testing extends Context{
+public class Testing extends Context implements ActionHandler{
     private Pointer pointer;
     private AABBEntity box;
     private AttractMotion boxMotion;
@@ -50,7 +50,7 @@ public class Testing extends Context{
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(Color.WHITE);
+        g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
         for (Entity entity : entities) {
             entity.draw(g);
@@ -64,28 +64,27 @@ public class Testing extends Context{
 
     private void setupInput(){
         controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
-        bindAction(Action.EXIT_GAME, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
-                controller.exitContext();
-                init();
-            }
-        });
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
-        bindAction(Action.MOUSE_CLICK, new ActionHandler() {
+    }
 
-            @Override
-            public void startAction(int inputCode) {
-            }
+    @Override
+    public void startAction(Action action, int inputCode) {
+        switch (action) {
+            case EXIT_GAME:
+                break;
+            case MOUSE_CLICK:
+                break;
+        }
+    }
 
-            @Override
-            public void stopAction(int inputCode) {
-            }
-        });
+    @Override
+    public void stopAction(Action action, int inputCode) {
+        switch (action) {
+            case EXIT_GAME:
+                controller.exitContext();
+                break;
+            case MOUSE_CLICK:
+                break;
+        }
     }
 }
-

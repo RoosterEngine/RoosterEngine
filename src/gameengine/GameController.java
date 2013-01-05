@@ -18,7 +18,7 @@ public class GameController implements MouseMovedHandler{
     private EnumMap<ContextType, HashMap<Integer, Action>> contextTypeControlsMap;
     private HashMap<Context, CollisionDetector> collisionDetectorHashMap;
     private CollisionDetector currentCollisionDetector;
-    private HashMap<Integer, Action> currentControls;
+    private HashMap<Integer, Action> currentInputCodeToActionMap;
     private InputManager input;
     private ScreenManager screen;
     private Thread gameThread;
@@ -26,8 +26,7 @@ public class GameController implements MouseMovedHandler{
     private UserProfile currentProfile;
     private Deque<Context> contextStack;    // the built in stack extends Vector, recommended to use Deque instead
     private Context currentContext;
-    private ActionHandler singleHandler;
-    private boolean inSingleHandlerMode = false, showingMouseCursor = true;
+    private boolean showingMouseCursor = true;
 
     public GameController() {
         this(120, 60);
@@ -103,8 +102,8 @@ public class GameController implements MouseMovedHandler{
     public void changeUserProfile(UserProfile userProfile) {
         this.currentProfile = userProfile;
         contextTypeControlsMap.clear();
-        currentControls = getControlsMap(userProfile, currentContext.getContextType());
-        contextTypeControlsMap.put(currentContext.getContextType(), currentControls);
+        currentInputCodeToActionMap = getControlsMap(userProfile, currentContext.getContextType());
+        contextTypeControlsMap.put(currentContext.getContextType(), currentInputCodeToActionMap);
     }
 
     public void updateMouseVelocity(double frameTime) {
@@ -159,10 +158,10 @@ public class GameController implements MouseMovedHandler{
         contextStack.push(context);
         currentContext = context;
 
-        currentControls = contextTypeControlsMap.get(context.getContextType());
-        if (currentControls == null) {
-            currentControls = getControlsMap(currentProfile, currentContext.getContextType());
-            contextTypeControlsMap.put(context.getContextType(), currentControls);
+        currentInputCodeToActionMap = contextTypeControlsMap.get(context.getContextType());
+        if (currentInputCodeToActionMap == null) {
+            currentInputCodeToActionMap = getControlsMap(currentProfile, currentContext.getContextType());
+            contextTypeControlsMap.put(context.getContextType(), currentInputCodeToActionMap);
         }
 
         currentCollisionDetector = getCollisionDetector(currentContext);
@@ -194,6 +193,15 @@ public class GameController implements MouseMovedHandler{
     }
 
     /**
+     * Checks if the supplied {@link InputCode} is mapped to an {@link Action}
+     * @param inputCode the {@link InputCode} used to check whether there are an {@link Action} mapped
+     * @return true if the {@link InputCode} is mapped to an action, otherwise, false
+     */
+    public boolean isInputCodeMappedToAction(int inputCode) {
+        return currentInputCodeToActionMap.containsKey(inputCode) || currentContext.isInSingleHandlerMode();
+    }
+
+    /**
      * Gets the {@link MouseMovedHandler} from the currentContext
      *
      * @return MouseMovedHandler
@@ -204,20 +212,46 @@ public class GameController implements MouseMovedHandler{
 
     /**
      * Gets the {@link ActionHandler} that is associated with the specified
-     * inputCode in the currentContext
+     * {@link Action} in the currentContext
      *
-     * @param inputCode
-     * @return
+     * @param action The action who's handler to return
+     * @return the {@link ActionHandler} for the specified {@link Action}
      */
-    public ActionHandler getActionHandler(int inputCode) {
-        if (inSingleHandlerMode) {
-            return singleHandler;
+    public ActionHandler getActionHandler(Action action) {
+        if (currentContext.isInSingleHandlerMode()) {
+            return currentContext.getSingleHandler();
         }
-        return currentContext.getActionHandler(currentControls.get(inputCode));
+        return currentContext.getActionHandler(action);
+    }
+
+    private Action getAction(int inputCode) {
+        Action action = currentInputCodeToActionMap.get(inputCode);
+        if (currentContext.isInSingleHandlerMode() && action == null) {
+            action = Action.DEFAULT;
+        }
+        return action;
     }
 
     /**
-     * adds input listeners to a specified component
+     * Starts the {@link ActionHandler} for the specified {@link InputCode}
+     * @param inputCode the {@link InputCode} who's handler to start
+     */
+    public void startActionHandler(int inputCode) {
+        Action action = getAction(inputCode);
+        getActionHandler(action).startAction(action, inputCode);
+    }
+
+    /**
+     * Stops the {@link ActionHandler} for the specified {@link InputCode}
+     * @param inputCode the {@link InputCode} who's handler to stop
+     */
+    public void stopActionHandler(int inputCode) {
+        Action action = getAction(inputCode);
+        getActionHandler(action).stopAction(action, inputCode);
+    }
+
+    /**
+     * adds input listeners to the specified component
      *
      * @param component the container to add listeners to
      */
@@ -238,8 +272,8 @@ public class GameController implements MouseMovedHandler{
      * @param originalCode the code that is currently bound
      */
     public void changeUserBinding(int newCode, int originalCode) {
-        Action action = currentControls.remove(originalCode);
-        currentControls.put(newCode, action);
+        Action action = currentInputCodeToActionMap.remove(originalCode);
+        currentInputCodeToActionMap.put(newCode, action);
         currentProfile.removeInputBinding(originalCode);
         currentProfile.setInputBinding(newCode, action);
     }
@@ -268,25 +302,6 @@ public class GameController implements MouseMovedHandler{
             i++;
         }
         mappings.add(new InputMapping(inputCode, action));
-    }
-
-    /**
-     * All events are handled by one handler that the user specifies,
-     * {@link Action}s are not user in single handler mode
-     *
-     * @param singleHandler the handler to catch all events
-     */
-    public void enterSingleHandlerMode(ActionHandler singleHandler) {
-        this.singleHandler = singleHandler;
-        inSingleHandlerMode = true;
-    }
-
-    /**
-     * Reverts back to multi handler mode
-     */
-    public void exitSingleHandlerMode() {
-        singleHandler = null;
-        inSingleHandlerMode = false;
     }
 
     public Object getUserProperty(String propertyName) {

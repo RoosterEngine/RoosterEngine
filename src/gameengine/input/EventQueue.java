@@ -1,5 +1,7 @@
 package gameengine.input;
 
+import gameengine.GameController;
+
 /**
  * Events from the EDT thread are placed on this queue and handled from the game thread
  *
@@ -9,61 +11,59 @@ public class EventQueue {
 
     private static final double GROWTH_RATE = 1.5;
     private static final int INIT_CAPACITY = 16, INIT_RECYCLE_CAPACITY = 16;
-    private InputAction[] queue;
+    private GameController gameController;
+    private InputEvent[] queue;
     private int front = 0, size = 0;
-    private InputAction[][] recycledInstances = new InputAction[2][INIT_RECYCLE_CAPACITY];
+    private InputEvent[][] recycledInstances = new InputEvent[2][INIT_RECYCLE_CAPACITY];
     private int[] numRecycled;
     private boolean clearQueue = false;
     
-    public EventQueue() {
-        queue = new InputAction[INIT_CAPACITY];
+    public EventQueue(GameController gameController) {
+        this.gameController = gameController;
+        queue = new InputEvent[INIT_CAPACITY];
         numRecycled = new int[2];
         numRecycled[0] = 1;
         numRecycled[1] = 1;
-        recycledInstances[InputAction.PRESSED_ACTION][0] = new PressedAction(null, 0, 0);
-        recycledInstances[InputAction.RELEASED_ACTION][0] = new ReleasedAction(null, 0, 0);
+        recycledInstances[InputEvent.PRESSED_EVENT][0] = new PressedEvent(0, 0);
+        recycledInstances[InputEvent.RELEASED_EVENT][0] = new ReleasedEvent(0, 0);
     }
 
     /**
-     * Add a {@link PressedAction} to the queue
+     * Add a {@link PressedEvent} to the queue
      *
-     * @param handler the handler to be called when the handleAction method is
-     * called
      * @param inputCode the input code of the event, should be retrieved from
      * {@link InputCode}
      * @param eventTime the time this action was triggered
      */
-    public synchronized void addPressedAction(ActionHandler handler, int inputCode, long eventTime) {
-        ((PressedAction)addRecycledInputAction(InputAction.PRESSED_ACTION)).setup(handler, inputCode, eventTime);
+    public synchronized void addPressedAction(int inputCode, long eventTime) {
+        addRecycledInputAction(InputEvent.PRESSED_EVENT, inputCode, eventTime);
     }
 
     /**
-     * Add a {@link ReleasedAction} to the queue
+     * Add a {@link ReleasedEvent} to the queue
      *
-     * @param handler the handler to be called when the handleAction method is
-     * called
      * @param inputCode the input code of the event, should be retrieved from
      * {@link InputCode}
      * @param eventTime the time this action was triggered
      */
-    public synchronized void addReleasedAction(ActionHandler handler, int inputCode, long eventTime) {
-        ((ReleasedAction)addRecycledInputAction(InputAction.RELEASED_ACTION)).setup(handler, inputCode, eventTime);
+    public synchronized void addReleasedAction(int inputCode, long eventTime) {
+        addRecycledInputAction(InputEvent.RELEASED_EVENT, inputCode, eventTime);
     }
     
-    private InputAction addRecycledInputAction(int actionType){
-        InputAction action;
+    private void addRecycledInputAction(int actionType, int inputCode, long eventTime){
+        InputEvent inputEvent;
         if(numRecycled[actionType] == 0){
-            action = recycledInstances[actionType][0].createInstance();
+            inputEvent = recycledInstances[actionType][0].createInstance(inputCode, eventTime);
         }else{
             numRecycled[actionType]--;
-            action = recycledInstances[actionType][numRecycled[actionType]];
+            inputEvent = recycledInstances[actionType][numRecycled[actionType]];
+            inputEvent.setup(inputCode, eventTime);
         }
         if (size == queue.length) {
             expand();
         }
-        queue[(front + size) % queue.length] = action;
+        queue[(front + size) % queue.length] = inputEvent;
         size++;
-        return action;
     }
 
     /**
@@ -74,7 +74,7 @@ public class EventQueue {
     public synchronized void handleEvents(long cutOffTime) {
         while(size > 0 && queue[front].getEventTime() <= cutOffTime) {
             size--;
-            queue[front].handleAction();
+            queue[front].handleAction(gameController);
             recycleAction(queue[front]);
             front = (front + 1) % queue.length;
         }
@@ -82,7 +82,7 @@ public class EventQueue {
     
     /**
      * Returns the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
-     * @return 
+     * @return the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
      */
     public long getNextEventTime(){
         if(size == 0){
@@ -99,25 +99,25 @@ public class EventQueue {
         }
         clearQueue = false;
     }
-    
+
+    //TODO figure out what was going on here
     public synchronized void clearQueue(){
         clearQueue = true;
     }
     
-    private void recycleAction(InputAction action){
-        int type = action.getActionType();
+    private void recycleAction(InputEvent action){
+        int type = action.getEventType();
         if(numRecycled[type] == recycledInstances[type].length){
-            InputAction[] temp = recycledInstances[type];
-            recycledInstances[type] = new InputAction[(int)(temp.length * GROWTH_RATE)];
+            InputEvent[] temp = recycledInstances[type];
+            recycledInstances[type] = new InputEvent[(int)(temp.length * GROWTH_RATE)];
             System.arraycopy(temp, 0, recycledInstances[type], 0, temp.length);
         }
-        action.clearHandler();
         recycledInstances[type][numRecycled[type]] = action;
         numRecycled[type]++;
     }
     
     private void expand() {
-        InputAction[] temp = new InputAction[(int) (queue.length * GROWTH_RATE)];
+        InputEvent[] temp = new InputEvent[(int) (queue.length * GROWTH_RATE)];
         int firstHalfLength = queue.length - front;
         System.arraycopy(queue, front, temp, 0, firstHalfLength);
         System.arraycopy(queue, 0, temp, firstHalfLength, front);

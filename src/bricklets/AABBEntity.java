@@ -12,7 +12,7 @@ public class AABBEntity extends Entity{
 
     public AABBEntity(double x, double y, double width, double height) {
         super(x, y, width, height);
-        color = Color.BLACK;
+        color = Color.WHITE;
     }
 
     @Override

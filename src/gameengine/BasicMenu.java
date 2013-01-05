@@ -31,7 +31,7 @@ public class BasicMenu extends Context{
     public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons,
                      ButtonHandler handler, Graphic background, double leftBorderRatio, double rightBorderRatio,
                      double topBorderRatio, double bottomBorderRatio, double paddingRatio){
-        super(controller, type, false, false);
+        super(controller, type, false, true);
         this.buttons = buttons;
         Collections.addAll(entities, buttons);
         entities.add(pointer);
@@ -129,17 +129,17 @@ public class BasicMenu extends Context{
         bindAction(Action.RESTART_GAME, new ActionHandler() {
 
             @Override
-            public void startAction(int inputCode) {
+            public void startAction(Action action, int inputCode) {
             }
 
             @Override
-            public void stopAction(int inputCode) {
+            public void stopAction(Action action, int inputCode) {
             }
         });
         
         bindAction(Action.MENU_UP, new ActionHandler() {
             @Override
-            public void startAction(int inputCode) {
+            public void startAction(Action action, int inputCode) {
                 int newSelectedIndex = selectedIndex - 1;
                 if(newSelectedIndex == -1){
                     newSelectedIndex = buttons.length - 1;
@@ -148,41 +148,41 @@ public class BasicMenu extends Context{
             }
 
             @Override
-            public void stopAction(int inputCode) {
+            public void stopAction(Action action, int inputCode) {
             }
         });
         
         bindAction(Action.MENU_DOWN, new ActionHandler() {
             @Override
-            public void startAction(int inputCode) {
+            public void startAction(Action action, int inputCode) {
                 changeSelectedButton((selectedIndex + 1) % buttons.length);
             }
 
             @Override
-            public void stopAction(int inputCode) {
+            public void stopAction(Action action, int inputCode) {
             }
         });
         
         bindAction(Action.EXIT_GAME, new ActionHandler() {
             @Override
-            public void startAction(int inputCode) {
+            public void startAction(Action action, int inputCode) {
             }
 
             @Override
-            public void stopAction(int inputCode) {
+            public void stopAction(Action action, int inputCode) {
                 controller.stopGame();
             }
         });
         
         bindAction(Action.MENU_SELECT, new ActionHandler() {
             @Override
-            public void startAction(int inputCode) {
+            public void startAction(Action action, int inputCode) {
                 BasicButton button = buttons[selectedIndex];
                 button.setPressed();
             }
 
             @Override
-            public void stopAction(int inputCode) {
+            public void stopAction(Action action, int inputCode) {
                 BasicButton button = buttons[selectedIndex];
                 buttonHandler.buttonActivated(button);
                 button.setUnpressed();
@@ -192,7 +192,7 @@ public class BasicMenu extends Context{
         bindAction(Action.MENU_MOUSE_SELECT, new ActionHandler() {
 
             @Override
-            public void startAction(int inputCode) {
+            public void startAction(Action action, int inputCode) {
                 if(selectedIndex >= 0){
                     BasicButton button = buttons[selectedIndex];
                     button.setPressed();
@@ -201,7 +201,7 @@ public class BasicMenu extends Context{
             }
 
             @Override
-            public void stopAction(int inputCode) {
+            public void stopAction(Action action, int inputCode) {
                 if(selectedIndex >= 0){
                     BasicButton button = buttons[selectedIndex];
                     buttonHandler.buttonActivated(button);

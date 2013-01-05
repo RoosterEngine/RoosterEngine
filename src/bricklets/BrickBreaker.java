@@ -20,7 +20,7 @@ import java.util.Random;
  * Time: 9:55 AM
  * To change this template use File | Settings | File Templates.
  */
-public class BrickBreaker extends Context {
+public class BrickBreaker extends Context implements ActionHandler{
     private ArrayList<Brick> bricks = new ArrayList<Brick>();
     private Paddle paddle;
     private ArrayList<CircleEntity> balls = new ArrayList<CircleEntity>();
@@ -200,15 +200,44 @@ public class BrickBreaker extends Context {
         }
     }
 
-    private void setupInput(){
+    private void setupInput() {
+        setSingleHandler(this);
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
-        bindAction(Action.MOUSE_CLICK, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
+        controller.setContextBinding(contextType, InputCode.KEY_P, Action.PAUSE_GAME);
+        controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
+        controller.setContextBinding(contextType, InputCode.KEY_UP, Action.GAME_UP);
+        controller.setContextBinding(contextType, InputCode.KEY_DOWN, Action.GAME_DOWN);
+        controller.setContextBinding(contextType, InputCode.KEY_LEFT, Action.GAME_LEFT);
+        controller.setContextBinding(contextType, InputCode.KEY_RIGHT, Action.GAME_RIGHT);
+        controller.setContextBinding(contextType, InputCode.KEY_Q, Action.GAME_UNDO);
+    }
 
-            @Override
-            public void stopAction(int inputCode) {
+    @Override
+    public void startAction(Action action, int inputCode) {
+        switch (action) {
+            case MOUSE_CLICK:
+                break;
+            case PAUSE_GAME:
+                break;
+            case EXIT_GAME:
+                break;
+            case GAME_UP:
+                break;
+            case GAME_DOWN:
+                break;
+            case GAME_LEFT:
+                break;
+            case GAME_RIGHT:
+                break;
+            case GAME_UNDO:
+                break;
+        }
+    }
+
+    @Override
+    public void stopAction(Action action, int inputCode) {
+        switch (action) {
+            case MOUSE_CLICK:
                 CircleEntity newBall = new CircleEntity(paddle.getX(), paddle.getY() - paddle.getHeight() / 2 - 5, ballRadius);
                 newBall.setVelocity(0, -1);
                 newBall.setMass(ballMass);
@@ -216,87 +245,24 @@ public class BrickBreaker extends Context {
                 balls.add(newBall);
                 gravityGroup.addEntity(newBall);
                 controller.addShapeToCollisionDetector(BrickBreaker.this, newBall.getShape(Material.createCustomMaterial(0, 1)), 0);
-            }
-        });
-
-        controller.setContextBinding(contextType, InputCode.KEY_P, Action.PAUSE_GAME);
-        bindAction(Action.PAUSE_GAME, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
+                break;
+            case PAUSE_GAME:
                 togglePause();
-            }
-        });
-
-        controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
-        bindAction(Action.EXIT_GAME, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
+                break;
+            case EXIT_GAME:
                 init();
                 controller.exitContext();
-            }
-        });
-
-        controller.setContextBinding(contextType, InputCode.KEY_UP, Action.GAME_UP);
-        bindAction(Action.GAME_UP, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
-            }
-        });
-
-        controller.setContextBinding(contextType, InputCode.KEY_DOWN, Action.GAME_DOWN);
-        bindAction(Action.GAME_DOWN, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
-            }
-        });
-
-        controller.setContextBinding(contextType, InputCode.KEY_LEFT, Action.GAME_LEFT);
-        bindAction(Action.GAME_LEFT, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
-            }
-        });
-
-        controller.setContextBinding(contextType, InputCode.KEY_RIGHT, Action.GAME_RIGHT);
-        bindAction(Action.GAME_RIGHT, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
-            }
-        });
-
-        controller.setContextBinding(contextType, InputCode.KEY_Q, Action.GAME_UNDO);
-        bindAction(Action.GAME_UNDO, new ActionHandler() {
-            @Override
-            public void startAction(int inputCode) {
-            }
-
-            @Override
-            public void stopAction(int inputCode) {
-            }
-        });
+                break;
+            case GAME_UP:
+                break;
+            case GAME_DOWN:
+                break;
+            case GAME_LEFT:
+                break;
+            case GAME_RIGHT:
+                break;
+            case GAME_UNDO:
+                break;
+        }
     }
 }

@@ -30,7 +30,7 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
     
     public InputManager(GameController gameController){
         this.gameController = gameController;
-        eventQueue = new EventQueue();
+        eventQueue = new EventQueue(gameController);
         try{
             robot = new Robot();
         }catch(Exception e){
@@ -94,13 +94,13 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
     @Override
     public void mousePressed(MouseEvent e) {
         int inputCode = InputCode.getMouseButtonInputCode(e.getButton());
-        handlePressedEvent(inputCode);
+        handlePressInput(inputCode);
         e.consume();
     }
     @Override
     public void mouseReleased(MouseEvent e) {
         int inputCode = InputCode.getMouseButtonInputCode(e.getButton());
-        handleReleasedEvent(inputCode);
+        handleReleaseInput(inputCode);
         e.consume();
     }
 
@@ -146,14 +146,14 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
     @Override
     public void keyPressed(KeyEvent e) {
         int inputCode = InputCode.getKeyInputCode(e.getKeyCode());
-        handlePressedEvent(inputCode);
+        handlePressInput(inputCode);
         e.consume();
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
         int inputCode = InputCode.getKeyInputCode(e.getKeyCode());
-        handleReleasedEvent(inputCode);
+        handleReleaseInput(inputCode);
         e.consume();
     }
 
@@ -164,21 +164,22 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
             int inputCode = InputCode.getWheelUpInputCode();
             while(mouseWheelRotation <= -mouseWheelRes){
                 mouseWheelRotation += mouseWheelRes;
-                handlePressedEvent(inputCode);
+                handlePressInput(inputCode);
             }
         }else{
             int inputCode = InputCode.getWheelDownInputCode();
             while(mouseWheelRotation >= mouseWheelRes){
                 mouseWheelRotation -= mouseWheelRes;
-                handlePressedEvent(inputCode);
+                handlePressInput(inputCode);
             }
         }
         e.consume();
     }
     
     /**
-     * 
-     * @param frameTime is in milliseconds
+     * Updates the mouse velocity
+     *
+     * @param frameTime the amount of time last frame took to complete
      */
     public void updateMouseVelocity(double frameTime){
         synchronized(mouseLock){
@@ -193,12 +194,14 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
             }
         }
     }
-    
+
     /**
-     * 
-     * @param updateTime is in milliseconds
+     *
+     * Updates the {@link MouseMovedHandler} with the new mouse velocity
+     *
+     * @param elapsedTime The amount of time in milliseconds since last update
      */
-    public void updateMouseMovedHandler(double updateTime){
+    public void updateMouseMovedHandler(double elapsedTime){
         if(mouseVelX == 0 && mouseVelY == 0){
             if(!mouseMoving){
                 return;
@@ -207,8 +210,8 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
         }else{
             mouseMoving = true;
         }
-        double dx = mouseVelX * updateTime;
-        double dy = mouseVelY * updateTime;
+        double dx = mouseVelX * elapsedTime;
+        double dy = mouseVelY * elapsedTime;
         if(isRelativeMouseMode){
             gameController.getMouseMovedHandler().mouseMoved(dx, dy, mouseVelX, mouseVelY);
         }else{
@@ -218,17 +221,15 @@ public class InputManager implements MouseListener, MouseMotionListener, MouseWh
         }
     }
 
-    private void handlePressedEvent(int inputCode){
-        ActionHandler handler = gameController.getActionHandler(inputCode);
-        if(handler != null){
-            eventQueue.addPressedAction(handler, inputCode, System.nanoTime());
+    private void handlePressInput(int inputCode){
+        if(gameController.isInputCodeMappedToAction(inputCode)){
+            eventQueue.addPressedAction(inputCode, System.nanoTime());
         }
     }
 
-    private void handleReleasedEvent(int inputCode){
-        ActionHandler handler = gameController.getActionHandler(inputCode);
-        if(handler != null){
-            eventQueue.addReleasedAction(handler, inputCode, System.nanoTime());
+    private void handleReleaseInput(int inputCode){
+        if(gameController.isInputCodeMappedToAction(inputCode)) {
+            eventQueue.addReleasedAction(inputCode, System.nanoTime());
         }
     }
 }

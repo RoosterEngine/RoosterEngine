@@ -12,8 +12,8 @@ import java.util.HashMap;
 public abstract class Context{
     //TODO switch to EnumMap
     private HashMap<Action, ActionHandler> actionHandlers;
-    private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
-
+    private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled, inSingleHandlerMode = false;
+    private ActionHandler singleHandler = null;
     protected ArrayList<Entity> entities = new ArrayList<Entity>();
     protected ArrayList<Group> groups = new ArrayList<Group>();
     protected boolean paused = false;
@@ -50,6 +50,29 @@ public abstract class Context{
 
     public boolean isPaused(){
         return paused;
+    }
+
+    public boolean isInSingleHandlerMode() {
+        return inSingleHandlerMode;
+    }
+
+    public ActionHandler getSingleHandler() {
+        return singleHandler;
+    }
+
+    /**
+     * All events will be handled by the specified handler.
+     *
+     * @param singleHandler the handler to catch all input events
+     */
+    public void setSingleHandler(ActionHandler singleHandler) {
+        inSingleHandlerMode = true;
+        this.singleHandler = singleHandler;
+    }
+
+    public void removeSingleHandler() {
+        inSingleHandlerMode = false;
+        this.singleHandler = null;
     }
 
     public void togglePause(){

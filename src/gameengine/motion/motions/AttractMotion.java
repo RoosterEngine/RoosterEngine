@@ -1,8 +1,8 @@
-package gameengine.effects.motions;
+package gameengine.motion.motions;
 
 import bricklets.Entity;
 import bricklets.Physics;
-import gameengine.effects.integrators.Integrator;
+import gameengine.motion.integrators.Integrator;
 
 /**
  * A {@link Motion} that follows a straight line towards it's destination

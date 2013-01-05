@@ -1,29 +1,29 @@
-package gameengine.effects.motions;
+package gameengine.motion.motions;
 
 import bricklets.Entity;
 
 /**
- * A {@link Motion} that will return the x velocities from the {@link Motion} passed to it, but will always return 0
- * as it's y velocity
+ * A {@link Motion} that will return the y velocities from the {@link Motion} passed to it, but will always return 0
+ * as it's x velocity
  * User: davidrusu
  * Date: 17/12/12
- * Time: 6:35 PM
+ * Time: 6:38 PM
  */
-public class HorizontalMotionFilter implements Motion {
+public class VerticalMotionFilter implements Motion {
     private Motion motion;
 
-    public HorizontalMotionFilter(Motion motion){
+    public VerticalMotionFilter(Motion motion){
         this.motion = motion;
     }
 
     @Override
     public double getVelocityX() {
-        return motion.getVelocityX();
+        return 0;
     }
 
     @Override
     public double getVelocityY() {
-        return 0;
+        return motion.getVelocityY();
     }
 
     @Override

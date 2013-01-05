@@ -1,7 +1,7 @@
 package gameengine;
 
 import bricklets.Entity;
-import gameengine.effects.motions.MouseMotion;
+import gameengine.motion.motions.MouseMotion;
 
 import java.awt.*;
 

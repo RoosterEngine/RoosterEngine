@@ -1,7 +1,7 @@
-package gameengine.effects.motions;
+package gameengine.motion.motions;
 
 import bricklets.Entity;
-import gameengine.effects.integrators.Integrator;
+import gameengine.motion.integrators.Integrator;
 import gameengine.math.ParametricEquation;
 
 /**

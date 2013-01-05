@@ -1,7 +1,7 @@
 package bricklets;
 
 import gameengine.*;
-import gameengine.effects.motions.AttractMotion;
+import gameengine.motion.motions.AttractMotion;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;

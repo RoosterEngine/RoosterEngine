@@ -1,4 +1,4 @@
-package gameengine.effects;
+package gameengine.motion;
 
 import bricklets.Entity;
 

@@ -1,7 +1,7 @@
 package bricklets;
 
-import gameengine.effects.motions.Motion;
-import gameengine.effects.motions.NormalMotion;
+import gameengine.motion.motions.Motion;
+import gameengine.motion.motions.NormalMotion;
 
 import java.awt.Graphics2D;
 

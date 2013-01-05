@@ -1,4 +1,4 @@
-package gameengine.effects.integrators;
+package gameengine.motion.integrators;
 
 import bricklets.Entity;
 import bricklets.Physics;

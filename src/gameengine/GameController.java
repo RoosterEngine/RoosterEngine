@@ -3,7 +3,7 @@ package gameengine;
 import bricklets.CollisionDetector;
 import bricklets.Entity;
 import bricklets.Shape;
-import gameengine.effects.motions.MouseMotion;
+import gameengine.motion.motions.MouseMotion;
 import gameengine.input.*;
 
 import javax.imageio.ImageIO;

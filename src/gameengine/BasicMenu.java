@@ -2,7 +2,7 @@ package gameengine;
 
 import bricklets.Collision;
 import bricklets.Entity;
-import gameengine.effects.EffectFactory;
+import gameengine.motion.EffectFactory;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;

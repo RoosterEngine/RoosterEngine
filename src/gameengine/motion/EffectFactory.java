@@ -1,7 +1,7 @@
-package gameengine.effects;
+package gameengine.motion;
 
 import bricklets.Entity;
-import gameengine.effects.motions.HorizontalAttractMotion;
+import gameengine.motion.motions.HorizontalAttractMotion;
 
 public class EffectFactory {
     

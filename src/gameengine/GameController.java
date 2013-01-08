@@ -14,162 +14,183 @@ import java.io.Serializable;
 import java.util.*;
 
 public class GameController implements MouseMovedHandler{
-    private EnumMap<ContextType, ArrayList<InputMapping>> contextTypeContextControlsMap;
-    private EnumMap<ContextType, HashMap<Integer, Action>> contextTypeControlsMap;
+    private EnumMap<ContextType, ArrayList<InputMapping>> contextTypeMap;
     private HashMap<Context, CollisionDetector> collisionDetectorHashMap;
     private CollisionDetector currentCollisionDetector;
-    private HashMap<Integer, Action> currentInputCodeToActionMap;
-    private InputManager input;
-    private ScreenManager screen;
+    private InputManager inputManager;
+    private ScreenManager screenManager;
     private Thread gameThread;
-    private GameTimer timer;
-    private UserProfile currentProfile;
-    private Deque<Context> contextStack;    // the built in stack extends Vector, recommended to use Deque instead
-    private Context currentContext;
-    private boolean showingMouseCursor = true;
+    private GameTimer gameTimer;
+    private User user;
+    private Deque<Context> contextStack; // the built in stack extends Vector
+    private Context activeContext;
 
     public GameController() {
         this(120, 60);
     }
 
     /**
-     * @param updateRate       update the game state this many times per second
-     *                         (updateRate needs to be greater or equal to desiredFrameRate)
-     * @param desiredFrameRate render to the screen this many times per second
+     * @param UPS update the game state this many times per second. UPS needs to
+     *            be greater or equal to targetFPS
+     * @param targetFPS render this many times per second
      */
-    public GameController(int updateRate, int desiredFrameRate) {
-        this(updateRate, desiredFrameRate, (int) (0.6 * desiredFrameRate));
+    public GameController(int UPS, int targetFPS) {
+        this(UPS, targetFPS, (int) (0.6 * targetFPS));
     }
 
     /**
-     * @param updateRate       update the game state this many times per second
-     *                         (updateRate needs to be greater or equal to desiredFrameRate)
-     * @param desiredFrameRate render to the screen this many times per second
-     * @param minFrameRate     minimum allowable frame rate before the updateRate
-     *                         slows down (game play doesn't slow down though)
+     * @param UPS update the game state this many times per second. UPS needs to
+     *            be greater or equal to targetFPS
+     * @param targetFPS render this many times per second
+     * @param minFPS minimum allowable frame rate before the UPS slows down.
      */
-    public GameController(int updateRate, int desiredFrameRate, int minFrameRate) {
-        UserProfile profile = new UserProfile("Default");
+    public GameController(int UPS, int targetFPS, int minFPS) {
+        User profile = new User("Default");
         profile.setInputBinding(InputCode.KEY_A, Action.EXIT_GAME);
-        init(updateRate, desiredFrameRate, minFrameRate, profile);
+        init(UPS, targetFPS, minFPS, profile);
     }
 
     /**
-     * @param updateRate       update the game state this many times per second
-     *                         (updateRate needs to be greater or equal to desiredFrameRate)
-     * @param desiredFrameRate render to the screen this many times per second
-     * @param minFrameRate     minimum allowable frame rate before the updateRate
-     *                         slows down (game play doesn't slow down though)
-     * @param userProfile
+     * @param UPS update the game state this many times per second. UPS needs to
+     *            be greater or equal to targetFPS
+     * @param targetFPS render this many times per second
+     * @param minFPS minimum allowable frame rate before the UPS slows down.
+     * @param user the user profile from which to load user preferences from
      */
-    public GameController(int updateRate, int desiredFrameRate, int minFrameRate, UserProfile userProfile) {
-        init(updateRate, desiredFrameRate, minFrameRate, userProfile);
+    public GameController(int UPS, int targetFPS, int minFPS, User user) {
+        init(UPS, targetFPS, minFPS, user);
     }
 
-    private void init(int updateRate, int desiredFrameRate, int minFrameRate, UserProfile userProfile) {
-        currentProfile = userProfile;
-        input = new InputManager(this);
-        screen = new ScreenManager();
-        screen.setFullScreen();
-        contextStack = new ArrayDeque<Context>();
-        contextTypeControlsMap = new EnumMap<ContextType, HashMap<Integer, Action>>(ContextType.class);
-        contextTypeContextControlsMap = new EnumMap<ContextType, ArrayList<InputMapping>>(ContextType.class);
+    private void init(int UPS, int targetFPS, int minFPS, User user) {
+        this.user = user;
+        inputManager = new InputManager(this);
+        screenManager = new ScreenManager();
+        screenManager.setFullScreen();
+        contextStack = new ArrayDeque<>();
+
+        contextTypeMap = new EnumMap<>(ContextType.class);
         ContextType[] contextTypes = ContextType.values();
         for (ContextType type : contextTypes) {
-            contextTypeContextControlsMap.put(type, new ArrayList<InputMapping>());
+            contextTypeMap.put(type, new ArrayList<InputMapping>());
         }
-        timer = new GameTimer(this, updateRate, desiredFrameRate, minFrameRate);
-        gameThread = new Thread(timer);
-        collisionDetectorHashMap = new HashMap<Context, CollisionDetector>();
+
+        gameTimer = new GameTimer(this, UPS, targetFPS, minFPS);
+        gameThread = new Thread(gameTimer);
+        collisionDetectorHashMap = new HashMap<>();
     }
 
     public void startGame() {
-        addInputListeners(screen.getFullScreenWindow());
+        addInputListeners(screenManager.getFullScreenWindow());
         gameThread.start();
     }
 
     public void stopGame() {
         resetCursor();
-        timer.stop();
+        gameTimer.stop();
     }
 
     /**
-     * Changes the current {@link UserProfile} to the specified one and updates
+     * Changes the current {@link User} to the specified one and updates
      * the controls to the new users controls.
      *
-     * @param userProfile the new user profile
+     * @param user the new user profile
      */
-    public void changeUserProfile(UserProfile userProfile) {
-        this.currentProfile = userProfile;
-        contextTypeControlsMap.clear();
-        currentInputCodeToActionMap = getControlsMap(userProfile, currentContext.getContextType());
-        contextTypeControlsMap.put(currentContext.getContextType(), currentInputCodeToActionMap);
+    public void changeUser(User user) {
+        this.user = user;
+        setInputHandler(activeContext.getInputHandler());
     }
 
     public void updateMouseVelocity(double frameTime) {
-        input.updateMouseVelocity(frameTime);
+        inputManager.updateMouseVelocity(frameTime);
     }
 
     public void updateMouseMovedHandler(double updateTime) {
-        input.updateMouseMovedHandler(updateTime);
-    }
-
-    private HashMap<Integer, Action> getControlsMap(UserProfile userProfile, ContextType contextType) {
-        HashMap<Integer, Action> controlMap = new HashMap<Integer, Action>();
-
-        Iterator<Map.Entry<Integer, Action>> iter = userProfile.getControlsIterator();
-        while (iter.hasNext()) {
-            Map.Entry<Integer, Action> entry = iter.next();
-            controlMap.put(entry.getKey(), entry.getValue());
-        }
-
-        ArrayList<InputMapping> contextMappings = contextTypeContextControlsMap.get(contextType);
-
-        for (InputMapping mapping : contextMappings) {
-            controlMap.put(mapping.getInputCode(), mapping.getAction());
-        }
-
-        return controlMap;
+        inputManager.updateMouseMovedHandler(updateTime);
     }
 
     /**
-     * Starts updating and rendering the specified context, the state of the
-     * previous context is preserved on a stack and can be reentered by calling
-     * exitContext. the current control map is updated to have the new contexts
-     * default controls
+     * Enters the specified {@link Context}.
+     * <p>
+     * The specified context is set as the active context and begin to be
+     * updated and rendered by the {@link GameTimer}.
+     * </p>
+     * <p>
+     * The State of the previous context is preserved and placed on a stack. The
+     * previous context will be entered when the exitContext() method is called.
+     * </p>
+     * When a context is entered, the {@link InputHandler} from the context will
+     * be given the bindings between {@link InputCode} and {@link Action}.
      *
-     * @param context the context to be entered
+     * @param context
      */
     public void enterContext(Context context) {
-        input.clearInputQueue();
-        if (!showingMouseCursor && context.isShowingMouseCursor()) {
-            showingMouseCursor = true;
-            resetMouseCursor(screen.getFullScreenWindow());
-        } else if (showingMouseCursor && !context.isShowingMouseCursor()) {
-            showingMouseCursor = false;
-            setInvisibleMouseCursor(screen.getFullScreenWindow());
-        }
-        if (context.isRelativeMouseMovedEnabled()) {
-            input.enableRelativeMouseMove(context.getWidth() / 2, context.getHeight() / 2);
-        } else {
-            input.disableRelativeMouseMove();
-        }
-
         contextStack.push(context);
-        currentContext = context;
+        activeContext = context;
 
-        currentInputCodeToActionMap = contextTypeControlsMap.get(context.getContextType());
-        if (currentInputCodeToActionMap == null) {
-            currentInputCodeToActionMap = getControlsMap(currentProfile, currentContext.getContextType());
-            contextTypeControlsMap.put(context.getContextType(), currentInputCodeToActionMap);
+        InputHandler inputHandler = context.getInputHandler();
+        // TODO if the context type doesn't change, we might not have to update
+        setInputHandler(inputHandler);
+
+        setMouseCursor(context.isShowingMouseCursor());
+        setMouseMode(context.isRelativeMouseMovedEnabled());
+        // mouse move event is injected for cases when the mouse would be moving
+        // when a context was exited.
+        mouseMoved(0, 0, 0, 0);
+
+        currentCollisionDetector = getCollisionDetector(context);
+    }
+
+    /**
+     * Sets the {@link InputHandler} that will handle input events.
+     * <p>
+     * The active {@link Context} is used to generate mappings between
+     * {@link InputCode}s and {@link Action}, so make sure the active context is
+     * the context that the specified {@link InputHandler} will be handling
+     * input for.
+     * </p>
+     *
+     * @param inputHandler the {@link InputHandler} to handle input events
+     */
+    public void setInputHandler(InputHandler inputHandler) {
+        inputHandler.clearInputMappings();
+
+        Iterator<Map.Entry<Integer, Action>> iterator = user.getControlsIterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, Action> entry = iterator.next();
+            inputHandler.addInputMapping(entry.getKey(), entry.getValue());
         }
 
-        currentCollisionDetector = getCollisionDetector(currentContext);
-        mouseMoved(0, 0, 0, 0);
+        ContextType contextType = activeContext.getContextType();
+        ArrayList<InputMapping> contextMappings = contextTypeMap.get(contextType);
+        for (InputMapping mapping : contextMappings) {
+            inputHandler.addInputMapping(mapping.getInputCode(), mapping.getAction());
+        }
+        inputManager.setInputHandler(inputHandler);
+    }
+
+    private void setMouseMode(boolean isRelativeMouseModeEnabled) {
+        if (isRelativeMouseModeEnabled) {
+            int centerX = activeContext.getWidth() / 2;
+            int centerY = activeContext.getHeight() / 2;
+            inputManager.enableRelativeMouseMode(centerX, centerY);
+        } else {
+            inputManager.disableRelativeMouseMove();
+        }
+    }
+
+    private void setMouseCursor(boolean visible) {
+        Window window = screenManager.getFullScreenWindow();
+        if (visible) {
+            resetMouseCursor(window);
+        } else {
+            setInvisibleMouseCursor(window);
+        }
     }
 
     private static void setInvisibleMouseCursor(Window window) {
-        window.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit().getImage(""), new Point(0, 0), "invisible"));
+        window.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
+                Toolkit.getDefaultToolkit().getImage(""),
+                new Point(0, 0), "invisible"));
     }
 
     private static void resetMouseCursor(Window window) {
@@ -193,16 +214,7 @@ public class GameController implements MouseMovedHandler{
     }
 
     /**
-     * Checks if the supplied {@link InputCode} is mapped to an {@link Action}
-     * @param inputCode the {@link InputCode} used to check whether there are an {@link Action} mapped
-     * @return true if the {@link InputCode} is mapped to an action, otherwise, false
-     */
-    public boolean isInputCodeMappedToAction(int inputCode) {
-        return currentInputCodeToActionMap.containsKey(inputCode) || currentContext.isInSingleHandlerMode();
-    }
-
-    /**
-     * Gets the {@link MouseMovedHandler} from the currentContext
+     * Gets the {@link MouseMovedHandler} from the activeContext
      *
      * @return MouseMovedHandler
      */
@@ -211,76 +223,36 @@ public class GameController implements MouseMovedHandler{
     }
 
     /**
-     * Gets the {@link ActionHandler} that is associated with the specified
-     * {@link Action} in the currentContext
-     *
-     * @param action The action who's handler to return
-     * @return the {@link ActionHandler} for the specified {@link Action}
-     */
-    public ActionHandler getActionHandler(Action action) {
-        if (currentContext.isInSingleHandlerMode()) {
-            return currentContext.getSingleHandler();
-        }
-        return currentContext.getActionHandler(action);
-    }
-
-    private Action getAction(int inputCode) {
-        Action action = currentInputCodeToActionMap.get(inputCode);
-        if (currentContext.isInSingleHandlerMode() && action == null) {
-            action = Action.DEFAULT;
-        }
-        return action;
-    }
-
-    /**
-     * Starts the {@link ActionHandler} for the specified {@link InputCode}
-     * @param inputCode the {@link InputCode} who's handler to start
-     */
-    public void startActionHandler(int inputCode) {
-        Action action = getAction(inputCode);
-        getActionHandler(action).startAction(action, inputCode);
-    }
-
-    /**
-     * Stops the {@link ActionHandler} for the specified {@link InputCode}
-     * @param inputCode the {@link InputCode} who's handler to stop
-     */
-    public void stopActionHandler(int inputCode) {
-        Action action = getAction(inputCode);
-        getActionHandler(action).stopAction(action, inputCode);
-    }
-
-    /**
-     * adds input listeners to the specified component
+     * adds inputManager listeners to the specified component
      *
      * @param component the container to add listeners to
      */
     public final void addInputListeners(Component component) {
-        component.addMouseListener(input);
-        component.addMouseMotionListener(input);
-        component.addMouseWheelListener(input);
-        component.addKeyListener(input);
-        component.setFocusTraversalKeysEnabled(false); // allows input of the Tab and other focus traversal keys
+        component.addMouseListener(inputManager);
+        component.addMouseMotionListener(inputManager);
+        component.addMouseWheelListener(inputManager);
+        component.addKeyListener(inputManager);
+        // allows inputManager of the Tab and other focus traversal keys
+        component.setFocusTraversalKeysEnabled(false);
     }
 
     /**
-     * Change input bindings, should only be used in a control menu where the
+     * Change inputManager bindings, should only be used in a control menu where the
      * player is changing bindings
      *
+     * @param originalCode the code that is currently bound
      * @param newCode      the code to bind, this code should be got from one of the
      *                     get*EventType*InputCode() methods
-     * @param originalCode the code that is currently bound
      */
-    public void changeUserBinding(int newCode, int originalCode) {
-        Action action = currentInputCodeToActionMap.remove(originalCode);
-        currentInputCodeToActionMap.put(newCode, action);
-        currentProfile.removeInputBinding(originalCode);
-        currentProfile.setInputBinding(newCode, action);
+    public void changeUserBinding(int originalCode, int newCode) {
+        user.removeInputBinding(originalCode);
+        user.setInputBinding(newCode, user.getAction(originalCode));
+        setInputHandler(activeContext.getInputHandler());
     }
 
     /**
-     * Sets context specific input bindings. The combined context specific
-     * bindings and {@link UserProfile} bindings are used when the context is
+     * Sets context specific inputManager bindings. The combined context specific
+     * bindings and {@link User} bindings are used when the context is
      * entered. When the bindings are combined, the context specific bindings
      * always override the user profile bindings. Game actions should not be
      * reused in menus to avoid having multiple keys bound to the same action
@@ -290,7 +262,7 @@ public class GameController implements MouseMovedHandler{
      * @param action      the action to bind
      */
     public void setContextBinding(ContextType contextType, int inputCode, Action action) {
-        ArrayList<InputMapping> mappings = contextTypeContextControlsMap.get(contextType);
+        ArrayList<InputMapping> mappings = contextTypeMap.get(contextType);
         boolean duplicateNotFound = true;
         int i = 0;
         while (duplicateNotFound && i < mappings.size()) {
@@ -305,53 +277,54 @@ public class GameController implements MouseMovedHandler{
     }
 
     public Object getUserProperty(String propertyName) {
-        return currentProfile.getProperty(propertyName);
+        return user.getProperty(propertyName);
     }
 
     public void setUserProperty(String propertyName, Serializable property) {
-        currentProfile.setProperty(propertyName, property);
+        user.setProperty(propertyName, property);
     }
 
 
     /**
-     * Returns the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
+     * Returns the time in nanoseconds of the next input event.
      *
-     * @return
+     * @return the time in nanoseconds of the next input event.<br></br>
+     *                  Long.MAX_VALUE is returned if no events are in the queue
      */
     public long getNextInputEventTime() {
-        return input.getNextEventTime();
+        return inputManager.getNextEventTime();
     }
 
     public void handleEvents(long cutOffTime) {
-        input.handleEvents(cutOffTime);
+        inputManager.handleEvents(cutOffTime);
     }
 
     public void setFullScreen() {
-        screen.setFullScreen();
+        screenManager.setFullScreen();
     }
 
     public void restoreScreen() {
-        screen.restoreScreen();
+        screenManager.restoreScreen();
     }
 
     public double getFrameRate() {
-        return timer.getFrameRate();
+        return gameTimer.getFrameRate();
     }
 
     public double getUpdateRate() {
-        return timer.getUpdateRate();
+        return gameTimer.getUpdateRate();
     }
 
     public int getWidth() {
-        return screen.getFullScreenWindow().getWidth();
+        return screenManager.getFullScreenWindow().getWidth();
     }
 
     public int getHeight() {
-        return screen.getFullScreenWindow().getHeight();
+        return screenManager.getFullScreenWindow().getHeight();
     }
 
     public void update(double elapsedTime) {
-        currentCollisionDetector.update(elapsedTime, currentContext);
+        currentCollisionDetector.update(elapsedTime, activeContext);
     }
 
     public void addShapeToCollisionDetector(Context context, Shape shape, int collisionCategory) {
@@ -390,31 +363,35 @@ public class GameController implements MouseMovedHandler{
 
     public Graphic loadImage(String path) throws IOException {
         BufferedImage im = ImageIO.read(getClass().getResource(path));
-        Graphic result = new ImageGraphic(screen.getCompatibleImageVersion(im));
+        Graphic result = new ImageGraphic(screenManager.getCompatibleImageVersion(im));
         im.flush();//to save some memory right away
         return result;
     }
 
     public BufferedImage createCompatibleImage(int width, int height) {
-        return screen.createCompatibleImage(width, height, BufferedImage.BITMASK);
+        return screenManager.createCompatibleImage(width, height, BufferedImage.BITMASK);
     }
 
     public void resetCursor() {
-        if (!showingMouseCursor) {
-            resetMouseCursor(screen.getFullScreenWindow());
+        if (!activeContext.isShowingMouseCursor()) {
+            resetMouseCursor(screenManager.getFullScreenWindow());
         }
     }
 
     public void draw() {
-        Graphics2D g2D = screen.getGraphics();
-        currentContext.draw(g2D);
-        //clean up the graphics object and update the screen
+        Graphics2D g2D = screenManager.getGraphics();
+        activeContext.draw(g2D);
+        //clean up the graphics object and update the screenManager
         g2D.dispose();
-        screen.updateGraphics();
+        screenManager.updateGraphics();
     }
 
     @Override
     public void mouseMoved(double x, double y, double velocityX, double velocityY) {
         MouseMotion.mouseMoved(velocityX, velocityY);
+    }
+
+    public User getUser() {
+        return user;
     }
 }

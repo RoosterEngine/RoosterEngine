@@ -201,7 +201,6 @@ public class BrickBreaker extends Context implements ActionHandler{
     }
 
     private void setupInput() {
-        setSingleHandler(this);
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
         controller.setContextBinding(contextType, InputCode.KEY_P, Action.PAUSE_GAME);
         controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);

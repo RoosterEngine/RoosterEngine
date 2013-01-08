@@ -26,10 +26,7 @@ public class Main implements ButtonHandler{
     }
     
     public static void main(String[] args){
-        UserProfile profile = new UserProfile("Player");
-        profile.setInputBinding(InputCode.KEY_LEFT, Action.GAME_LEFT);
-        profile.setInputBinding(InputCode.KEY_RIGHT, Action.GAME_RIGHT);
-        GameController controller = new GameController(60, 60, 50, profile);
+        GameController controller = new GameController(60, 60, 50);
         setupInputToActionMappings(controller);
         Main main = new Main(controller);
         main.startGame();

@@ -1,7 +1,5 @@
 package gameengine.input;
 
-import gameengine.GameController;
-
 /**
  * Wrapper for {@link ActionHandler}.
  * When a released input action occurs (such as key_released), the handler is stored in a ReleasedEvent instance and placed in a queue
@@ -29,7 +27,7 @@ public class ReleasedEvent extends InputEvent {
     }
 
     @Override
-    public void handleAction(GameController controller) {
-        controller.stopActionHandler(inputCode);
+    public void handleAction(InputHandler inputHandler) {
+        inputHandler.stopInput(inputCode);
     }
 }

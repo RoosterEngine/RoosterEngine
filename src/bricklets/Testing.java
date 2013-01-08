@@ -55,6 +55,13 @@ public class Testing extends Context implements ActionHandler{
         for (Entity entity : entities) {
             entity.draw(g);
         }
+        drawStats(g);
+    }
+
+    private void drawStats(Graphics2D g) {
+        g.setColor(Color.WHITE);
+        g.drawString("fps: " + controller.getFrameRate(), 25, 25);
+        g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
     }
 
     @Override

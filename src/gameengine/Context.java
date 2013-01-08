@@ -5,22 +5,24 @@ import bricklets.Entity;
 import bricklets.Group;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
+import gameengine.input.InputHandler;
+
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public abstract class Context{
+public abstract class Context implements ActionHandler, InputHandler{
     //TODO switch to EnumMap
-    private HashMap<Action, ActionHandler> actionHandlers;
-    private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled, inSingleHandlerMode = false;
-    private ActionHandler singleHandler = null;
-    protected ArrayList<Entity> entities = new ArrayList<Entity>();
-    protected ArrayList<Group> groups = new ArrayList<Group>();
-    protected boolean paused = false;
+    private HashMap<Action, ActionHandler> actionMap;
+    private HashMap<Integer, Action> inputMap = new HashMap<>();
+    private InputHandler inputHandler = this;
+    private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
+    private boolean paused = false;
+    protected ArrayList<Entity> entities = new ArrayList<>();
+    protected ArrayList<Group> groups = new ArrayList<>();
     protected GameController controller;
     protected ContextType contextType;
     protected int width, height;
-    protected double timeScale = 1;
 
     /**
      * Constructs a Context
@@ -37,7 +39,7 @@ public abstract class Context{
         this.contextType = contextType;
         this.isShowingMouseCursor = showMouseCursor;
         isRelativeMouseMovedEnabled = enableRelativeMouseMoved;
-        actionHandlers = new HashMap<Action, ActionHandler>();
+        actionMap = new HashMap<>();
         setSize(controller.getWidth(), controller.getHeight());
     }
 
@@ -45,34 +47,10 @@ public abstract class Context{
         entities.clear();
         groups.clear();
         paused = false;
-        timeScale = 1;
     }
 
     public boolean isPaused(){
         return paused;
-    }
-
-    public boolean isInSingleHandlerMode() {
-        return inSingleHandlerMode;
-    }
-
-    public ActionHandler getSingleHandler() {
-        return singleHandler;
-    }
-
-    /**
-     * All events will be handled by the specified handler.
-     *
-     * @param singleHandler the handler to catch all input events
-     */
-    public void setSingleHandler(ActionHandler singleHandler) {
-        inSingleHandlerMode = true;
-        this.singleHandler = singleHandler;
-    }
-
-    public void removeSingleHandler() {
-        inSingleHandlerMode = false;
-        this.singleHandler = null;
     }
 
     public void togglePause(){
@@ -100,10 +78,6 @@ public abstract class Context{
         return height;
     }
 
-    public double getTimeScale(){
-        return timeScale;
-    }
-    
     /**
      * Returns the {@link ContextType} of this context
      * @return {@link ContextType}
@@ -112,24 +86,6 @@ public abstract class Context{
         return contextType;
     }
     
-    /**
-     * Returns the {@link ActionHandler} associated with the specified {@link Action}
-     * @param action the action to use to find the {@link ActionHandler}
-     * @return {@link ActionHandler}
-     */
-    public final ActionHandler getActionHandler(Action action) {
-        return actionHandlers.get(action);
-    }
-
-    /**
-     * Binds an {@link Action} to an {@link ActionHandler}
-     * @param action
-     * @param handler 
-     */
-    protected final void bindAction(Action action, ActionHandler handler) {
-        actionHandlers.put(action, handler);
-    }
-
     public void updatePositions(double elapsedTime) {
         for (Entity entity : entities) {
             entity.updatePosition(elapsedTime);
@@ -140,7 +96,89 @@ public abstract class Context{
         for (Entity entity : entities) {
             entity.updateMotion(elapsedTime);
         }
+    }
 
+    /**
+     * Binds an {@link Action} to an {@link ActionHandler}
+     * @param action
+     * @param handler
+     */
+    protected final void bindAction(Action action, ActionHandler handler) {
+        actionMap.put(action, handler);
+    }
+
+    /**
+     * Enters binding mode. <br></br>
+     * When in binding mode all input events except mouse movement will be
+     * handled, the specified {@link Action} is given to the
+     * {@link ActionHandler} when an input event happens.
+     *
+     * @param bindingInputHandler the {@link InputHandler} that will handle the
+     *                            input while in binding mode
+     */
+    public void enterBindingMode(InputHandler bindingInputHandler) {
+        inputHandler = bindingInputHandler;
+    }
+
+    /**
+     * Exits binding mode.
+     */
+    public void exitBindingMode() {
+        inputHandler = this;
+    }
+
+    public InputHandler getInputHandler() {
+        return inputHandler;
+    }
+
+    //-------------------- InputHandler implementation -------------------------
+    @Override
+    public void clearInputMappings() {
+        inputMap.clear();
+    }
+
+    @Override
+    public void addInputMapping(int inputCode, Action action) {
+        inputMap.put(inputCode, action);
+    }
+
+
+    @Override
+    public final void startInput(int inputCode) {
+        Action action = inputMap.get(inputCode);
+        if (action == null) {
+            return;
+        }
+        startAction(action, inputCode);
+    }
+
+    @Override
+    public final void stopInput(int inputCode) {
+        Action action = inputMap.get(inputCode);
+        if (action == null) {
+            return;
+        }
+        stopAction(action, inputCode);
+    }
+
+
+    //------------------- ActionHandler implementation -------------------------
+    @Override
+    public void startAction(Action action, int inputCode) {
+        ActionHandler actionHandler = actionMap.get(action);
+        if (actionHandler == null) {
+            return;
+        }
+        actionHandler.startAction(action, inputCode);
+    }
+
+    @Override
+    public void stopAction(Action action, int inputCode) {
+        ActionHandler actionHandler = actionMap.get(action);
+        if (actionHandler == null) {
+            return;
+        }
+        actionHandler.stopAction(action, inputCode);
     }
     
     public abstract void update(double elapsedTime);

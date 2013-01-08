@@ -1,7 +1,5 @@
 package gameengine.input;
 
-import gameengine.GameController;
-
 /**
  * Events from the EDT thread are placed on this queue and handled from the game thread
  *
@@ -11,15 +9,14 @@ public class EventQueue {
 
     private static final double GROWTH_RATE = 1.5;
     private static final int INIT_CAPACITY = 16, INIT_RECYCLE_CAPACITY = 16;
-    private GameController gameController;
     private InputEvent[] queue;
     private int front = 0, size = 0;
     private InputEvent[][] recycledInstances = new InputEvent[2][INIT_RECYCLE_CAPACITY];
     private int[] numRecycled;
+    // TODO do i need this flag?
     private boolean clearQueue = false;
-    
-    public EventQueue(GameController gameController) {
-        this.gameController = gameController;
+
+    public EventQueue() {
         queue = new InputEvent[INIT_CAPACITY];
         numRecycled = new int[2];
         numRecycled[0] = 1;
@@ -69,20 +66,24 @@ public class EventQueue {
     /**
      * Handles the events up to the specified time
      * 
-     * @param cutOffTime the time to handle events upto
+     * @param cutOffTime the time to handle events up to
+     * @param inputHandler the handler to handle the input events
      */
-    public synchronized void handleEvents(long cutOffTime) {
+    public synchronized void handleEvents(long cutOffTime,
+                                          InputHandler inputHandler) {
         while(size > 0 && queue[front].getEventTime() <= cutOffTime) {
             size--;
-            queue[front].handleAction(gameController);
+            queue[front].handleAction(inputHandler);
             recycleAction(queue[front]);
             front = (front + 1) % queue.length;
         }
     }
     
     /**
-     * Returns the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
-     * @return the time in nanoseconds of the next event. Long.MAX_VALUE is returned if there are no events in queue
+     * Returns the time in nanoseconds of the next event.
+     *
+     * @return the time in nanoseconds of the next event.
+     * Long.MAX_VALUE is returned if there are no events in queue
      */
     public long getNextEventTime(){
         if(size == 0){

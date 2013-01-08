@@ -13,9 +13,9 @@ public class InputCode {
     
     private static final int PARTITION = Integer.MAX_VALUE / 4;
     private static final int KEY_OFFSET = 0;
-    private static final int MOUSE_BUTTON_OFFSET = KEY_OFFSET + PARTITION;
-    private static final int MOUSE_WHEEL_OFFSET = MOUSE_BUTTON_OFFSET + PARTITION;
-    // inputcode constanstants
+    private static final int MOUSE_BUTTON_OFFSET = PARTITION * 2;
+    private static final int MOUSE_WHEEL_OFFSET = PARTITION * 3;
+
     public static final int KEY_A = getKeyInputCode(KeyEvent.VK_A);
     public static final int KEY_B = getKeyInputCode(KeyEvent.VK_B);
     public static final int KEY_C = getKeyInputCode(KeyEvent.VK_C);
@@ -197,5 +197,19 @@ public class InputCode {
      */
     private static String formatKeyString(String name) {
         return name + " Key";
+    }
+
+    public static boolean isKeyboardInput(int inputCode) {
+        return inputCode >= KEY_OFFSET  && inputCode < KEY_OFFSET + PARTITION;
+    }
+
+    public static boolean isMouseButtonInput(int inputCode) {
+        return inputCode >= MOUSE_BUTTON_OFFSET
+                && inputCode < MOUSE_BUTTON_OFFSET + PARTITION;
+    }
+
+    public static boolean isMouseWheelInput(int inputCode) {
+        return inputCode >= MOUSE_WHEEL_OFFSET
+                && inputCode < MOUSE_WHEEL_OFFSET + PARTITION;
     }
 }

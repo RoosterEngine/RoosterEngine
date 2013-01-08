@@ -1,9 +1,7 @@
 package gameengine.input;
 
-import gameengine.GameController;
-
 /**
- * A wrapper of input handlers
+ * A wrapper for input codes
  *
  * @author davidrusu
  */
@@ -45,9 +43,13 @@ public abstract class InputEvent {
 
     /**
      * Handles the {@link Action} associated with the provided {@link InputCode}
-     * @param controller the {@link GameController} that is controlling the game
+     * @param inputHandler the {@link InputHandler} to handle this event
      */
-    public abstract void handleAction(GameController controller);
+    public abstract void handleAction(InputHandler inputHandler);
 
+    /**
+     * Returns a constant identifying the type of {@link InputEvent}
+     * @return either InputEvent.PRESSED_EVENT or InputEvent.RELEASED_EVENT
+     */
     public abstract int getEventType();
 }

@@ -182,7 +182,7 @@ public class CollisionDetector {
     }
 
     public void update(double elapsedTime, Context context) {
-        double timeLeft = elapsedTime * context.getTimeScale();
+        double timeLeft = elapsedTime;
 
         context.updateMotions(elapsedTime);
 

@@ -11,7 +11,7 @@ import java.util.Map;
  * Stores all user preferences such as control bindings
  * @author davidrusu
  */
-public class UserProfile {
+public class User {
     private String userName;
     private HashMap<Integer, Action> controls = new HashMap<Integer, Action>();
     private HashMap<String, Serializable> properties = new HashMap<String, Serializable>();
@@ -19,7 +19,7 @@ public class UserProfile {
     /**
      * @param userName the name of the user
      */
-    public UserProfile(String userName){
+    public User(String userName){
         this.userName = userName;
     }
     
@@ -49,7 +49,7 @@ public class UserProfile {
     }
     
     /**
-     * Sets the user name for this UserProfile
+     * Sets the user name for this User
      * @param userName the new user name
      */
     public void setUserName(String userName){
@@ -57,7 +57,7 @@ public class UserProfile {
     }
     
     /**
-     * Retrieves the user name for this UserProfile
+     * Retrieves the user name for this User
      * @return 
      */
     public String getUserName(){

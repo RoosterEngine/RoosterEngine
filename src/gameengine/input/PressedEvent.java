@@ -1,7 +1,5 @@
 package gameengine.input;
 
-import gameengine.GameController;
-
 /**
  * Wrapper for {@link ActionHandler}.
  * When a pressed input action occurs (such as key_pressed), the handler is stored in a PressedEvent instance and placed in a queue
@@ -29,7 +27,7 @@ public class PressedEvent extends InputEvent {
     }
     
     @Override
-    public void handleAction(GameController controller) {
-        controller.startActionHandler(inputCode);
+    public void handleAction(InputHandler inputHandler) {
+        inputHandler.startInput(inputCode);
     }
 }

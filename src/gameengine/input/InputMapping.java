@@ -2,6 +2,7 @@ package gameengine.input;
 
 /**
  * Stores a mapping between {@link InputCode} and {@link Action}
+ *
  * @author davidrusu
  */
 public class InputMapping {
@@ -12,7 +13,7 @@ public class InputMapping {
         this.inputCode = inputCode;
         this.action = action;
     }
-    
+
     public int getInputCode() {
         return inputCode;
     }

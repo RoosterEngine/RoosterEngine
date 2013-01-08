@@ -13,7 +13,7 @@ public class Gravity implements EnvironmentMotionGenerator {
     private double gX, gY;
     private double deltaVelocityX, deltaVelocityY;
 
-    public Gravity(double gX, double gY){
+    public Gravity(double gX, double gY) {
         this.gX = gX;
         this.gY = gY;
     }

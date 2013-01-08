@@ -2,12 +2,9 @@ package gameengine;
 
 import bricklets.Entity;
 
-import java.awt.Color;
-import java.awt.FontMetrics;
-import java.awt.Graphics2D;
+import java.awt.*;
 
 /**
- *
  * @author davidrusu
  */
 public class BasicButton extends Entity {
@@ -15,14 +12,14 @@ public class BasicButton extends Entity {
     private boolean selected = false, isPressed = false;
     private Graphic upGraphic, pressedGraphic, selectedGraphic, currentGraphic;
     private double initialX, initialY;
-    
-    public BasicButton(String text){
-        this(text, new SolidColorGraphic(new Color(177,70,35), 0, 0),
-                   new SolidColorGraphic(new Color(62,28,51), 0, 0),
-                   new SolidColorGraphic(new Color(96,39,73), 0, 0));
+
+    public BasicButton(String text) {
+        this(text, new SolidColorGraphic(new Color(177, 70, 35), 0, 0),
+                new SolidColorGraphic(new Color(62, 28, 51), 0, 0),
+                new SolidColorGraphic(new Color(96, 39, 73), 0, 0));
     }
-    
-    public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic){
+
+    public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic) {
         super(0, 0, 0, 0);
         this.text = text;
         this.upGraphic = upGraphic;
@@ -30,8 +27,8 @@ public class BasicButton extends Entity {
         this.selectedGraphic = selectedGraphic;
         currentGraphic = upGraphic;
     }
-    
-    public void initialize(double x, double y, double width, double height){
+
+    public void initialize(double x, double y, double width, double height) {
         resetMotion();
         this.x = x;
         this.y = y;
@@ -39,38 +36,38 @@ public class BasicButton extends Entity {
         initialY = y;
         setWidth(width);
         setHeight(height);
-        upGraphic.resize((int)width, (int)height);
-        pressedGraphic.resize((int)width, (int)height);
-        selectedGraphic.resize((int)width, (int)height);
-        
+        upGraphic.resize((int) width, (int) height);
+        pressedGraphic.resize((int) width, (int) height);
+        selectedGraphic.resize((int) width, (int) height);
+
     }
 
-    public void select(){
+    public void select() {
         currentGraphic = selectedGraphic;
         currentGraphic.reset();
         selected = true;
     }
-    
-    public void deSelect(){
+
+    public void deSelect() {
         currentGraphic = upGraphic;
         currentGraphic.reset();
         selected = false;
     }
-    
-    public boolean isPressed(){
+
+    public boolean isPressed() {
         return isPressed;
     }
-    
-    public void setPressed(){
+
+    public void setPressed() {
         currentGraphic = pressedGraphic;
         currentGraphic.reset();
         isPressed = true;
     }
-    
-    public void setUnpressed(){
-        if(selected){
+
+    public void setUnpressed() {
+        if (selected) {
             currentGraphic = selectedGraphic;
-        }else{
+        } else {
             currentGraphic = upGraphic;
         }
         currentGraphic.reset();
@@ -78,11 +75,11 @@ public class BasicButton extends Entity {
     }
 
     @Override
-    public void update(double elapsedTime){
+    public void update(double elapsedTime) {
         currentGraphic.update(elapsedTime);
     }
-    
-    public void reset(){
+
+    public void reset() {
         resetMotion();
         x = initialX;
         y = initialY;
@@ -107,22 +104,22 @@ public class BasicButton extends Entity {
     public double getHeight() {
         return height;
     }
-    
-    public boolean contains(double x, double y){
+
+    public boolean contains(double x, double y) {
         double leftEdge = this.x - width / 2;
         double topEdge = this.y - height / 2;
         return x >= leftEdge && x <= leftEdge + width && y >= topEdge && y <= topEdge + height;
     }
 
     @Override
-    public void draw(Graphics2D g){
-        currentGraphic.draw(g, (int)(x - width / 2), (int)(y - height / 2));
+    public void draw(Graphics2D g) {
+        currentGraphic.draw(g, (int) (x - width / 2), (int) (y - height / 2));
         FontMetrics metrics = g.getFontMetrics();
         int textWidth = metrics.stringWidth(text);
         int textHeight = metrics.getHeight();
         g.setColor(Color.WHITE);
         double xPadding = (width - textWidth) * 0.5;
         double yPadding = (height + textHeight / 2) * 0.5;
-        g.drawString(text, (int)(x - width / 2 + xPadding), (int)(y - height / 2 + yPadding));
+        g.drawString(text, (int) (x - width / 2 + xPadding), (int) (y - height / 2 + yPadding));
     }
 }

@@ -5,13 +5,13 @@ import gameengine.Graphic;
 import java.awt.*;
 
 /**
- * Created with IntelliJ IDEA.
+ * A {@link Graphic} that does not render anything
+ *
  * User: davidrusu
  * Date: 17/12/12
  * Time: 8:50 PM
- * To change this template use File | Settings | File Templates.
  */
-public class NoGraphic implements Graphic{
+public class NoGraphic implements Graphic {
 
     @Override
     public void update(double elapsedTime) {

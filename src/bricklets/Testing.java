@@ -1,32 +1,31 @@
 package bricklets;
 
 import gameengine.*;
-import gameengine.motion.motions.AttractMotion;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
+import gameengine.motion.motions.AttractMotion;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 
-public class Testing extends Context implements ActionHandler{
+public class Testing extends Context implements ActionHandler {
     private Pointer pointer;
-    private AABBEntity box;
+    private BoxEntity box;
     private AttractMotion boxMotion;
 
-    public Testing(GameController controller){
-        super(controller, ContextType.GAME, false, true);
+    public Testing(GameController controller) {
+        super(controller, ContextType.GAME);
         init();
     }
 
-    private void init(){
+    private void init() {
         entities.clear();
         controller.clearCollisions(this);
         controller.setCollisionPair(this, 0, 0);
         pointer = new Pointer(new OvalGraphic(10, 10, Color.RED), width / 2, height / 2);
         entities.add(pointer);
 
-        box = new AABBEntity(width / 4, height / 2, 100, 50);
+        box = new BoxEntity(width / 4, height / 2, 100, 50);
         boxMotion = new AttractMotion(width / 2, height / 2, 0.0001, 0.3, box.getMass());
         box.setMotion(boxMotion);
         entities.add(box);
@@ -34,7 +33,7 @@ public class Testing extends Context implements ActionHandler{
         Material material = Material.createCustomMaterial(0.1, 0.001);
         controller.addShapeToCollisionDetector(this, new AABBShape(box.getX(), box.getY(), box.getWidth(), box.getHeight(), box, material), 0);
 
-        AABBEntity box2 = new AABBEntity(width - width / 4, height / 2, 100, 50);
+        BoxEntity box2 = new BoxEntity(width - width / 4, height / 2, 100, 50);
         box2.setMass(10000);
         entities.add(box2);
 
@@ -45,7 +44,7 @@ public class Testing extends Context implements ActionHandler{
 
     @Override
     public void update(double elapsedTime) {
-        boxMotion.setDestination(box, pointer.getX(), pointer.getY());
+        boxMotion.setDestination(pointer.getX(), pointer.getY());
     }
 
     @Override
@@ -69,7 +68,7 @@ public class Testing extends Context implements ActionHandler{
         Physics.performCollision(collision);
     }
 
-    private void setupInput(){
+    private void setupInput() {
         controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
     }

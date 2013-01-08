@@ -2,12 +2,13 @@ package bricklets;
 
 import gameengine.GameController;
 import gameengine.Graphic;
-import java.awt.Color;
-import java.awt.Graphics2D;
+
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
  * Diagonal stripes graphic
+ *
  * @author david
  */
 public class StripedGraphic implements Graphic {
@@ -15,8 +16,8 @@ public class StripedGraphic implements Graphic {
     private int width, height;
     private GameController controller;
     private BufferedImage image;
-    
-    public StripedGraphic(GameController controller, Color background, Color foreground, int width, int height){
+
+    public StripedGraphic(GameController controller, Color background, Color foreground, int width, int height) {
         this.controller = controller;
         this.backgroundColor = background;
         this.foregroundColor = foreground;
@@ -28,8 +29,8 @@ public class StripedGraphic implements Graphic {
     @Override
     public void reset() {
     }
-    
-    private void setupImage(){
+
+    private void setupImage() {
         image = controller.createCompatibleImage(width, height);
         Graphics2D g = image.createGraphics();
         g.setColor(backgroundColor);
@@ -40,23 +41,23 @@ public class StripedGraphic implements Graphic {
         double padding = 10, thickness = 10;
         int[] xPoints = new int[4];
         int[] yPoints = new int[4];
-        for(int i = 0; i < Math.max(width, height) * 2 / (padding + thickness); i++){
+        for (int i = 0; i < Math.max(width, height) * 2 / (padding + thickness); i++) {
             x2 += padding + thickness;
             y1 += padding + thickness;
-            
-            xPoints[0] = (int)x1;
-            yPoints[0] = (int)y1 ;
-            xPoints[1] = (int)x1;
-            yPoints[1] = (int)(y1 + thickness);
-            xPoints[2] = (int)(x2 + thickness);
-            yPoints[2] = (int)y2;
-            xPoints[3] = (int)x2;
-            yPoints[3] = (int)y2;
+
+            xPoints[0] = (int) x1;
+            yPoints[0] = (int) y1;
+            xPoints[1] = (int) x1;
+            yPoints[1] = (int) (y1 + thickness);
+            xPoints[2] = (int) (x2 + thickness);
+            yPoints[2] = (int) y2;
+            xPoints[3] = (int) x2;
+            yPoints[3] = (int) y2;
             g.fillPolygon(xPoints, yPoints, 4);
         }
         g.dispose();
     }
-    
+
     @Override
     public void update(double elapsedTime) {
     }

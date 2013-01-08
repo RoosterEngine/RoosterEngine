@@ -3,7 +3,6 @@ package gameengine.motion.integrators;
 import bricklets.Entity;
 
 /**
- *
  * @author davidrusu
  */
 public class LinearIntegrator implements Integrator {
@@ -11,6 +10,7 @@ public class LinearIntegrator implements Integrator {
 
     /**
      * Constructs a {@link LinearIntegrator} instance
+     *
      * @param constantVelocity the velocity to be returned when getVelocity is called, must be positive
      * @throws IllegalArgumentException if constantVelocity is negative
      */

@@ -3,7 +3,6 @@ package gameengine.motion.integrators;
 import bricklets.Entity;
 
 /**
- *
  * @author davidrusu
  */
 public class JumpIntegrator implements Integrator {
@@ -11,11 +10,12 @@ public class JumpIntegrator implements Integrator {
 
     /**
      * Constructs a {@link JumpIntegrator} instance
-     * @param jumpDistance the distance to jump
+     *
+     * @param jumpDistance     the distance to jump
      * @param timeBetweenJumps the time between jumps. If set to zero, this Integrator will behave like {@link LinearIntegrator}
      * @throws IllegalArgumentException if the specified timeBetweenJumps is negative
      */
-    public JumpIntegrator(double jumpDistance, double timeBetweenJumps){
+    public JumpIntegrator(double jumpDistance, double timeBetweenJumps) {
         if (timeBetweenJumps < 0) {
             throw new IllegalArgumentException("timeBetweenJumps must be positive, timeBetweenJumps: " + timeBetweenJumps);
         }
@@ -28,13 +28,13 @@ public class JumpIntegrator implements Integrator {
     @Override
     public double getVelocity(Entity entity, double displacementFromDestination, double elapsedTime) {
         timeTillNextJump -= elapsedTime;
-        if(timeTillNextJump > 0){
+        if (timeTillNextJump > 0) {
             return 0;
         }
 
         double displacementVector = displacementFromDestination / Math.abs(displacementFromDestination);
         timeTillNextJump += timeBetweenJumps;
-        if(displacementFromDestination * displacementVector < jumpDistance){
+        if (displacementFromDestination * displacementVector < jumpDistance) {
             return displacementFromDestination / elapsedTime;
         }
         return jumpDistance * displacementVector / elapsedTime;
@@ -47,6 +47,7 @@ public class JumpIntegrator implements Integrator {
 
     /**
      * Sets the distance to jump
+     *
      * @param jumpDistance the distance to jump in pixels
      */
     public void setJumpDistance(double jumpDistance) {
@@ -55,6 +56,7 @@ public class JumpIntegrator implements Integrator {
 
     /**
      * sets the time between jumps
+     *
      * @param timeBetweenJumps the time between jumps in milliseconds
      */
     public void setTimeBetweenJumps(double timeBetweenJumps) {

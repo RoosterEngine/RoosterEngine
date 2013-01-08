@@ -7,7 +7,7 @@ import java.util.ArrayList;
 public class CollisionDetector {
     public static final int MAX_COLLISION_CATEGORIES = 10;
     private ArrayList<Shape>[] categories;
-    private ArrayList<CollisionCategoryPair> collisionPairs = new ArrayList<CollisionCategoryPair>();
+    private ArrayList<CollisionCategoryPair> collisionPairs = new ArrayList<>();
     private double[] collisionTimes = new double[16];
     private int back = 0, numCollision = 0;
     private double currentGameTime = 0;
@@ -31,7 +31,7 @@ public class CollisionDetector {
     public CollisionDetector() {
         categories = new ArrayList[MAX_COLLISION_CATEGORIES];
         for (int i = 0; i < categories.length; i++) {
-            categories[i] = new ArrayList<Shape>();
+            categories[i] = new ArrayList<>();
         }
     }
 
@@ -48,21 +48,21 @@ public class CollisionDetector {
         return false;
     }
 
-    public void removeChildren(Entity parent){
-        for(CollisionCategoryPair pair: collisionPairs){
+    public void removeChildren(Entity parent) {
+        for (CollisionCategoryPair pair : collisionPairs) {
             ArrayList<Shape> listA = categories[pair.getA()];
             ArrayList<Shape> listB = categories[pair.getB()];
 
-            for (int i = 0; i < listA.size(); i++){
+            for (int i = 0; i < listA.size(); i++) {
                 Shape shape = listA.get(i);
-                if(shape.getParentEntity() == parent){
+                if (shape.getParentEntity() == parent) {
                     listA.remove(shape);
                 }
             }
 
-            for (int i = 0; i < listB.size(); i++){
+            for (int i = 0; i < listB.size(); i++) {
                 Shape shape = listB.get(i);
-                if(shape.getParentEntity() == parent){
+                if (shape.getParentEntity() == parent) {
                     listB.remove(shape);
                 }
             }
@@ -108,8 +108,8 @@ public class CollisionDetector {
     }
 
     public Collision getNextCollision(double maxTime) {
-        for(ArrayList<Shape> list: categories){
-            for(Shape shape: list){
+        for (ArrayList<Shape> list : categories) {
+            for (Shape shape : list) {
                 shape.update();
             }
         }
@@ -186,15 +186,15 @@ public class CollisionDetector {
 
         context.updateMotions(elapsedTime);
 
-        while(timeLeft > 0 && !context.isPaused()){
+        while (timeLeft > 0 && !context.isPaused()) {
             Collision collision = getNextCollision(timeLeft);
             double updateTime = Math.min(collision.getTimeToCollision(), timeLeft);
             currentGameTime += updateTime;
             context.updatePositions(updateTime);
-            if(collision.getTimeToCollision() != Shape.NO_COLLISION && collision.getTimeToCollision() <= timeLeft){
+            if (collision.getTimeToCollision() != Shape.NO_COLLISION && collision.getTimeToCollision() <= timeLeft) {
                 collisionTimes[back] = currentGameTime;
                 double collisionRate;
-                if(numCollision >= collisionTimes.length - 1){
+                if (numCollision >= collisionTimes.length - 1) {
                     int front = (back + 1) % collisionTimes.length;
                     double dt = collisionTimes[back] - collisionTimes[front];
                     back = front;

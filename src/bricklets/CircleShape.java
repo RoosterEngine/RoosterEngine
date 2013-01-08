@@ -4,24 +4,23 @@
  */
 package bricklets;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 
-public class CircleShape extends Shape{
-    
-    public CircleShape(double x, double y, double radius, Entity parentEntity, Material material){
+public class CircleShape extends Shape {
+
+    public CircleShape(double x, double y, double radius, Entity parentEntity, Material material) {
         super(x, y, radius, parentEntity, material);
     }
-    
+
     @Override
     public int getShapeType() {
         return TYPE_CIRCLE;
     }
-    
+
     @Override
-    public void draw(Graphics2D g, Color color){
+    public void draw(Graphics2D g, Color color) {
         g.setColor(color);
-        g.drawOval((int)(x - radius), (int)(y - radius), (int)(radius * 2), (int)(radius * 2));
+        g.drawOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
     }
-    
+
 }

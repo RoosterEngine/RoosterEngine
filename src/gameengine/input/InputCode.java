@@ -10,7 +10,7 @@ import java.awt.event.MouseEvent;
  * @author davidrusu
  */
 public class InputCode {
-    
+
     private static final int PARTITION = Integer.MAX_VALUE / 4;
     private static final int KEY_OFFSET = 0;
     private static final int MOUSE_BUTTON_OFFSET = PARTITION * 2;
@@ -119,9 +119,9 @@ public class InputCode {
     public static final int MOUSE_WHEEL_DOWN = MOUSE_WHEEL_OFFSET + 1;
 
     //private constructor to avoid any instances of this class from being created
-    private InputCode(){
+    private InputCode() {
     }
-    
+
     /**
      * Generates the input code from a {@link KeyEvent} code
      *
@@ -134,7 +134,7 @@ public class InputCode {
 
     /**
      * Gets the input code associated with the a specified mouse button
-     * 
+     *
      * @param button the integer returned when getMouseButton is called on a MouseEvent
      * @return the integer input code for the specified mouse button
      */
@@ -167,25 +167,25 @@ public class InputCode {
      * @return the string representation of the provided input code
      */
     public static String getStringRep(int inputCode) {
-        
-        if(inputCode < MOUSE_BUTTON_OFFSET){
+
+        if (inputCode < MOUSE_BUTTON_OFFSET) {
             return formatKeyString(KeyEvent.getKeyText(inputCode - KEY_OFFSET));
         }
-        
-        if(inputCode == MOUSE_LEFT_BUTTON){
+
+        if (inputCode == MOUSE_LEFT_BUTTON) {
             return "LEFT MOUSE BUTTON";
-        }else if(inputCode == MOUSE_RIGHT_BUTTON){
+        } else if (inputCode == MOUSE_RIGHT_BUTTON) {
             return "RIGHT MOUSE BUTTON";
-        }else if(inputCode == MOUSE_MIDDLE_BUTTON){
+        } else if (inputCode == MOUSE_MIDDLE_BUTTON) {
             return "MIDDLE MOUSE BUTTON";
-        }else if(inputCode == MOUSE_WHEEL_UP){
+        } else if (inputCode == MOUSE_WHEEL_UP) {
             return "MOUSE WHEEL UP";
-        }else if(inputCode == MOUSE_WHEEL_DOWN){
+        } else if (inputCode == MOUSE_WHEEL_DOWN) {
             return "MOUSE_WHEEL_DOWN";
         }
         return "NOT RECOGNIZED";
     }
-        
+
     /**
      * Formats the string representation of the key input codes. Modify this
      * method to change how key input codes are represented. since there are so
@@ -200,7 +200,7 @@ public class InputCode {
     }
 
     public static boolean isKeyboardInput(int inputCode) {
-        return inputCode >= KEY_OFFSET  && inputCode < KEY_OFFSET + PARTITION;
+        return inputCode >= KEY_OFFSET && inputCode < KEY_OFFSET + PARTITION;
     }
 
     public static boolean isMouseButtonInput(int inputCode) {

@@ -4,11 +4,12 @@ import bricklets.Entity;
 
 /**
  * A {@link Motion} that will always return zero as it's velocity
+ *
  * @author davidrusu
  */
 public class NoMotion implements Motion {
 
-    public NoMotion(){
+    public NoMotion() {
     }
 
     @Override

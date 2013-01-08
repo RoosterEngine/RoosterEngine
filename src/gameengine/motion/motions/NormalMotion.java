@@ -3,11 +3,11 @@ package gameengine.motion.motions;
 import bricklets.Entity;
 
 /**
- * Created with IntelliJ IDEA.
+ * This {@link Motion} will not affect the velocity of the {@link Entity}
+ *
  * User: davidrusu
  * Date: 29/12/12
  * Time: 12:22 PM
- * To change this template use File | Settings | File Templates.
  */
 public class NormalMotion implements Motion {
     private double velocityX, velocityY;

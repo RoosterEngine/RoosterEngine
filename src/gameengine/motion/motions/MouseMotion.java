@@ -3,11 +3,11 @@ package gameengine.motion.motions;
 import bricklets.Entity;
 
 /**
- * Created with IntelliJ IDEA.
+ * To be used if you want your entity to be controlled by the mouse
+ *
  * User: davidrusu
  * Date: 14/12/12
  * Time: 9:47 PM
- * To change this template use File | Settings | File Templates.
  */
 public class MouseMotion implements Motion {
     private static double mouseVelocityX, mouseVelocityY;
@@ -32,10 +32,11 @@ public class MouseMotion implements Motion {
 
     /**
      * Sets the velocity that is returned by this {@link MouseMotion}
+     *
      * @param velocityX the x velocity of the mouse
      * @param velocityY the y velocity of the mouse
      */
-    public static void mouseMoved(double velocityX, double velocityY){
+    public static void mouseMoved(double velocityX, double velocityY) {
         mouseVelocityX = velocityX;
         mouseVelocityY = velocityY;
     }

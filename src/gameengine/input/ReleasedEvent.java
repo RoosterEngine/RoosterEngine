@@ -4,7 +4,7 @@ package gameengine.input;
  * Wrapper for {@link ActionHandler}.
  * When a released input action occurs (such as key_released), the handler is stored in a ReleasedEvent instance and placed in a queue
  * for the event to be handled at the appropriate time.
- * 
+ *
  * @author davidrusu
  */
 public class ReleasedEvent extends InputEvent {
@@ -17,12 +17,12 @@ public class ReleasedEvent extends InputEvent {
     }
 
     @Override
-    public InputEvent createInstance(int inputCode, long eventTime){
+    public InputEvent createInstance(int inputCode, long eventTime) {
         return new ReleasedEvent(inputCode, eventTime);
     }
-    
+
     @Override
-    public int getEventType(){
+    public int getEventType() {
         return InputEvent.RELEASED_EVENT;
     }
 

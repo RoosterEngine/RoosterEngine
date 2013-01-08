@@ -29,7 +29,7 @@ public class EventQueue {
      * Add a {@link PressedEvent} to the queue
      *
      * @param inputCode the input code of the event, should be retrieved from
-     * {@link InputCode}
+     *                  {@link InputCode}
      * @param eventTime the time this action was triggered
      */
     public synchronized void addPressedAction(int inputCode, long eventTime) {
@@ -40,18 +40,18 @@ public class EventQueue {
      * Add a {@link ReleasedEvent} to the queue
      *
      * @param inputCode the input code of the event, should be retrieved from
-     * {@link InputCode}
+     *                  {@link InputCode}
      * @param eventTime the time this action was triggered
      */
     public synchronized void addReleasedAction(int inputCode, long eventTime) {
         addRecycledInputAction(InputEvent.RELEASED_EVENT, inputCode, eventTime);
     }
-    
-    private void addRecycledInputAction(int actionType, int inputCode, long eventTime){
+
+    private void addRecycledInputAction(int actionType, int inputCode, long eventTime) {
         InputEvent inputEvent;
-        if(numRecycled[actionType] == 0){
+        if (numRecycled[actionType] == 0) {
             inputEvent = recycledInstances[actionType][0].createInstance(inputCode, eventTime);
-        }else{
+        } else {
             numRecycled[actionType]--;
             inputEvent = recycledInstances[actionType][numRecycled[actionType]];
             inputEvent.setup(inputCode, eventTime);
@@ -65,35 +65,35 @@ public class EventQueue {
 
     /**
      * Handles the events up to the specified time
-     * 
-     * @param cutOffTime the time to handle events up to
+     *
+     * @param cutOffTime   the time to handle events up to
      * @param inputHandler the handler to handle the input events
      */
     public synchronized void handleEvents(long cutOffTime,
                                           InputHandler inputHandler) {
-        while(size > 0 && queue[front].getEventTime() <= cutOffTime) {
+        while (size > 0 && queue[front].getEventTime() <= cutOffTime) {
             size--;
             queue[front].handleAction(inputHandler);
             recycleAction(queue[front]);
             front = (front + 1) % queue.length;
         }
     }
-    
+
     /**
      * Returns the time in nanoseconds of the next event.
      *
      * @return the time in nanoseconds of the next event.
-     * Long.MAX_VALUE is returned if there are no events in queue
+     *         Long.MAX_VALUE is returned if there are no events in queue
      */
-    public long getNextEventTime(){
-        if(size == 0){
+    public long getNextEventTime() {
+        if (size == 0) {
             return Long.MAX_VALUE;
         }
         return queue[front].getEventTime();
     }
-    
-    private void emptyQueue(){
-        while(size > 0) {
+
+    private void emptyQueue() {
+        while (size > 0) {
             size--;
             recycleAction(queue[front]);
             front = (front + 1) % queue.length;
@@ -102,21 +102,21 @@ public class EventQueue {
     }
 
     //TODO figure out what was going on here
-    public synchronized void clearQueue(){
+    public synchronized void clearQueue() {
         clearQueue = true;
     }
-    
-    private void recycleAction(InputEvent action){
+
+    private void recycleAction(InputEvent action) {
         int type = action.getEventType();
-        if(numRecycled[type] == recycledInstances[type].length){
+        if (numRecycled[type] == recycledInstances[type].length) {
             InputEvent[] temp = recycledInstances[type];
-            recycledInstances[type] = new InputEvent[(int)(temp.length * GROWTH_RATE)];
+            recycledInstances[type] = new InputEvent[(int) (temp.length * GROWTH_RATE)];
             System.arraycopy(temp, 0, recycledInstances[type], 0, temp.length);
         }
         recycledInstances[type][numRecycled[type]] = action;
         numRecycled[type]++;
     }
-    
+
     private void expand() {
         InputEvent[] temp = new InputEvent[(int) (queue.length * GROWTH_RATE)];
         int firstHalfLength = queue.length - front;

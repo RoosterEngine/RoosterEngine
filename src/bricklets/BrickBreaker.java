@@ -3,28 +3,30 @@ package bricklets;
 import gameengine.Context;
 import gameengine.ContextType;
 import gameengine.GameController;
-import gameengine.motion.*;
-import gameengine.motion.motions.*;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
+import gameengine.motion.Gravity;
+import gameengine.motion.motions.AttractMotion;
+import gameengine.motion.motions.MotionCompositor;
+import gameengine.motion.motions.MouseMotion;
+import gameengine.motion.motions.VerticalAttractMotion;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
 /**
- * Created with IntelliJ IDEA.
+ *
  * User: davidrusu
  * Date: 24/11/12
  * Time: 9:55 AM
- * To change this template use File | Settings | File Templates.
  */
-public class BrickBreaker extends Context implements ActionHandler{
-    private ArrayList<Brick> bricks = new ArrayList<Brick>();
+public class BrickBreaker extends Context implements ActionHandler {
+    private ArrayList<Brick> bricks = new ArrayList<>();
     private Paddle paddle;
-    private ArrayList<CircleEntity> balls = new ArrayList<CircleEntity>();
-    private AABBEntity topBounds, rightBounds, leftBounds, bottomBounds;
+    private ArrayList<CircleEntity> balls = new ArrayList<>();
+    private BoxEntity topBounds, rightBounds, leftBounds, bottomBounds;
     private Group gravityGroup;
 
     private Entity controlledEntity;
@@ -37,12 +39,12 @@ public class BrickBreaker extends Context implements ActionHandler{
     private double ballMass = 100;
     private int lives = 100;
 
-    public BrickBreaker(GameController controller){
-        super(controller, ContextType.GAME, false, true);
+    public BrickBreaker(GameController controller) {
+        super(controller, ContextType.GAME);
         init();
     }
 
-    private void init(){
+    private void init() {
         rand.setSeed(1);
         controller.clearCollisions(this);
         lives = 100;
@@ -80,12 +82,12 @@ public class BrickBreaker extends Context implements ActionHandler{
         setupInput();
     }
 
-    public void initBounding(){
+    public void initBounding() {
         double borderThickness = 10;
-        topBounds = new AABBEntity(width / 2, 0, width, borderThickness);
-        bottomBounds = new AABBEntity(width / 2, height - 50, width, borderThickness);
-        leftBounds = new AABBEntity(0, height / 2, borderThickness, height);
-        rightBounds = new AABBEntity(width, height / 2, borderThickness, height);
+        topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
+        bottomBounds = new BoxEntity(width / 2, height - 50, width, borderThickness);
+        leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
+        rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
         topBounds.setMass(Double.POSITIVE_INFINITY);
         bottomBounds.setMass(Double.POSITIVE_INFINITY);
         leftBounds.setMass(Double.POSITIVE_INFINITY);
@@ -107,7 +109,7 @@ public class BrickBreaker extends Context implements ActionHandler{
         entities.add(rightBounds);
     }
 
-    private void initBricks(){
+    private void initBricks() {
         bricks.clear();
         int rows = 5;
         int columns = 16;
@@ -117,13 +119,13 @@ public class BrickBreaker extends Context implements ActionHandler{
         double brickWidth = (width - borderPadding * 2 - (columns + 1) * padding) / columns;
         double brickHeight = brickWidth / 2.75;
         Material material = Material.createCustomMaterial(0, 1);
-        for(int x = 0; x < columns; x++){
-            for(int y = 0; y < rows; y++){
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++) {
                 double xPos = padding * (1 + x) + brickWidth * x + brickWidth / 2 + borderPadding;
-                double yPos = padding * (1 + y)  + brickHeight * y + brickHeight / 2 + yOffset;
+                double yPos = padding * (1 + y) + brickHeight * y + brickHeight / 2 + yOffset;
                 Brick brick = new Brick(xPos, yPos, brickWidth, brickHeight);
                 brick.setMass(10);
-                brick.setMotion(new AttractMotion(xPos,  yPos, 0.001, 0.3, brick.getMass()));
+                brick.setMotion(new AttractMotion(xPos, yPos, 0.001, 0.3, brick.getMass()));
                 bricks.add(brick);
                 entities.add(brick);
                 gravityGroup.addEntity(brick);
@@ -135,27 +137,27 @@ public class BrickBreaker extends Context implements ActionHandler{
 
     @Override
     public void update(double elapsedTime) {
-        for(Entity entity: entities){
+        for (Entity entity : entities) {
             entity.update(elapsedTime);
         }
-        for (int i = 0; i < bricks.size(); i++){
+        for (int i = 0; i < bricks.size(); i++) {
             Brick brick = bricks.get(i);
-            if(!brick.isAlive()){
+            if (brick.isDead()) {
                 bricks.remove(i);
                 entities.remove(brick);
                 controller.removeChildrenFromCollisionDetector(this, brick);
             }
         }
-        if(bricks.size() == 0){
+        if (bricks.size() == 0) {
             init();
         }
     }
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(new Color(30,110, 50));
+        g.setColor(new Color(30, 110, 50));
         g.fillRect(0, 0, width, height);
-        for(Entity entity: entities) {
+        for (Entity entity : entities) {
             entity.draw(g);
         }
 
@@ -176,18 +178,18 @@ public class BrickBreaker extends Context implements ActionHandler{
         Entity b = collision.getB().getParentEntity();
         boolean isABall = balls.contains(a);
         boolean isBBall = balls.contains(b);
-        if (a instanceof Brick && isBBall){
+        if (a instanceof Brick && isBBall) {
             ((Brick) a).doDamage(damage);
-        } else if (b instanceof Brick && isABall){
+        } else if (b instanceof Brick && isABall) {
             ((Brick) b).doDamage(damage);
-        } else if (a == bottomBounds && isBBall || isABall && b == bottomBounds){
-            if(lives > 0){
+        } else if (a == bottomBounds && isBBall || isABall && b == bottomBounds) {
+            if (lives > 0) {
                 lives--;
                 CircleEntity ball;
-                if(isBBall){
-                    ball = (CircleEntity)b;
-                } else{
-                    ball = (CircleEntity)a;
+                if (isBBall) {
+                    ball = (CircleEntity) b;
+                } else {
+                    ball = (CircleEntity) a;
                 }
                 controller.removeChildrenFromCollisionDetector(this, ball);
                 entities.remove(ball);

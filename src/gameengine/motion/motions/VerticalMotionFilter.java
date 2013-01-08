@@ -12,7 +12,7 @@ import bricklets.Entity;
 public class VerticalMotionFilter implements Motion {
     private Motion motion;
 
-    public VerticalMotionFilter(Motion motion){
+    public VerticalMotionFilter(Motion motion) {
         this.motion = motion;
     }
 
@@ -33,7 +33,8 @@ public class VerticalMotionFilter implements Motion {
 
     /**
      * Updates the {@link Motion} that was supplied when constructed
-     * @param entity The entity to base the update on
+     *
+     * @param entity      The entity to base the update on
      * @param elapsedTime The amount of time to integrate the motion
      */
     @Override

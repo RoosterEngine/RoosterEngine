@@ -4,13 +4,12 @@
  */
 package bricklets;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 
-public class AABBEntity extends Entity{
+public class BoxEntity extends Entity {
     protected Color color;
 
-    public AABBEntity(double x, double y, double width, double height) {
+    public BoxEntity(double x, double y, double width, double height) {
         super(x, y, width, height);
         color = Color.WHITE;
     }
@@ -22,7 +21,7 @@ public class AABBEntity extends Entity{
     @Override
     public void draw(Graphics2D g) {
         g.setColor(color);
-        g.fillRect((int)(x - halfWidth), (int)(y - halfHeight), (int)width, (int)height);
+        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
     }
-    
+
 }

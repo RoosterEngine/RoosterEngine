@@ -1,7 +1,6 @@
 package gameengine.input;
 
 /**
- *
  * @author davidrusu
  */
 public enum Action {

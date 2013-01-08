@@ -21,12 +21,14 @@ public interface EnvironmentMotionGenerator {
 
     /**
      * Called once per update
+     *
      * @param elapsedTime
      */
     public void update(double elapsedTime);
 
     /**
      * Called once per entity per update
+     *
      * @param entity
      */
     public void update(Entity entity);

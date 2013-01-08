@@ -1,15 +1,15 @@
 package gameengine.motion.motions;
 
 import bricklets.Entity;
-import gameengine.motion.integrators.Integrator;
 import gameengine.math.ParametricEquation;
+import gameengine.motion.integrators.Integrator;
 
 /**
- * Created with IntelliJ IDEA.
+ * A {@link Motion} that follows a {@link ParametricEquation}.
+ *
  * User: davidrusu
  * Date: 30/12/12
  * Time: 5:42 PM
- * To change this template use File | Settings | File Templates.
  */
 public class PathMotion implements Motion {
     private ParametricEquation function;
@@ -99,21 +99,21 @@ public class PathMotion implements Motion {
                 actualDist = sign * function.getArcLength(t, finalT, tolerance);
                 rate = deltaT / actualDist;
             } while (Math.abs(distToTravel - actualDist) > tolerance);
-        }else {
+        } else {
             finalT = t + distToTravel * rate;
             actualDist = distToTravel;
         }
 
-            double futureX = function.getX(finalT);
-            double futureY = function.getY(finalT);
-            double deltaX = futureX - x;
-            double deltaY = futureY - y;
-            x = futureX;
-            y = futureY;
-            velocityX = deltaX / elapsedTime;
-            velocityY = deltaY / elapsedTime;
-            position += actualDist;
-            t = finalT;
+        double futureX = function.getX(finalT);
+        double futureY = function.getY(finalT);
+        double deltaX = futureX - x;
+        double deltaY = futureY - y;
+        x = futureX;
+        y = futureY;
+        velocityX = deltaX / elapsedTime;
+        velocityY = deltaY / elapsedTime;
+        position += actualDist;
+        t = finalT;
 
     }
 }

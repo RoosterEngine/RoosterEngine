@@ -4,11 +4,11 @@ import bricklets.Entity;
 import bricklets.Physics;
 
 /**
- * Created with IntelliJ IDEA.
+ * This {@link Motion} will pull entities towards the specified y coordinate.
+ *
  * User: davidrusu
  * Date: 29/12/12
  * Time: 10:49 AM
- * To change this template use File | Settings | File Templates.
  */
 public class VerticalAttractMotion implements Motion {
     private double destination;
@@ -17,10 +17,11 @@ public class VerticalAttractMotion implements Motion {
 
     /**
      * Constructs a {@link VerticalAttractMotion}
+     *
      * @param destination the destination to attract towards
-     * @param k the strength of the attraction force
-     * @param d the dampening factor to be applied to velocity, 0 is no dampening, 1 is critically damped
-     * @param entityMass the mass of the entity this motion will be applied to, the mass is assumed to never change
+     * @param k           the strength of the attraction force
+     * @param d           the dampening factor to be applied to velocity, 0 is no dampening, 1 is critically damped
+     * @param entityMass  the mass of the entity this motion will be applied to, the mass is assumed to never change
      */
     public VerticalAttractMotion(double destination, double k, double d, double entityMass) {
         this.destination = destination;
@@ -38,7 +39,7 @@ public class VerticalAttractMotion implements Motion {
         return velocity;
     }
 
-    public void setDestination(Entity entity, double x, double y) {
+    public void setDestination(double y) {
         destination = y;
         velocity = 0;
     }

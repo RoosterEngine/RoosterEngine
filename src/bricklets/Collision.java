@@ -1,9 +1,6 @@
 package bricklets;
 
-import java.awt.Color;
-
 /**
- * 
  * @author davidrusu
  */
 public class Collision {
@@ -11,22 +8,22 @@ public class Collision {
     private Vector2D collisionNormal;
     private Shape a, b;
     private double timeToCollision;
-    
-    public Collision(){
+
+    public Collision() {
         timeToCollision = Shape.NO_COLLISION;
         collisionNormal = new Vector2D();
         a = null;
         b = null;
     }
-    
-    public Collision(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b){
+
+    public Collision(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b) {
         this.timeToCollision = timeToCollision;
         this.collisionNormal = collisionNormal;
         this.a = a;
         this.b = b;
     }
-    
-    public void set(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b){
+
+    public void set(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b) {
         this.timeToCollision = timeToCollision;
         this.collisionNormal = collisionNormal;
         this.a = a;
@@ -42,23 +39,23 @@ public class Collision {
         b = collision.b;
     }
 
-    public void setNoCollision(){
+    public void setNoCollision() {
         set(NO_COLLISION);
     }
-    
-    public double getTimeToCollision(){
+
+    public double getTimeToCollision() {
         return timeToCollision;
     }
-    
-    public Vector2D getCollisionNormal(){
+
+    public Vector2D getCollisionNormal() {
         return collisionNormal;
     }
-    
-    public Shape getA(){
+
+    public Shape getA() {
         return a;
     }
-    
-    public Shape getB(){
+
+    public Shape getB() {
         return b;
     }
 }

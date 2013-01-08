@@ -17,11 +17,12 @@ public class AttractMotion implements Motion {
 
     /**
      * Constructs an {@link AttractMotion}
+     *
      * @param destinationX the x position of the destination
      * @param destinationY the y position of the destination
-     * @param k the strength of the attraction
-     * @param d the damping that will be applied to the entity, 0 is no damping, 1 is critically damped
-     * @param entityMass the mass of the {@link Entity} that will be affected by this {@link Integrator}
+     * @param k            the strength of the attraction
+     * @param d            the damping that will be applied to the entity, 0 is no damping, 1 is critically damped
+     * @param entityMass   the mass of the {@link Entity} that will be affected by this {@link Integrator}
      */
     public AttractMotion(double destinationX, double destinationY, double k, double d, double entityMass) {
         this.destinationX = destinationX;
@@ -40,7 +41,7 @@ public class AttractMotion implements Motion {
         return velocityY;
     }
 
-    public void setDestination(Entity entity, double x, double y) {
+    public void setDestination(double x, double y) {
         destinationX = x;
         destinationY = y;
         velocityX = 0;
@@ -55,7 +56,7 @@ public class AttractMotion implements Motion {
     public void update(Entity entity, double elapsedTime) {
         double deltaX = destinationX - entity.getX();
         double deltaY = destinationY - entity.getY();
-        if(deltaX == 0 && deltaY == 0) {
+        if (deltaX == 0 && deltaY == 0) {
             velocityX = 0;
             velocityY = 0;
             return;

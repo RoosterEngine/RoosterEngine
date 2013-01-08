@@ -1,11 +1,9 @@
 package gameengine;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 /**
- * 
  * @author danrusu
  */
 public class ImageGraphic implements Graphic {
@@ -15,9 +13,9 @@ public class ImageGraphic implements Graphic {
     public ImageGraphic(BufferedImage image) {
         this.image = image;
     }
-    
+
     @Override
-    public void reset(){
+    public void reset() {
     }
 
     @Override

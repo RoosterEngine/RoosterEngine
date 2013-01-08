@@ -8,24 +8,24 @@ package gameengine.input;
  * @author davidrusu
  */
 public class PressedEvent extends InputEvent {
-    
+
     /**
      * @param inputCode the input code of the event (input codes can be acquired from {@link InputCode})
      */
     public PressedEvent(int inputCode, long eventTime) {
         super(inputCode, eventTime);
     }
-    
+
     @Override
-    public InputEvent createInstance(int inputCode, long eventTime){
+    public InputEvent createInstance(int inputCode, long eventTime) {
         return new PressedEvent(inputCode, eventTime);
     }
-    
+
     @Override
-    public int getEventType(){
+    public int getEventType() {
         return InputEvent.PRESSED_EVENT;
     }
-    
+
     @Override
     public void handleAction(InputHandler inputHandler) {
         inputHandler.startInput(inputCode);

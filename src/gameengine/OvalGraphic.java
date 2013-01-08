@@ -1,21 +1,19 @@
 package gameengine;
 
-import gameengine.Graphic;
-
 import java.awt.*;
 
 /**
- * Created with IntelliJ IDEA.
+ * A {@link Graphic} that renders an oval
+ *
  * User: davidrusu
  * Date: 17/12/12
  * Time: 6:57 PM
- * To change this template use File | Settings | File Templates.
  */
 public class OvalGraphic implements Graphic {
     private int width, height, xRadius, yRadius;
     private Color color;
 
-    public OvalGraphic(int width, int height, Color color){
+    public OvalGraphic(int width, int height, Color color) {
         resize(width, height);
         this.color = color;
     }

@@ -3,11 +3,12 @@ package gameengine.motion.motions;
 import bricklets.Entity;
 
 /**
- * Created with IntelliJ IDEA.
+ * Takes a two separate {@link Motion}s, one for horizontal motion and the other
+ * for vertical motion.
+ *
  * User: davidrusu
  * Date: 29/12/12
  * Time: 12:08 PM
- * To change this template use File | Settings | File Templates.
  */
 public class MotionCompositor implements Motion {
     private Motion horizontalMotion, verticalMotion;

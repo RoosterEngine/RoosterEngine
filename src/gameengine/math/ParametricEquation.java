@@ -5,7 +5,6 @@
 package gameengine.math;
 
 /**
- *
  * @author davidrusu
  */
 public abstract class ParametricEquation implements Function {
@@ -30,7 +29,7 @@ public abstract class ParametricEquation implements Function {
         this.stop = stop;
     }
 
-    public double slope(double t){
+    public double slope(double t) {
         return getDY(t) / getDX(t);
     }
 
@@ -53,7 +52,7 @@ public abstract class ParametricEquation implements Function {
         return Math.sqrt(dx * dx + dy * dy);
     }
 
-    public double getArcLength(double from, double to, double eps){
+    public double getArcLength(double from, double to, double eps) {
         return Utilities.adaptiveSimpsonsRule(this, from, to, eps);
     }
 

@@ -3,8 +3,8 @@ package gameengine;
 import bricklets.CollisionDetector;
 import bricklets.Entity;
 import bricklets.Shape;
-import gameengine.motion.motions.MouseMotion;
 import gameengine.input.*;
+import gameengine.motion.motions.MouseMotion;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-public class GameController implements MouseMovedHandler{
+public class GameController implements MouseMovedHandler {
     private EnumMap<ContextType, ArrayList<InputMapping>> contextTypeMap;
     private HashMap<Context, CollisionDetector> collisionDetectorHashMap;
     private CollisionDetector currentCollisionDetector;
@@ -30,8 +30,8 @@ public class GameController implements MouseMovedHandler{
     }
 
     /**
-     * @param UPS update the game state this many times per second. UPS needs to
-     *            be greater or equal to targetFPS
+     * @param UPS       update the game state this many times per second. UPS needs to
+     *                  be greater or equal to targetFPS
      * @param targetFPS render this many times per second
      */
     public GameController(int UPS, int targetFPS) {
@@ -39,10 +39,10 @@ public class GameController implements MouseMovedHandler{
     }
 
     /**
-     * @param UPS update the game state this many times per second. UPS needs to
-     *            be greater or equal to targetFPS
+     * @param UPS       update the game state this many times per second. UPS needs to
+     *                  be greater or equal to targetFPS
      * @param targetFPS render this many times per second
-     * @param minFPS minimum allowable frame rate before the UPS slows down.
+     * @param minFPS    minimum allowable frame rate before the UPS slows down.
      */
     public GameController(int UPS, int targetFPS, int minFPS) {
         User profile = new User("Default");
@@ -51,11 +51,11 @@ public class GameController implements MouseMovedHandler{
     }
 
     /**
-     * @param UPS update the game state this many times per second. UPS needs to
-     *            be greater or equal to targetFPS
+     * @param UPS       update the game state this many times per second. UPS needs to
+     *                  be greater or equal to targetFPS
      * @param targetFPS render this many times per second
-     * @param minFPS minimum allowable frame rate before the UPS slows down.
-     * @param user the user profile from which to load user preferences from
+     * @param minFPS    minimum allowable frame rate before the UPS slows down.
+     * @param user      the user profile from which to load user preferences from
      */
     public GameController(int UPS, int targetFPS, int minFPS, User user) {
         init(UPS, targetFPS, minFPS, user);
@@ -121,7 +121,7 @@ public class GameController implements MouseMovedHandler{
      * When a context is entered, the {@link InputHandler} from the context will
      * be given the bindings between {@link InputCode} and {@link Action}.
      *
-     * @param context
+     * @param context the {@link Context} to enter
      */
     public void enterContext(Context context) {
         contextStack.push(context);
@@ -289,7 +289,7 @@ public class GameController implements MouseMovedHandler{
      * Returns the time in nanoseconds of the next input event.
      *
      * @return the time in nanoseconds of the next input event.<br></br>
-     *                  Long.MAX_VALUE is returned if no events are in the queue
+     *         Long.MAX_VALUE is returned if no events are in the queue
      */
     public long getNextInputEventTime() {
         return inputManager.getNextEventTime();

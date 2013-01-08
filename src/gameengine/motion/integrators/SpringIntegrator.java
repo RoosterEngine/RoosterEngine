@@ -2,21 +2,23 @@ package gameengine.motion.integrators;
 
 import bricklets.Entity;
 import bricklets.Physics;
+import gameengine.motion.motions.Motion;
 
 /**
- * Created with IntelliJ IDEA.
+ * A {@link Motion} using this {@link Integrator} will be pulled towards its
+ * destination as if by a spring
  * User: davidrusu
  * Date: 25/12/12
  * Time: 11:00 PM
- * To change this template use File | Settings | File Templates.
  */
 public class SpringIntegrator implements Integrator {
     private double k, d, velocity;
 
     /**
      * Creates a {@link SpringIntegrator}
-     * @param k the strength of the spring
-     * @param d the dampening of the spring, 1 is critically damped, 0 is no damping
+     *
+     * @param k          the strength of the spring
+     * @param d          the dampening of the spring, 1 is critically damped, 0 is no damping
      * @param entityMass the mass of the {@link Entity} that will be affected by this {@link Integrator}
      */
     public SpringIntegrator(double k, double d, double entityMass) {
@@ -38,6 +40,7 @@ public class SpringIntegrator implements Integrator {
 
     /**
      * Sets the strength of the spring
+     *
      * @param k the strength of the spring
      */
     public void setK(double k) {
@@ -46,6 +49,7 @@ public class SpringIntegrator implements Integrator {
 
     /**
      * Sets the dampening factor of the spring
+     *
      * @param d the dampening factor of the spring
      */
     public void setD(double d) {

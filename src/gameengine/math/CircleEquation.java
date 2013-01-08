@@ -1,11 +1,11 @@
 package gameengine.math;
 
 /**
- * Created with IntelliJ IDEA.
+ * A {@link ParametricEquation} that models a circle
+ *
  * User: davidrusu
  * Date: 30/12/12
  * Time: 9:59 PM
- * To change this template use File | Settings | File Templates.
  */
 public class CircleEquation extends ParametricEquation {
     private double radius;

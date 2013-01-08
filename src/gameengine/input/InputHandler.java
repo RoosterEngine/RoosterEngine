@@ -1,11 +1,14 @@
 package gameengine.input;
 
+import gameengine.Context;
 /**
- * Created with IntelliJ IDEA.
+ * Handles raw InputCodes.
+ * {@link Context} implements InputHandler. It converts from {@link InputCode}
+ * to the {@link Action} that was bound.
+ *
  * User: davidrusu
  * Date: 07/01/13
  * Time: 11:02 AM
- * To change this template use File | Settings | File Templates.
  */
 public interface InputHandler {
 
@@ -18,7 +21,7 @@ public interface InputHandler {
      * Adds a mapping between an {@link gameengine.input.InputCode} and an {@link Action}
      *
      * @param inputCode the {@link gameengine.input.InputCode} to map
-     * @param action the {@link Action} to map
+     * @param action    the {@link Action} to map
      */
     public void addInputMapping(int inputCode, Action action);
 

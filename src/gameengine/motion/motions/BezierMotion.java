@@ -1,18 +1,17 @@
 package gameengine.motion.motions;
 
 import bricklets.Entity;
-import gameengine.motion.integrators.Integrator;
 import gameengine.math.BezierEquation;
+import gameengine.motion.integrators.Integrator;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.*;
 
 /**
- * Created with IntelliJ IDEA.
+ * A class for generating motion that follows a Bezier curve.
+ *
  * User: davidrusu
  * Date: 10/12/12
  * Time: 5:42 PM
- * To change this template use File | Settings | File Templates.
  */
 public class BezierMotion implements Motion {
     private double currentTime, totalLength, eps;
@@ -20,7 +19,7 @@ public class BezierMotion implements Motion {
     private BezierEquation bezierFunction;
     private Integrator motion;
 
-    public BezierMotion(double currentX, double currentY, double x1, double y1, double x2, double y2, Integrator motion){
+    public BezierMotion(double currentX, double currentY, double x1, double y1, double x2, double y2, Integrator motion) {
         this.motion = motion;
         currentTime = 0;
         eps = 0.001;
@@ -51,12 +50,13 @@ public class BezierMotion implements Motion {
 
     /**
      * Sets the new destination of the path
-     * @param entity the {@link Entity} to use as a base to set the new destination of the motion
-     * @param x the X position of the destination
-     * @param y the Y position of the destination
+     *
+     * @param entity         the {@link Entity} to use as a base to set the new destination of the motion
+     * @param x              the X position of the destination
+     * @param y              the Y position of the destination
      * @param lazyMultiplier how sharp of a turn towards the new destination, higher is smoother
      */
-    public void setDestination(Entity entity, double x, double y, double lazyMultiplier){
+    public void setDestination(Entity entity, double x, double y, double lazyMultiplier) {
         double x1 = entity.getX() + entity.getDX() * lazyMultiplier;
         double y1 = entity.getY() + entity.getDY() * lazyMultiplier;
         bezierFunction.setPoints(entity.getX(), entity.getY(), x1, y1, x, y);
@@ -76,12 +76,12 @@ public class BezierMotion implements Motion {
         double approxFinalT = currentTime + 16 * velocitySign;
         double approxArcLength = bezierFunction.getArcLength(currentTime, approxFinalT, eps);
         double lastT = currentTime;
-        while(Math.abs(arcLength - approxArcLength) > eps){
+        while (Math.abs(arcLength - approxArcLength) > eps) {
             double halfTime = Math.abs((approxFinalT - lastT) / 2);
             lastT = approxFinalT;
-            if(approxArcLength < arcLength){
+            if (approxArcLength < arcLength) {
                 approxFinalT += halfTime;
-            }else{
+            } else {
                 approxFinalT -= halfTime;
             }
             approxArcLength = bezierFunction.getArcLength(currentTime, approxFinalT, eps);
@@ -102,10 +102,11 @@ public class BezierMotion implements Motion {
 
     /**
      * Draws the path of the bezier function
-     * @param g the {@link Graphics2D} object to draw to
+     *
+     * @param g     the {@link Graphics2D} object to draw to
      * @param color the color of the path
      */
-    public void draw(Graphics2D g, Color color){
+    public void draw(Graphics2D g, Color color) {
         bezierFunction.draw(g, color);
     }
 }

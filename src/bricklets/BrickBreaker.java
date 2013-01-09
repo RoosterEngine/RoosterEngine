@@ -1,11 +1,19 @@
 package bricklets;
 
-import gameengine.Context;
-import gameengine.ContextType;
-import gameengine.GameController;
+import gameengine.*;
+import gameengine.collisiondetection.Collision;
+import gameengine.context.Context;
+import gameengine.context.ContextType;
+import gameengine.entities.BoxEntity;
+import gameengine.entities.CircleEntity;
+import gameengine.entities.Entity;
+import gameengine.physics.Material;
+import gameengine.collisiondetection.shapes.AABBShape;
+import gameengine.collisiondetection.shapes.CircleShape;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
+import gameengine.physics.Physics;
 import gameengine.motion.Gravity;
 import gameengine.motion.motions.AttractMotion;
 import gameengine.motion.motions.MotionCompositor;

@@ -1,6 +1,12 @@
 package bricklets;
 
 import gameengine.*;
+import gameengine.context.BasicMenu;
+import gameengine.context.ButtonHandler;
+import gameengine.context.Context;
+import gameengine.context.ContextType;
+import gameengine.entities.BasicButton;
+import gameengine.graphics.SolidColorGraphic;
 import gameengine.input.Action;
 import gameengine.input.InputCode;
 

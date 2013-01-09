@@ -1,4 +1,4 @@
-package bricklets;
+package gameengine.entities;
 
 import gameengine.motion.motions.Motion;
 import gameengine.motion.motions.NormalMotion;

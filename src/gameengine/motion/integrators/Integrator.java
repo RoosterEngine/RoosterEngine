@@ -1,6 +1,6 @@
 package gameengine.motion.integrators;
 
-import bricklets.Entity;
+import gameengine.entities.Entity;
 
 public interface Integrator {
 

@@ -1,4 +1,6 @@
-package gameengine;
+package gameengine.context;
+
+import gameengine.entities.BasicButton;
 
 /**
  * @author davidrusu

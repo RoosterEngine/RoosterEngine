@@ -1,4 +1,7 @@
-package bricklets;
+package gameengine.entities;
+
+import gameengine.physics.Material;
+import gameengine.collisiondetection.shapes.CircleShape;
 
 import java.awt.*;
 

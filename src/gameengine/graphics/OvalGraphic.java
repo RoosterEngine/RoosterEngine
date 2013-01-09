@@ -1,4 +1,4 @@
-package gameengine;
+package gameengine.graphics;
 
 import java.awt.*;
 

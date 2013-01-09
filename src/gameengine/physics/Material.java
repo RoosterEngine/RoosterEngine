@@ -1,4 +1,4 @@
-package bricklets;
+package gameengine.physics;
 
 /**
  * Materials are used to give your shapes physical properties like friction and

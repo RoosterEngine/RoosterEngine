@@ -1,4 +1,4 @@
-package bricklets;
+package gameengine.math;
 
 /**
  * @author davidrusu

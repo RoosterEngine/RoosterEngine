@@ -1,7 +1,7 @@
 package gameengine.motion.integrators;
 
-import bricklets.Entity;
-import bricklets.Physics;
+import gameengine.entities.Entity;
+import gameengine.physics.Physics;
 import gameengine.motion.motions.Motion;
 
 /**

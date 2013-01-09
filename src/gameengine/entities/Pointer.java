@@ -1,6 +1,6 @@
-package gameengine;
+package gameengine.entities;
 
-import bricklets.Entity;
+import gameengine.graphics.Graphic;
 import gameengine.motion.motions.MouseMotion;
 
 import java.awt.*;

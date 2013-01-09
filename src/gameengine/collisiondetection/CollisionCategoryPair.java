@@ -1,4 +1,4 @@
-package bricklets;
+package gameengine.collisiondetection;
 
 /**
  * @author davidrusu

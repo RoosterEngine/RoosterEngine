@@ -1,8 +1,9 @@
-package gameengine;
+package gameengine.context;
 
-import bricklets.Collision;
-import bricklets.Entity;
 import bricklets.Group;
+import gameengine.GameController;
+import gameengine.collisiondetection.Collision;
+import gameengine.entities.Entity;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputHandler;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 
 /**
  * Contexts are where the game is made.
- * To create a game, extend Context and tell the {@link GameController} to enter
+ * To create a game, extend Context and tell the {@link gameengine.GameController} to enter
  * your context.
  *
  * User: davidrusu

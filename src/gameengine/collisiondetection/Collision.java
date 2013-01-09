@@ -1,4 +1,7 @@
-package bricklets;
+package gameengine.collisiondetection;
+
+import gameengine.math.Vector2D;
+import gameengine.collisiondetection.shapes.Shape;
 
 /**
  * @author davidrusu

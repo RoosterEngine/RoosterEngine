@@ -1,4 +1,4 @@
-package bricklets;
+package gameengine.physics;
 
 /**
  * Wrapper for material properties that are between two surfaces, like friction

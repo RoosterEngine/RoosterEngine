@@ -1,7 +1,7 @@
 package bricklets;
 
 import gameengine.GameController;
-import gameengine.Graphic;
+import gameengine.graphics.Graphic;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

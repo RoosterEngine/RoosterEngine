@@ -1,4 +1,9 @@
-package bricklets;
+package gameengine.physics;
+
+import gameengine.collisiondetection.Collision;
+import gameengine.entities.Entity;
+import gameengine.math.Vector2D;
+import gameengine.collisiondetection.shapes.Shape;
 
 /**
  * @author davidrusu

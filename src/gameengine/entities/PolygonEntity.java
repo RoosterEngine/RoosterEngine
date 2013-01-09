@@ -1,4 +1,7 @@
-package bricklets;
+package gameengine.entities;
+
+import gameengine.physics.Material;
+import gameengine.collisiondetection.shapes.Polygon;
 
 import java.awt.*;
 
@@ -6,7 +9,7 @@ import java.awt.*;
  * @author david
  */
 public class PolygonEntity extends Entity {
-    private Polygon polygon;
+    private gameengine.collisiondetection.shapes.Polygon polygon;
     private Color color = Color.BLACK;
 
     public PolygonEntity(double x, double y, double radius, int minPoints, int maxPoints) {

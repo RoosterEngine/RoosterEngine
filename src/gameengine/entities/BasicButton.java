@@ -1,6 +1,7 @@
-package gameengine;
+package gameengine.entities;
 
-import bricklets.Entity;
+import gameengine.graphics.Graphic;
+import gameengine.graphics.SolidColorGraphic;
 
 import java.awt.*;
 

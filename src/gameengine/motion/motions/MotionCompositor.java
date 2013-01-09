@@ -1,6 +1,6 @@
 package gameengine.motion.motions;
 
-import bricklets.Entity;
+import gameengine.entities.Entity;
 
 /**
  * Takes a two separate {@link Motion}s, one for horizontal motion and the other

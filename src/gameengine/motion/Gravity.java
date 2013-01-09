@@ -1,6 +1,6 @@
 package gameengine.motion;
 
-import bricklets.Entity;
+import gameengine.entities.Entity;
 
 /**
  * Created with IntelliJ IDEA.

@@ -1,4 +1,4 @@
-package gameengine;
+package gameengine.context;
 
 /**
  * High level user specified context types.

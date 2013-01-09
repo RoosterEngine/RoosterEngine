@@ -1,6 +1,10 @@
-package bricklets;
+package gameengine.collisiondetection;
 
-import gameengine.Context;
+import gameengine.context.Context;
+import gameengine.entities.Entity;
+import gameengine.collisiondetection.shapes.AABBShape;
+import gameengine.collisiondetection.shapes.Polygon;
+import gameengine.collisiondetection.shapes.Shape;
 
 import java.util.ArrayList;
 

@@ -1,6 +1,6 @@
 package bricklets;
 
-import gameengine.Graphic;
+import gameengine.graphics.Graphic;
 
 import java.awt.*;
 import java.util.Random;

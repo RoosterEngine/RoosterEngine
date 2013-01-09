@@ -1,5 +1,6 @@
 package bricklets;
 
+import gameengine.entities.Entity;
 import gameengine.motion.EnvironmentMotionGenerator;
 
 import java.util.ArrayList;

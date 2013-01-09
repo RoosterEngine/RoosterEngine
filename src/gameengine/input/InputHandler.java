@@ -1,6 +1,6 @@
 package gameengine.input;
 
-import gameengine.Context;
+import gameengine.context.Context;
 /**
  * Handles raw InputCodes.
  * {@link Context} implements InputHandler. It converts from {@link InputCode}

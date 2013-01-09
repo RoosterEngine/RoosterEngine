@@ -1,9 +1,19 @@
 package bricklets;
 
 import gameengine.*;
+import gameengine.collisiondetection.Collision;
+import gameengine.context.Context;
+import gameengine.context.ContextType;
+import gameengine.entities.BoxEntity;
+import gameengine.entities.Entity;
+import gameengine.entities.Pointer;
+import gameengine.graphics.OvalGraphic;
+import gameengine.physics.Material;
+import gameengine.collisiondetection.shapes.AABBShape;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
+import gameengine.physics.Physics;
 import gameengine.motion.motions.AttractMotion;
 
 import java.awt.*;

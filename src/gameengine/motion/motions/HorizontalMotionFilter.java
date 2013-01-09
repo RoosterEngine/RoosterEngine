@@ -1,6 +1,6 @@
 package gameengine.motion.motions;
 
-import bricklets.Entity;
+import gameengine.entities.Entity;
 
 /**
  * A {@link Motion} that will return the x velocities from the {@link Motion} passed to it, but will always return 0

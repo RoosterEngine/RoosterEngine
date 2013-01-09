@@ -1,5 +1,9 @@
 package bricklets;
 
+import gameengine.entities.Entity;
+import gameengine.physics.Material;
+import gameengine.collisiondetection.shapes.Polygon;
+
 import java.awt.*;
 
 /**
@@ -10,7 +14,7 @@ import java.awt.*;
  * Time: 6:37 PM
  */
 public class Paddle extends Entity {
-    private Polygon polygon;
+    private gameengine.collisiondetection.shapes.Polygon polygon;
     private Color color;
 
 

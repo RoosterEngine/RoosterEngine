@@ -1,6 +1,6 @@
 package gameengine.motion.motions;
 
-import bricklets.Entity;
+import gameengine.entities.Entity;
 import gameengine.math.ParametricEquation;
 import gameengine.motion.integrators.Integrator;
 

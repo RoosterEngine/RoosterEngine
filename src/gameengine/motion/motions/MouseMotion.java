@@ -1,6 +1,6 @@
 package gameengine.motion.motions;
 
-import bricklets.Entity;
+import gameengine.entities.Entity;
 
 /**
  * To be used if you want your entity to be controlled by the mouse

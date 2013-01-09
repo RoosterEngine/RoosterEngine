@@ -1,6 +1,6 @@
 package gameengine.motion.motions;
 
-import bricklets.Entity;
+import gameengine.entities.Entity;
 
 /**
  * This {@link Motion} will not affect the velocity of the {@link Entity}

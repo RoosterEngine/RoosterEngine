@@ -1,4 +1,9 @@
-package bricklets;
+package gameengine.collisiondetection.shapes;
+
+import gameengine.collisiondetection.Collision;
+import gameengine.entities.Entity;
+import gameengine.math.Vector2D;
+import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -58,7 +63,7 @@ public abstract class Shape {
         dy = parentEntity.getDY();
     }
 
-    public static void collidePolyPoly(Polygon a, Polygon b, double maxTime, Collision result) {
+    public static void collidePolyPoly(gameengine.collisiondetection.shapes.Polygon a, gameengine.collisiondetection.shapes.Polygon b, double maxTime, Collision result) {
         if (!willBoundingCollide(a, b, maxTime)) {
             result.setNoCollision();
             return;
@@ -85,7 +90,7 @@ public abstract class Shape {
         result.setNoCollision();
     }
 
-    public static void collideAABBPoly(AABBShape a, Polygon b, double maxTime, Collision result) {
+    public static void collideAABBPoly(AABBShape a, gameengine.collisiondetection.shapes.Polygon b, double maxTime, Collision result) {
         collisionData.clear();
         double relVelX = a.dx - b.dx;
         double relVelY = a.dy - b.dy;
@@ -137,7 +142,7 @@ public abstract class Shape {
         calcTOIAlongAxis(collisionData.getMin(), collisionData.getMax(), bMin, bMax, projVel, collisionData, normal);
     }
 
-    private static void calcCollisionWithBoxNormals(AABBShape a, Polygon b,
+    private static void calcCollisionWithBoxNormals(AABBShape a, gameengine.collisiondetection.shapes.Polygon b,
                                                     double relVelX, double relVelY, CollisionData collisionData) {
         double bMinX = Double.MAX_VALUE;
         double bMaxX = -Double.MAX_VALUE;
@@ -170,7 +175,7 @@ public abstract class Shape {
         collisionData.updateTempOverlapData(maxY - bMinY, -relVelY, 0, 1);
     }
 
-    public static void collideCirclePoly(Shape a, Polygon b, double maxTime, Collision result) {
+    public static void collideCirclePoly(Shape a, gameengine.collisiondetection.shapes.Polygon b, double maxTime, Collision result) {
         collisionData.clear();
         checkCollisionWithLines(a, b, collisionData);
         if (collisionData.isCollisionNotPossible()) {
@@ -194,7 +199,7 @@ public abstract class Shape {
         }
     }
 
-    private static void checkCollisionWithLines(Shape a, Polygon b, CollisionData collisionData) {
+    private static void checkCollisionWithLines(Shape a, gameengine.collisiondetection.shapes.Polygon b, CollisionData collisionData) {
         double relVelX = a.dx - b.dx;
         double relVelY = a.dy - b.dy;
         for (int i = 0; i < b.getNumPoints(); i++) {
@@ -214,7 +219,7 @@ public abstract class Shape {
         }
     }
 
-    private static void checkCollisionWithPoints(Shape a, Polygon b, CollisionData collisionData) {
+    private static void checkCollisionWithPoints(Shape a, gameengine.collisiondetection.shapes.Polygon b, CollisionData collisionData) {
         double relVelX = a.dx - b.dx;
         double relVelY = a.dy - b.dy;
         double relX = b.x - a.x;
@@ -363,7 +368,7 @@ public abstract class Shape {
         result.setNoCollision();
     }
 
-    private static void getEntryLeaveAndOverlapTime(Polygon a, Polygon b, CollisionData collisionData) {
+    private static void getEntryLeaveAndOverlapTime(gameengine.collisiondetection.shapes.Polygon a, gameengine.collisiondetection.shapes.Polygon b, CollisionData collisionData) {
         collisionData.setTempOverlapVelocity(collisionData.getOverlapVelocity());
         collisionData.resetOverlapUpdated();
         double relVelX = a.dx - b.dx;
@@ -495,7 +500,7 @@ public abstract class Shape {
         collisionData.updateMinMax(projDist);
     }
 
-    private static boolean willBoundingCollide(Polygon a, Polygon b, double maxTime) {
+    private static boolean willBoundingCollide(gameengine.collisiondetection.shapes.Polygon a, gameengine.collisiondetection.shapes.Polygon b, double maxTime) {
         if (!a.isUsingBoundingBox() && !b.isUsingBoundingBox()) {
             return willBoundingCircleCircleCollide(a, b, maxTime);
         } else if (!a.isUsingBoundingBox() && b.isUsingBoundingBox()) {
@@ -508,7 +513,7 @@ public abstract class Shape {
         return false;
     }
 
-    private static boolean willBoundingCircleCircleCollide(Polygon a, Polygon b, double maxTime) {
+    private static boolean willBoundingCircleCircleCollide(gameengine.collisiondetection.shapes.Polygon a, gameengine.collisiondetection.shapes.Polygon b, double maxTime) {
         double combinedVelX = b.dx - a.dx;
         double combinedVelY = b.dy - a.dy;
         if (combinedVelX == 0 && combinedVelY == 0) {
@@ -544,7 +549,7 @@ public abstract class Shape {
      * @param maxTime the maximum amount of time for a collision to occur
      * @return true if a collision will occur, false otherwise
      */
-    private static boolean willBoundingCircleBoxCollide(Polygon a, Polygon b, double maxTime) {
+    private static boolean willBoundingCircleBoxCollide(gameengine.collisiondetection.shapes.Polygon a, gameengine.collisiondetection.shapes.Polygon b, double maxTime) {
         double relativeVelX = a.dx - b.dx, relativeVelY = a.dy - b.dy;
         double maxOverlapTime = getBoxOverlapTime(
                 a.x, a.y, a.radius, a.radius, b.x, b.y, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY);
@@ -567,7 +572,7 @@ public abstract class Shape {
         return maxOverlapTime <= maxTime;
     }
 
-    private static boolean willBoundingBoxBoxCollide(Polygon a, Polygon b, double maxTime) {
+    private static boolean willBoundingBoxBoxCollide(gameengine.collisiondetection.shapes.Polygon a, gameengine.collisiondetection.shapes.Polygon b, double maxTime) {
         double relativeVelX = a.dx - b.dx, relativeVelY = a.dy - b.dy;
         double maxOverlapTime = getBoxOverlapTime(a.x, a.y, a.getMaxX(), a.getMaxY(),
                 b.x, b.y, b.getMaxX(), b.getMaxY(), relativeVelX, relativeVelY);

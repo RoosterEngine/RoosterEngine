@@ -2,7 +2,10 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package bricklets;
+package gameengine.collisiondetection.shapes;
+
+import gameengine.entities.Entity;
+import gameengine.physics.Material;
 
 import java.awt.*;
 

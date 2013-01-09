@@ -1,8 +1,11 @@
 package gameengine;
 
-import bricklets.CollisionDetector;
-import bricklets.Entity;
-import bricklets.Shape;
+import gameengine.collisiondetection.CollisionDetector;
+import gameengine.context.Context;
+import gameengine.context.ContextType;
+import gameengine.entities.Entity;
+import gameengine.graphics.Graphic;
+import gameengine.graphics.ImageGraphic;
 import gameengine.input.*;
 import gameengine.motion.motions.MouseMotion;
 
@@ -327,12 +330,12 @@ public class GameController implements MouseMovedHandler {
         currentCollisionDetector.update(elapsedTime, activeContext);
     }
 
-    public void addShapeToCollisionDetector(Context context, Shape shape, int collisionCategory) {
+    public void addShapeToCollisionDetector(Context context, gameengine.collisiondetection.shapes.Shape shape, int collisionCategory) {
         CollisionDetector collisionDetector = getCollisionDetector(context);
         collisionDetector.addShape(shape, collisionCategory);
     }
 
-    public void removeShapeFromCollisionDetector(Context context, Shape shape, int collisionCategory) {
+    public void removeShapeFromCollisionDetector(Context context, gameengine.collisiondetection.shapes.Shape shape, int collisionCategory) {
         CollisionDetector collisionDetector = getCollisionDetector(context);
         collisionDetector.removeShape(shape, collisionCategory);
     }

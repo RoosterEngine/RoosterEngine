@@ -1,6 +1,6 @@
-package gameengine.math;
+package gameengine.graphics;
 
-import gameengine.Graphic;
+import gameengine.graphics.Graphic;
 
 import java.awt.*;
 

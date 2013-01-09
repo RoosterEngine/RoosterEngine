@@ -1,7 +1,12 @@
-package gameengine;
+package gameengine.context;
 
-import bricklets.Collision;
-import bricklets.Entity;
+import gameengine.GameController;
+import gameengine.collisiondetection.Collision;
+import gameengine.entities.BasicButton;
+import gameengine.entities.Entity;
+import gameengine.entities.Pointer;
+import gameengine.graphics.Graphic;
+import gameengine.graphics.OvalGraphic;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;

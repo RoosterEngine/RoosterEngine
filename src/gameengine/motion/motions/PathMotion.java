@@ -6,7 +6,7 @@ import gameengine.motion.integrators.Integrator;
 
 /**
  * A {@link Motion} that follows a {@link ParametricEquation}.
- *
+ * <p/>
  * User: davidrusu
  * Date: 30/12/12
  * Time: 5:42 PM
@@ -95,7 +95,6 @@ public class PathMotion implements Motion {
 
                 deltaT = distToTravel * rate;
                 finalT = t + deltaT;
-//                System.out.println(distToTravel + " " + t + " " + finalT + " " + tolerance);
                 actualDist = sign * function.getArcLength(t, finalT, tolerance);
                 rate = deltaT / actualDist;
             } while (Math.abs(distToTravel - actualDist) > tolerance);

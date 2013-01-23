@@ -3,7 +3,6 @@ package gameengine.physics;
 import gameengine.collisiondetection.Collision;
 import gameengine.entities.Entity;
 import gameengine.math.Vector2D;
-import gameengine.collisiondetection.shapes.Shape;
 
 /**
  * @author davidrusu
@@ -28,20 +27,20 @@ public class Physics {
     public static void performCollision(Collision collision) {
         unitY.set(collision.getCollisionNormal());
         unitX.set(-unitY.getY(), unitY.getX());
-        Shape shapeA = collision.getA();
-        Shape shapeB = collision.getB();
-        double friction = Material.getFriction(shapeA.getMaterial(), shapeB.getMaterial());
-        double restitution = Material.getRestitution(shapeA.getMaterial(), shapeB.getMaterial());
-        Entity a = shapeA.getParentEntity();
-        Entity b = shapeB.getParentEntity();
+        Entity a = collision.getA();
+        Entity b = collision.getB();
+        double friction = Material.getFriction(
+                a.getShape().getMaterial(), b.getShape().getMaterial());
+        double restitution = Material.getRestitution(
+                a.getShape().getMaterial(), b.getShape().getMaterial());
 
         double xLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitX);
         double yLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitY);
         double xLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitX);
         double yLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitY);
 
-        double aMass = a.getMass();
-        double bMass = b.getMass();
+        double aMass = a.getShape().getMass();
+        double bMass = b.getShape().getMass();
         boolean isMassAInfinite = aMass == Double.POSITIVE_INFINITY;
         boolean isMassBInfinite = bMass == Double.POSITIVE_INFINITY;
         if (isMassAInfinite && isMassBInfinite) {
@@ -62,7 +61,7 @@ public class Physics {
 //        if(collisionRate > collisionsThresh && Math.abs(velDiff) < 0.3){
 //            restitution *= 1 + collisionRate / 2;
 //        }
-        double combinedMomentum = yLengthB * b.getMass() + yLengthA * aMass;
+        double combinedMomentum = yLengthB * bMass + yLengthA * aMass;
         double combinedMass = bMass + aMass;
         double yFinalA = (restitution * bMass * yVelDiff + combinedMomentum) / combinedMass;
         double yFinalB = (combinedMomentum - restitution * aMass * yVelDiff) / combinedMass;

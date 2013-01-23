@@ -3,10 +3,10 @@ package gameengine.collisiondetection;
 /**
  * @author davidrusu
  */
-public class CollisionCategoryPair {
+public class CollisionPair {
     private int a, b;
 
-    public CollisionCategoryPair(int a, int b) {
+    public CollisionPair(int a, int b) {
         this.a = a;
         this.b = b;
     }

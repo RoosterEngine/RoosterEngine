@@ -1,30 +1,29 @@
 package bricklets;
 
+import gameengine.collisiondetection.shapes.PolygonShape;
 import gameengine.entities.Entity;
 import gameengine.physics.Material;
-import gameengine.collisiondetection.shapes.Polygon;
 
 import java.awt.*;
 
 /**
  * The paddle that is used by players to bounce balls
- *
+ * <p/>
  * User: davidrusu
  * Date: 10/12/12
  * Time: 6:37 PM
  */
 public class Paddle extends Entity {
-    private gameengine.collisiondetection.shapes.Polygon polygon;
     private Color color;
 
 
-    public Paddle(double x, double y, double width, double height, Material material) {
+    public Paddle(double x, double y, double width, double height) {
         super(x, y, width, height);
         color = Color.WHITE;
-        createPaddlePolygon(x, y, material);
+        createPaddlePolygon(x, y);
     }
 
-    private void createPaddlePolygon(double x, double y, Material material) {
+    private void createPaddlePolygon(double x, double y) {
         int numPoints = 20;
         double topToBaseRatio = 0.8;
         double topHeight = height * topToBaseRatio;
@@ -43,11 +42,8 @@ public class Paddle extends Entity {
             yPoints[i] = yPoint;
         }
 
-        polygon = new Polygon(x, y, xPoints, yPoints, this, material);
-    }
-
-    public Polygon getPolygon() {
-        return polygon;
+        setShape(new PolygonShape(this, x, y, xPoints, yPoints,
+                Material.createMaterial(1, 1), 1));
     }
 
     @Override
@@ -56,6 +52,9 @@ public class Paddle extends Entity {
 
     @Override
     public void draw(Graphics2D g) {
-        polygon.draw(g, color);
+        getShape().draw(g, color);
+        g.setColor(Color.ORANGE);
+        g.drawString("dx: " + dx, (int) (x), (int) (y + halfHeight + 10));
+        g.drawString("dy: " + dy, (int) (x), (int) (y + halfHeight + 25));
     }
 }

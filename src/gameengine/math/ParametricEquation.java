@@ -53,7 +53,7 @@ public abstract class ParametricEquation implements Function {
     }
 
     public double getArcLength(double from, double to, double eps) {
-        return Utilities.adaptiveSimpsonsRule(this, from, to, eps);
+        return Utils.adaptiveSimpsonsRule(this, from, to, eps);
     }
 
     public abstract double getX(double t);

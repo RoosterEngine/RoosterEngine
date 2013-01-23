@@ -1,7 +1,8 @@
 package gameengine.collisiondetection;
 
-import gameengine.math.Vector2D;
 import gameengine.collisiondetection.shapes.Shape;
+import gameengine.entities.Entity;
+import gameengine.math.Vector2D;
 
 /**
  * @author davidrusu
@@ -9,7 +10,7 @@ import gameengine.collisiondetection.shapes.Shape;
 public class Collision {
     private static final Collision NO_COLLISION = new Collision();
     private Vector2D collisionNormal;
-    private Shape a, b;
+    private Entity a, b;
     private double timeToCollision;
 
     public Collision() {
@@ -19,14 +20,14 @@ public class Collision {
         b = null;
     }
 
-    public Collision(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b) {
+    public Collision(double timeToCollision, Vector2D collisionNormal, Entity a, Entity b) {
         this.timeToCollision = timeToCollision;
         this.collisionNormal = collisionNormal;
         this.a = a;
         this.b = b;
     }
 
-    public void set(double timeToCollision, Vector2D collisionNormal, Shape a, Shape b) {
+    public void set(double timeToCollision, Vector2D collisionNormal, Entity a, Entity b) {
         this.timeToCollision = timeToCollision;
         this.collisionNormal = collisionNormal;
         this.a = a;
@@ -46,7 +47,7 @@ public class Collision {
         set(NO_COLLISION);
     }
 
-    public double getTimeToCollision() {
+    public double getCollisionTime() {
         return timeToCollision;
     }
 
@@ -54,11 +55,15 @@ public class Collision {
         return collisionNormal;
     }
 
-    public Shape getA() {
+    public Entity getA() {
         return a;
     }
 
-    public Shape getB() {
+    public Entity getB() {
         return b;
+    }
+
+    public void setCollisionTime(double collisionTime) {
+        this.timeToCollision = collisionTime;
     }
 }

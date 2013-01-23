@@ -5,7 +5,7 @@ import gameengine.physics.Physics;
 
 /**
  * This {@link Motion} will pull entities towards the specified y coordinate.
- *
+ * <p/>
  * User: davidrusu
  * Date: 29/12/12
  * Time: 10:49 AM
@@ -52,7 +52,7 @@ public class VerticalAttractMotion implements Motion {
     @Override
     public void update(Entity entity, double elapsedTime) {
         double delta = destination - entity.getY();
-        double attract = (k * delta) / entity.getMass();
+        double attract = (k * delta) / entity.getShape().getMass();
         double damping = entity.getDY() * d;
         velocity = entity.getDY() + (attract - damping) * elapsedTime;
     }

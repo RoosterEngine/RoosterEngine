@@ -1,7 +1,9 @@
 package gameengine.entities;
 
+import gameengine.collisiondetection.shapes.AABBShape;
 import gameengine.graphics.Graphic;
 import gameengine.graphics.SolidColorGraphic;
+import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -20,7 +22,8 @@ public class BasicButton extends Entity {
                 new SolidColorGraphic(new Color(96, 39, 73), 0, 0));
     }
 
-    public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic) {
+    public BasicButton(String text, Graphic upGraphic,
+                       Graphic downGraphic, Graphic selectedGraphic) {
         super(0, 0, 0, 0);
         this.text = text;
         this.upGraphic = upGraphic;
@@ -40,7 +43,7 @@ public class BasicButton extends Entity {
         upGraphic.resize((int) width, (int) height);
         pressedGraphic.resize((int) width, (int) height);
         selectedGraphic.resize((int) width, (int) height);
-
+        setShape(new AABBShape(this, x, y, width, height, Material.getIce(), 1));
     }
 
     public void select() {

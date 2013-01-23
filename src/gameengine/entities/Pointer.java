@@ -7,7 +7,7 @@ import java.awt.*;
 
 /**
  * Used as a mouse pointer
- *
+ * <p/>
  * User: davidrusu
  * Date: 17/12/12
  * Time: 6:53 PM
@@ -16,7 +16,7 @@ public class Pointer extends Entity {
     Graphic graphic;
 
     public Pointer(Graphic graphic, double startX, double startY) {
-        super(0, 0, graphic.getWidth(), graphic.getHeight());
+        super(startX, startY, graphic.getWidth(), graphic.getHeight());
         setPosition(startX, startY);
         this.graphic = graphic;
         setMotion(new MouseMotion());

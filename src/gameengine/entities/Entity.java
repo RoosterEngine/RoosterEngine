@@ -1,34 +1,54 @@
 package gameengine.entities;
 
+import gameengine.collisiondetection.shapes.CircleShape;
+import gameengine.collisiondetection.shapes.Shape;
+import gameengine.collisiondetection.tree.Tree;
+import gameengine.math.Utils;
 import gameengine.motion.motions.Motion;
 import gameengine.motion.motions.NormalMotion;
+import gameengine.physics.Material;
 
 import java.awt.*;
 
 public abstract class Entity {
-    protected double x, y, dx, dy, ddx, ddy, width, height, halfWidth, halfHeight;
-    protected double mass;
     private Motion motion;
+    private Shape shape;
+    private Tree partition;
+    protected double x, y, dx, dy, ddx, ddy, width, height, halfWidth, halfHeight;
 
     public Entity(double x, double y, double width, double height) {
-        this(x, y, width, height, 1);
+        this(x, y, width, height, new CircleShape(null, x, y,
+                Utils.pythagoras(width / 2, height / 2),
+                Material.getRubber(), 1));
+        shape.setParent(this);
     }
 
-    public Entity(double x, double y, double width, double height, double mass) {
+    public Entity(double x, double y, double width, double height, Shape shape) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         halfWidth = width / 2;
         halfHeight = height / 2;
-        this.mass = mass;
         motion = new NormalMotion();
+        this.shape = shape;
+        shape.setParentOffset(x - shape.getX(), y - shape.getY());
+    }
+
+    public void setShape(Shape shape) {
+        this.shape = shape;
+    }
+
+    public Shape getShape() {
+        return shape;
     }
 
     /**
-     * Sets the {@link Motion} that will controlling the velocity of this {@link Entity}
+     * Sets the {@link Motion} that will controlling the velocity of this
+     * {@link Entity}
      *
-     * @param motion the {@link Motion} that will control the velocity of this {@link Entity}
+     * @param motion the {@link Motion} that will control the velocity of this
+     *               {@link Entity}
      */
     public void setMotion(Motion motion) {
         this.motion = motion;
@@ -47,6 +67,7 @@ public abstract class Entity {
         motion.update(this, elapsedTime);
         dx = motion.getVelocityX();
         dy = motion.getVelocityY();
+        shape.updateVelocity(dx, dy);
     }
 
     /**
@@ -57,6 +78,8 @@ public abstract class Entity {
     public void updatePosition(double elapsedTime) {
         x += dx * elapsedTime;
         y += dy * elapsedTime;
+        shape.updatePosition(x, y);
+        shape.updateVelocity(dx, dy);
     }
 
     public double getX() {
@@ -93,17 +116,10 @@ public abstract class Entity {
         halfHeight = height / 2;
     }
 
-    public void setMass(double mass) {
-        this.mass = mass;
-    }
-
-    public double getMass() {
-        return mass;
-    }
-
-    public void setVelocity(double x, double y) {
-        dx = x;
-        dy = y;
+    public void setVelocity(double dx, double dy) {
+        this.dx = dx;
+        this.dy = dy;
+        shape.updateVelocity(this.dx, this.dy);
     }
 
     public void addVelocity(double dx, double dy) {
@@ -111,9 +127,34 @@ public abstract class Entity {
         this.dy += dy;
     }
 
+    public void setPartition(Tree partition) {
+        this.partition = partition;
+    }
+
+    public Tree getPartition() {
+        return partition;
+    }
+
     public abstract void update(double elapsedTime);
 
     public abstract void draw(Graphics2D g);
+
+    public void drawLineToPartition(Graphics2D g, Color color) {
+        g.setColor(color);
+//        double endX;
+//        double endY;
+//        if (partition != null) {
+//            endX = partition.getCenterX();
+//            endY = partition.getCenterY();
+//        } else {
+//            endX = Math.random() * 1900;
+//            endY = Math.random() * 1024;
+//        }
+//        g.drawLine((int)x, (int)y, (int) endX, (int) endY);
+        int shapeWidth = (int) (shape.getMaxCollisionX() - shape.getMinCollisionX());
+        int shapeHeight = (int) (shape.getMaxCollisionY() - shape.getMinCollisionY());
+        g.drawRect((int) shape.getMinCollisionX(), (int) shape.getMinCollisionY(), shapeWidth, shapeHeight);
+    }
 
     public void setPosition(double x, double y) {
         this.x = x;

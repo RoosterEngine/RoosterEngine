@@ -40,6 +40,12 @@ public class BasicMenu extends Context {
         Collections.addAll(entities, buttons);
         entities.add(pointer);
 
+        for (BasicButton button : buttons) {
+            controller.addEntityToCollisionDetector(this, button);
+        }
+
+        controller.addEntityToCollisionDetector(this, pointer);
+
         this.background = background;
         setupButtons(leftBorderRatio, rightBorderRatio, topBorderRatio, bottomBorderRatio, paddingRatio);
         selectedIndex = 0;

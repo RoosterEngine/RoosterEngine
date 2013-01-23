@@ -1,8 +1,8 @@
 package gameengine.motion.motions;
 
 import gameengine.entities.Entity;
-import gameengine.physics.Physics;
 import gameengine.motion.integrators.Integrator;
+import gameengine.physics.Physics;
 
 /**
  * A {@link Motion} that follows a straight line towards it's destination
@@ -64,7 +64,7 @@ public class AttractMotion implements Motion {
         double dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         deltaX /= dist;
         deltaY /= dist;
-        double attractAcceleration = (k * dist) / entity.getMass();
+        double attractAcceleration = (k * dist) / entity.getShape().getMass();
         double accelX = deltaX * attractAcceleration;
         double accelY = deltaY * attractAcceleration;
         double dampX = entity.getDX() * d;

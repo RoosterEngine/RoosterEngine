@@ -1,6 +1,7 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.entities.Entity;
+import gameengine.math.Utils;
 import gameengine.physics.Material;
 
 import java.awt.*;
@@ -11,12 +12,10 @@ import java.awt.*;
 public class AABBShape extends Shape {
     private double width, height, halfWidth, halfHeight;
 
-    private static double calcRadius(double halfWidth, double halfHeight) {
-        return Math.sqrt(halfWidth * halfWidth + halfHeight * halfHeight);
-    }
-
-    public AABBShape(double x, double y, double width, double height, Entity parentEntity, Material material) {
-        super(x, y, calcRadius(width / 2, height / 2), parentEntity, material);
+    public AABBShape(Entity parent, double x, double y, double width,
+                     double height, Material material, double mass) {
+        super(parent, x, y, Utils.pythagoras(width / 2, height / 2),
+                material, mass);
         this.width = width;
         this.height = height;
         halfWidth = width / 2;
@@ -41,7 +40,7 @@ public class AABBShape extends Shape {
 
     @Override
     public int getShapeType() {
-        return Shape.TYPE_AA_BOUNDING_BOX;
+        return Shape.TYPE_AABB;
     }
 
     @Override

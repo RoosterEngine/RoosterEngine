@@ -11,6 +11,6 @@ public enum ContextType {
 
     // start default context types
     MENU,
-    GAME
+    TEST_COLL, GAME
     // end default context types
 }

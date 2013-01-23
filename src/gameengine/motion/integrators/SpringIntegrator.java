@@ -1,8 +1,8 @@
 package gameengine.motion.integrators;
 
 import gameengine.entities.Entity;
-import gameengine.physics.Physics;
 import gameengine.motion.motions.Motion;
+import gameengine.physics.Physics;
 
 /**
  * A {@link Motion} using this {@link Integrator} will be pulled towards its
@@ -30,7 +30,7 @@ public class SpringIntegrator implements Integrator {
     public double getVelocity(Entity entity, double displacementFromDestination, double elapsedTime) {
         double entityVelocity = Math.sqrt(entity.getDX() * entity.getDX() + entity.getDY() * entity.getDY());
         double springForce = k * displacementFromDestination - d * velocity;
-        velocity += springForce / entity.getMass() * elapsedTime;
+        velocity += springForce / entity.getShape().getMass() * elapsedTime;
         return velocity;
     }
 

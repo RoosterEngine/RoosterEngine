@@ -1,6 +1,7 @@
 package gameengine;
 
 import gameengine.collisiondetection.CollisionDetector;
+import gameengine.collisiondetection.CollisionGroup;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.entities.Entity;
@@ -19,7 +20,7 @@ import java.util.*;
 public class GameController implements MouseMovedHandler {
     private EnumMap<ContextType, ArrayList<InputMapping>> contextTypeMap;
     private HashMap<Context, CollisionDetector> collisionDetectorHashMap;
-    private CollisionDetector currentCollisionDetector;
+    private CollisionDetector activeCollisionDetector;
     private InputManager inputManager;
     private ScreenManager screenManager;
     private Thread gameThread;
@@ -78,7 +79,7 @@ public class GameController implements MouseMovedHandler {
         }
 
         gameTimer = new GameTimer(this, UPS, targetFPS, minFPS);
-        gameThread = new Thread(gameTimer);
+        gameThread = new Thread(gameTimer, "Game");
         collisionDetectorHashMap = new HashMap<>();
     }
 
@@ -140,7 +141,7 @@ public class GameController implements MouseMovedHandler {
         // when a context was exited.
         mouseMoved(0, 0, 0, 0);
 
-        currentCollisionDetector = getCollisionDetector(context);
+        activeCollisionDetector = getCollisionDetector(context);
     }
 
     /**
@@ -327,27 +328,19 @@ public class GameController implements MouseMovedHandler {
     }
 
     public void update(double elapsedTime) {
-        currentCollisionDetector.update(elapsedTime, activeContext);
+        activeCollisionDetector.update(elapsedTime, activeContext);
     }
 
-    public void addShapeToCollisionDetector(Context context, gameengine.collisiondetection.shapes.Shape shape, int collisionCategory) {
-        CollisionDetector collisionDetector = getCollisionDetector(context);
-        collisionDetector.addShape(shape, collisionCategory);
+    public void addEntityToCollisionDetector(Context context, Entity entity) {
+        getCollisionDetector(context).addEntity(entity);
     }
 
-    public void removeShapeFromCollisionDetector(Context context, gameengine.collisiondetection.shapes.Shape shape, int collisionCategory) {
-        CollisionDetector collisionDetector = getCollisionDetector(context);
-        collisionDetector.removeShape(shape, collisionCategory);
+    public void removeEntityFromCollisionDetector(Context context, Entity entity) {
+        getCollisionDetector(context).removeEntity(entity);
     }
 
-    public void removeChildrenFromCollisionDetector(Context context, Entity parent) {
-        CollisionDetector collisionDetector = getCollisionDetector(context);
-        collisionDetector.removeChildren(parent);
-    }
-
-    public void setCollisionPair(Context context, int collisionCategoryA, int collisionCategoryB) {
-        CollisionDetector collisionDetector = getCollisionDetector(context);
-        collisionDetector.setCollisionPair(collisionCategoryA, collisionCategoryB);
+    public void setCollisionPair(Context context, CollisionGroup a, CollisionGroup b) {
+        getCollisionDetector(context).setCollisionPair(a, b);
     }
 
     public void clearCollisions(Context context) {
@@ -358,7 +351,9 @@ public class GameController implements MouseMovedHandler {
     private CollisionDetector getCollisionDetector(Context context) {
         CollisionDetector collisionDetector = collisionDetectorHashMap.get(context);
         if (collisionDetector == null) {
-            collisionDetector = new CollisionDetector();
+            double halfWidth = getWidth() / 2;
+            double halfHeight = getHeight() / 2;
+            collisionDetector = new CollisionDetector(halfWidth, halfHeight, halfWidth, halfHeight);
             collisionDetectorHashMap.put(context, collisionDetector);
         }
         return collisionDetector;
@@ -379,6 +374,10 @@ public class GameController implements MouseMovedHandler {
         if (!activeContext.isShowingMouseCursor()) {
             resetMouseCursor(screenManager.getFullScreenWindow());
         }
+    }
+
+    public void drawPartitions(Graphics2D g, Color color) {
+        activeCollisionDetector.draw(g, color);
     }
 
     public void draw() {

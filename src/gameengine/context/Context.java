@@ -1,6 +1,5 @@
 package gameengine.context;
 
-import bricklets.Group;
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
 import gameengine.entities.Entity;
@@ -16,7 +15,7 @@ import java.util.HashMap;
  * Contexts are where the game is made.
  * To create a game, extend Context and tell the {@link gameengine.GameController} to enter
  * your context.
- *
+ * <p/>
  * User: davidrusu
  */
 public abstract class Context implements ActionHandler, InputHandler {
@@ -27,7 +26,6 @@ public abstract class Context implements ActionHandler, InputHandler {
     private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
     private boolean paused = false;
     protected ArrayList<Entity> entities = new ArrayList<>();
-    protected ArrayList<Group> groups = new ArrayList<>();
     protected GameController controller;
     protected ContextType contextType;
     protected int width, height;
@@ -35,7 +33,7 @@ public abstract class Context implements ActionHandler, InputHandler {
     /**
      * Constructs a Context
      *
-     * @param controller The {@link GameController} controlling the game
+     * @param controller  The {@link GameController} controlling the game
      * @param contextType the {@link ContextType} of the this context
      */
     protected Context(GameController controller, ContextType contextType) {
@@ -49,7 +47,6 @@ public abstract class Context implements ActionHandler, InputHandler {
 
     public void reset() {
         entities.clear();
-        groups.clear();
         paused = false;
     }
 
@@ -133,7 +130,7 @@ public abstract class Context implements ActionHandler, InputHandler {
     /**
      * Binds an {@link Action} to an {@link ActionHandler}
      *
-     * @param action The {@link Action} to be mapped to an {@link ActionHandler}
+     * @param action  The {@link Action} to be mapped to an {@link ActionHandler}
      * @param handler the {@link ActionHandler} to handle the {@link Action}
      */
     protected final void bindAction(Action action, ActionHandler handler) {
@@ -146,7 +143,7 @@ public abstract class Context implements ActionHandler, InputHandler {
      * When in binding mode all input events except mouse movement will be
      * handled, the specified {@link Action} is given to the
      * {@link ActionHandler} when an input event happens.
-     *</p>
+     * </p>
      *
      * @param bindingInputHandler the {@link InputHandler} that will handle the
      *                            input while in binding mode

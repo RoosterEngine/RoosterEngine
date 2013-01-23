@@ -3,7 +3,7 @@ package gameengine.physics;
 /**
  * Materials are used to give your shapes physical properties like friction and
  * restitution.
- *
+ * <p/>
  * User: davidrusu
  * Date: 27/11/12
  * Time: 11:33 PM
@@ -49,7 +49,7 @@ public class Material {
         return ice;
     }
 
-    public static Material createCustomMaterial(double friction, double restitution) {
+    public static Material createMaterial(double friction, double restitution) {
         int materialNumber = getNextMaterialNumber();
         setMaterialData(materialNumber, 0, friction, restitution);
         return new Material(materialNumber);

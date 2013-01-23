@@ -5,7 +5,7 @@ import gameengine.physics.Physics;
 
 /**
  * This {@link Motion} will pull entities towards the specified x coordinate
- *
+ * <p/>
  * User: davidrusu
  * Date: 29/12/12
  * Time: 11:33 AM
@@ -51,7 +51,7 @@ public class HorizontalAttractMotion implements Motion {
     @Override
     public void update(Entity entity, double elapsedTime) {
         double delta = destination - entity.getX();
-        double attractAcceleration = k * delta / entity.getMass();
+        double attractAcceleration = k * delta / entity.getShape().getMass();
         double damping = d * entity.getDX();
         velocity = entity.getDX() + (attractAcceleration - damping) * elapsedTime;
     }

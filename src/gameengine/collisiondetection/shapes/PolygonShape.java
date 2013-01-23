@@ -1,13 +1,13 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.entities.Entity;
-import gameengine.physics.Material;
 import gameengine.math.Vector2D;
+import gameengine.physics.Material;
 
 import java.awt.*;
 import java.util.Random;
 
-public class Polygon extends Shape {
+public class PolygonShape extends Shape {
     private static Random rand = new Random(0);
     private Vector2D[] normals, points; // points are relative to the center
     private double[] normalMins, normalMaxs;
@@ -16,8 +16,9 @@ public class Polygon extends Shape {
     private int numPoints;
     private boolean usingBoundingBox = true;
 
-    public Polygon(double x, double y, double[] xPoints, double[] yPoints, Entity parentEntity, Material material) {
-        super(x, y, getRadius(xPoints, yPoints), parentEntity, material);
+    public PolygonShape(Entity parent, double x, double y, double[] xPoints, double[] yPoints,
+                        Material material, double mass) {
+        super(parent, x, y, getRadius(xPoints, yPoints), material, mass);
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
         normals = new Vector2D[numPoints];
@@ -35,30 +36,30 @@ public class Polygon extends Shape {
         setupBounding();
     }
 
-    public static void setRandomSeed(long seed) {
-        if (rand == null) {
-            rand = new Random(seed);
-        } else {
-            rand.setSeed(seed);
-        }
-    }
-
-    public static Polygon getRandomConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, Entity parentEntity, Material material) {
+    public static PolygonShape getRandConvexPolygon(Entity parent,
+                                                    double x, double y,
+                                                    double radiusMin,
+                                                    double radiusMax,
+                                                    int numPointsMin,
+                                                    int numPointsMax,
+                                                    Material material,
+                                                    double mass) {
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
-        int numPoints = (int) (rand.nextDouble() * (numPointsMax - numPointsMin)) + numPointsMin;
+        int pointsDiff = numPointsMax - numPointsMin;
+        int numPoints = (int) (rand.nextDouble() * pointsDiff) + numPointsMin;
         double[] xPoints = new double[numPoints];
         double[] yPoints = new double[numPoints];
         double angle = 2 * Math.PI / numPoints;
-        double initAngle = 0; //rand.nextDouble() * 2 * Math.PI;
+        double initAngle = rand.nextDouble() * 2 * Math.PI;
         for (int p = 0; p < numPoints; p++) {
-            double radomAngle = 0; //rand.nextDouble() * angle / 2 - angle;
-            double angleFluctuated = angle * p + radomAngle + initAngle;
+            double randomAngle = rand.nextDouble() * angle / 2 - angle;
+            double angleFluctuated = angle * p + randomAngle + initAngle;
             double pX = Math.cos(angleFluctuated) * radius;
             double pY = Math.sin(angleFluctuated) * radius;
             xPoints[p] = pX;
             yPoints[p] = pY;
         }
-        return new Polygon(x, y, xPoints, yPoints, parentEntity, material);
+        return new PolygonShape(parent, x, y, xPoints, yPoints, material, mass);
     }
 
     private static double getRadius(double[] xPoints, double[] yPoints) {

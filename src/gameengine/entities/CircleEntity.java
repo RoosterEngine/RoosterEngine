@@ -1,7 +1,7 @@
 package gameengine.entities;
 
-import gameengine.physics.Material;
 import gameengine.collisiondetection.shapes.CircleShape;
+import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -11,16 +11,9 @@ public class CircleEntity extends Entity {
 
     public CircleEntity(double x, double y, double radius) {
         super(x, y, radius * 2, radius * 2);
+        setShape(new CircleShape(this, x, y, radius,
+                Material.createMaterial(0, 1), 1));
         this.radius = radius;
-    }
-
-    public CircleEntity(Entity entity, double radius) {
-        super(entity.x, entity.y, radius, radius, entity.mass);
-        this.radius = radius;
-    }
-
-    public CircleShape getShape(Material material) {
-        return new CircleShape(x, y, radius, this, material);
     }
 
     public double getRadius() {

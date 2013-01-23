@@ -1,9 +1,8 @@
 package bricklets;
 
-import gameengine.*;
+import gameengine.GameController;
 import gameengine.context.BasicMenu;
 import gameengine.context.ButtonHandler;
-import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.entities.BasicButton;
 import gameengine.graphics.SolidColorGraphic;
@@ -21,15 +20,16 @@ public class Main implements ButtonHandler {
     private BasicButton controlsButton = new BasicButton("Controls");
     private BrickBreaker bricks;
     private BasicMenu menu;
-    private Context testing;
+    private Testing testing;
 
     public Main(GameController controller) {
         this.controller = controller;
+        BasicButton[] buttons = {gameButton, testingButton, exitButton};
         testing = new Testing(controller);
         bricks = new BrickBreaker(controller);
-        BasicButton[] buttons = {gameButton, testingButton, optionsButton, controlsButton, exitButton};
-        menu = new BasicMenu(controller, ContextType.MENU, buttons, this, new SolidColorGraphic(new Color(19, 9, 18), controller.getWidth(), controller.getHeight()));
-        controller.enterContext(menu);
+        menu = new BasicMenu(controller, ContextType.MENU, buttons, this,
+                new SolidColorGraphic(new Color(19, 9, 18),
+                        controller.getWidth(), controller.getHeight()));
     }
 
     public static void main(String[] args) {
@@ -40,15 +40,19 @@ public class Main implements ButtonHandler {
     }
 
     public void startGame() {
+        controller.enterContext(menu);
         controller.startGame();
     }
 
     @Override
     public void buttonActivated(BasicButton button) {
         if (button == gameButton) {
+//            testColl.init();
+//            controller.enterContext(testColl);
             controller.enterContext(bricks);
             menu.reset();
         } else if (button == testingButton) {
+            testing.init();
             controller.enterContext(testing);
             menu.reset();
         } else if (button == exitButton) {

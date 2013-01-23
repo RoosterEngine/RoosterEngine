@@ -3,7 +3,11 @@ package gameengine.math;
 /**
  * @author davidrusu
  */
-public class Utilities {
+public class Utils {
+
+    public static double pythagoras(double a, double b) {
+        return Math.sqrt(a * a + b * b);
+    }
 
     private static double simpsonsRule(Function f, double from, double to) {
         double halfDelta = (to - from) / 2;

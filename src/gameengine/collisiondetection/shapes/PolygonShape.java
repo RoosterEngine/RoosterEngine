@@ -18,7 +18,8 @@ public class PolygonShape extends Shape {
 
     public PolygonShape(Entity parent, double x, double y, double[] xPoints, double[] yPoints,
                         Material material, double mass) {
-        super(parent, x, y, getRadius(xPoints, yPoints), material, mass);
+        super(parent, x, y, getRadius(xPoints, yPoints),
+                getHalfLength(xPoints), getHalfLength(yPoints), material, mass);
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
         normals = new Vector2D[numPoints];
@@ -71,6 +72,22 @@ public class PolygonShape extends Shape {
             maxDistSquared = Math.max(distSquared, maxDistSquared);
         }
         return Math.sqrt(maxDistSquared);
+    }
+
+    private static double getHalfLength(double[] points) {
+        double halfLength = 0;
+        for (int i = 0; i < points.length; i++) {
+            halfLength = Math.max(Math.abs(points[i]), halfLength);
+        }
+        return halfLength;
+    }
+
+    private static double getHalfHeight(double[] yPoints) {
+        double halfHeight = 0;
+        for (int i = 0; i < yPoints.length; i++) {
+            halfHeight = Math.max(Math.abs(yPoints[i]), halfHeight);
+        }
+        return halfHeight;
     }
 
     @Override

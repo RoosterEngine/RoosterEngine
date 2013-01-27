@@ -10,7 +10,6 @@ import gameengine.graphics.OvalGraphic;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
-import gameengine.motion.EffectFactory;
 
 import java.awt.*;
 import java.util.Collections;
@@ -108,7 +107,7 @@ public class BasicMenu extends Context {
             button.initialize(width / 2, currentY, buttonWidth, buttonHeight);
             currentY += buttonHeight + padding;
         }
-        EffectFactory.setZipperEffect(buttons, width / 2, width, 1);
+//        EffectFactory.setZipperEffect(buttons, width / 2, width, 1);
     }
 
     /**

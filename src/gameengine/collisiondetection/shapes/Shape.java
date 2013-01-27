@@ -1,13 +1,12 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.CollisionGroup;
+import gameengine.collisiondetection.CollisionType;
 import gameengine.entities.Entity;
 import gameengine.math.Vector2D;
 import gameengine.physics.Material;
 
 import java.awt.*;
-import java.util.ArrayList;
 
 /**
  * @author david
@@ -16,40 +15,44 @@ public abstract class Shape {
     public static final int TYPE_CIRCLE = 0, TYPE_AABB = 1, TYPE_POLYGON = 2;
     public static final double NO_COLLISION = Double.MAX_VALUE;
     private static CollisionData collisionData = new CollisionData();
-    private ArrayList<CollisionGroup> collisionGroups = new ArrayList<>();
+    private int collisionType = CollisionType.DEFAULT.ordinal();
+    private double halfWidth, halfHeight;
     private double boundingMinX, boundingMaxX, boundingMinY, boundingMaxY;
     private double minCollisionX, maxCollisionX, minCollisionY, maxCollisionY;
-    protected double x, y, dx, dy, radius, parentOffsetX, parentOffsetY;
+    protected double x, y, dx, dy, parentOffsetX, parentOffsetY;
+    // TODO store radius in CircleShape and remove from here
+    protected double radius;
     protected Material material;
     protected double mass;
     protected Entity parent;
 
 
     public Shape(Entity parent, double x, double y, double radius,
+                 double halfWidth, double halfHeight,
                  Material material, double mass) {
         this.parent = parent;
         this.x = x;
         this.y = y;
-        this.radius = radius;
+        this.halfWidth = halfWidth;
+        this.halfHeight = halfHeight;
         this.mass = mass;
-        // TODO make abstract methods for getting the minCollisionX, minCollisionY...
+        this.material = material;
+        this.radius = radius;
         updateTightBoundingBox();
-        calculateBoundingBox(0);
         minCollisionX = boundingMinX;
         minCollisionY = boundingMinY;
         maxCollisionX = boundingMaxX;
         maxCollisionY = boundingMaxY;
         parentOffsetX = 0;
         parentOffsetY = 0;
-        this.material = material;
     }
 
     public void updateTightBoundingBox() {
-        // TODO use something better than radius to calculate bounding box
-        boundingMinX = x - radius;
-        boundingMaxX = x + radius;
-        boundingMinY = y - radius;
-        boundingMaxY = y + radius;
+        // TODO use something better than radius to calculate bounding box, also if you switch to storing the min/max x and y you may not have to cast to AABBShape when checking for collisions
+        boundingMinX = x - halfWidth;
+        boundingMaxX = x + halfWidth;
+        boundingMinY = y - halfHeight;
+        boundingMaxY = y + halfHeight;
     }
 
     public void calculateBoundingBox(double time) {
@@ -98,14 +101,12 @@ public abstract class Shape {
                 && minCollisionY > yMinBox && maxCollisionY < yMaxBox;
     }
 
-    public void addCollisionGroup(CollisionGroup group) {
-        if (!collisionGroups.contains(group)) {
-            collisionGroups.add(group);
-        }
+    public void setCollisionType(CollisionType type) {
+        collisionType = type.ordinal();
     }
 
-    public ArrayList<CollisionGroup> getCollisionGroups() {
-        return collisionGroups;
+    public int getCollisionType() {
+        return collisionType;
     }
 
     public void setParent(Entity parent) {
@@ -171,6 +172,12 @@ public abstract class Shape {
 
     public static void collideShapes(Shape a, Shape b, double maxTime,
                                      Collision result) {
+        double combinedHalfWidths = (a.boundingMaxX - a.boundingMinX + b.boundingMaxX - b.boundingMinX) * 0.5;
+        double combinedHalfHeights = (a.boundingMaxY - a.boundingMinY + b.boundingMaxY - b.boundingMinY) * 0.5;
+        if (Math.abs(a.x - b.x) > combinedHalfWidths || Math.abs(a.y - b.y) > combinedHalfHeights) {
+            return;
+        }
+
         boolean isAPolygon = a.getShapeType() == TYPE_POLYGON;
         boolean isBPolygon = b.getShapeType() == TYPE_POLYGON;
         boolean isACircle = a.getShapeType() == TYPE_CIRCLE;
@@ -769,4 +776,11 @@ public abstract class Shape {
     public abstract int getShapeType();
 
     public abstract void draw(Graphics2D g, Color color);
+
+    @Override
+    public String toString() {
+        return "x: " + x + " y: " + y
+                + "\nminX: " + minCollisionX + " minY: " + minCollisionY
+                + "\nmaxX: " + maxCollisionX + " maxY: " + maxCollisionY;
+    }
 }

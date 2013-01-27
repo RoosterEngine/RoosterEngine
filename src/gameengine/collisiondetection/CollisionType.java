@@ -6,6 +6,6 @@ package gameengine.collisiondetection;
  * Date: 12/01/13
  * Time: 5:04 PM
  */
-public enum CollisionGroup {
-    DEFAULT, WALL, ENEMY
+public enum CollisionType {
+    DEFAULT, WALL, BALL, ENEMY
 }

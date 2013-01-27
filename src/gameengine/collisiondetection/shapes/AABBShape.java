@@ -14,12 +14,12 @@ public class AABBShape extends Shape {
 
     public AABBShape(Entity parent, double x, double y, double width,
                      double height, Material material, double mass) {
-        super(parent, x, y, Utils.pythagoras(width / 2, height / 2),
+        super(parent, x, y, Utils.pythagoras(width * 0.5, height * 0.5), width * 0.5, height * 0.5,
                 material, mass);
         this.width = width;
         this.height = height;
-        halfWidth = width / 2;
-        halfHeight = height / 2;
+        halfWidth = width * 0.5;
+        halfHeight = height * 0.5;
     }
 
     public double getWidth() {

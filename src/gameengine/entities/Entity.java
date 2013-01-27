@@ -141,16 +141,16 @@ public abstract class Entity {
 
     public void drawLineToPartition(Graphics2D g, Color color) {
         g.setColor(color);
-//        double endX;
-//        double endY;
-//        if (partition != null) {
-//            endX = partition.getCenterX();
-//            endY = partition.getCenterY();
-//        } else {
-//            endX = Math.random() * 1900;
-//            endY = Math.random() * 1024;
-//        }
-//        g.drawLine((int)x, (int)y, (int) endX, (int) endY);
+        double endX;
+        double endY;
+        if (partition != null) {
+            endX = partition.getCenterX();
+            endY = partition.getCenterY();
+        } else {
+            endX = Math.random() * 1900;
+            endY = Math.random() * 1024;
+        }
+        g.drawLine((int) x, (int) y, (int) endX, (int) endY);
         int shapeWidth = (int) (shape.getMaxCollisionX() - shape.getMinCollisionX());
         int shapeHeight = (int) (shape.getMaxCollisionY() - shape.getMinCollisionY());
         g.drawRect((int) shape.getMinCollisionX(), (int) shape.getMinCollisionY(), shapeWidth, shapeHeight);

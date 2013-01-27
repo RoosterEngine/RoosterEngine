@@ -1,7 +1,7 @@
 package gameengine;
 
-import gameengine.collisiondetection.CollisionDetector;
-import gameengine.collisiondetection.CollisionGroup;
+import gameengine.collisiondetection.CollisionType;
+import gameengine.collisiondetection.World;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.entities.Entity;
@@ -19,8 +19,8 @@ import java.util.*;
 
 public class GameController implements MouseMovedHandler {
     private EnumMap<ContextType, ArrayList<InputMapping>> contextTypeMap;
-    private HashMap<Context, CollisionDetector> collisionDetectorHashMap;
-    private CollisionDetector activeCollisionDetector;
+    private HashMap<Context, World> worldHashMap;
+    private World activeWorld;
     private InputManager inputManager;
     private ScreenManager screenManager;
     private Thread gameThread;
@@ -80,7 +80,7 @@ public class GameController implements MouseMovedHandler {
 
         gameTimer = new GameTimer(this, UPS, targetFPS, minFPS);
         gameThread = new Thread(gameTimer, "Game");
-        collisionDetectorHashMap = new HashMap<>();
+        worldHashMap = new HashMap<>();
     }
 
     public void startGame() {
@@ -141,7 +141,7 @@ public class GameController implements MouseMovedHandler {
         // when a context was exited.
         mouseMoved(0, 0, 0, 0);
 
-        activeCollisionDetector = getCollisionDetector(context);
+        activeWorld = getCollisionDetector(context);
     }
 
     /**
@@ -328,7 +328,7 @@ public class GameController implements MouseMovedHandler {
     }
 
     public void update(double elapsedTime) {
-        activeCollisionDetector.update(elapsedTime, activeContext);
+        activeWorld.update(elapsedTime, activeContext);
     }
 
     public void addEntityToCollisionDetector(Context context, Entity entity) {
@@ -339,24 +339,25 @@ public class GameController implements MouseMovedHandler {
         getCollisionDetector(context).removeEntity(entity);
     }
 
-    public void setCollisionPair(Context context, CollisionGroup a, CollisionGroup b) {
-        getCollisionDetector(context).setCollisionPair(a, b);
+    public void setCollisionPair(Context context, CollisionType a, CollisionType b) {
+        getCollisionDetector(context).setCollisionGroup(a, b);
     }
 
     public void clearCollisions(Context context) {
-        CollisionDetector collisionDetector = getCollisionDetector(context);
-        collisionDetector.clearCollisions();
+        World world = getCollisionDetector(context);
+        world.clearCollisions();
     }
 
-    private CollisionDetector getCollisionDetector(Context context) {
-        CollisionDetector collisionDetector = collisionDetectorHashMap.get(context);
-        if (collisionDetector == null) {
+    private World getCollisionDetector(Context context) {
+        World world = worldHashMap.get(context);
+        if (world == null) {
             double halfWidth = getWidth() / 2;
             double halfHeight = getHeight() / 2;
-            collisionDetector = new CollisionDetector(halfWidth, halfHeight, halfWidth, halfHeight);
-            collisionDetectorHashMap.put(context, collisionDetector);
+            double halfLength = halfWidth;
+            world = new World(halfWidth, halfHeight, halfLength);
+            worldHashMap.put(context, world);
         }
-        return collisionDetector;
+        return world;
     }
 
     public Graphic loadImage(String path) throws IOException {
@@ -377,7 +378,7 @@ public class GameController implements MouseMovedHandler {
     }
 
     public void drawPartitions(Graphics2D g, Color color) {
-        activeCollisionDetector.draw(g, color);
+        activeWorld.draw(g, color);
     }
 
     public void draw() {

@@ -10,6 +10,7 @@ import gameengine.input.Action;
 import gameengine.input.InputCode;
 
 import java.awt.*;
+import java.util.Scanner;
 
 public class Main implements ButtonHandler {
     private GameController controller;
@@ -33,6 +34,9 @@ public class Main implements ButtonHandler {
     }
 
     public static void main(String[] args) {
+        Scanner input = new Scanner(System.in);
+        System.out.println("press any key to start");
+        input.nextLine();
         GameController controller = new GameController(60, 60, 50);
         setupInputToActionMappings(controller);
         Main main = new Main(controller);

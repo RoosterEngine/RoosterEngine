@@ -1,10 +1,7 @@
 package gameengine.collisiondetection.tree;
 
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.CollisionPair;
 import gameengine.entities.Entity;
-
-import java.util.ArrayList;
 
 /**
  * documentation
@@ -23,7 +20,6 @@ public interface Parent {
     public void relocateDown(Entity entity);
 
     public abstract void checkForCollisionWithTree(
-            Tree tree, ArrayList<CollisionPair> collisionPairs,
-            Collision result);
+            Tree tree, int[] collisionGroups, Collision temp, Collision result);
 
 }

@@ -18,4 +18,10 @@ public class CollisionPair {
     public int getB() {
         return b;
     }
+
+    @Override
+    public String toString() {
+        CollisionType[] groups = CollisionType.values();
+        return groups[a] + " " + groups[b];
+    }
 }

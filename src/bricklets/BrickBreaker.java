@@ -2,7 +2,7 @@ package bricklets;
 
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.CollisionGroup;
+import gameengine.collisiondetection.CollisionType;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
@@ -41,9 +41,10 @@ public class BrickBreaker extends Context implements ActionHandler {
     private Random rand = new Random(1);
     private double initialPaddleY = height - 200;
     private double ballRadius = 15;
-    private double ballMass = 100;
+    private double ballMass = 50;
     private int lives = 100;
     private double scale = 1;
+    private Color bgColor = Color.black;
 
     public BrickBreaker(GameController controller) {
         super(controller, ContextType.GAME);
@@ -57,13 +58,13 @@ public class BrickBreaker extends Context implements ActionHandler {
         reset();
 
         controller.setCollisionPair(
-                this, CollisionGroup.DEFAULT, CollisionGroup.DEFAULT);
+                this, CollisionType.DEFAULT, CollisionType.DEFAULT);
 
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
         Shape paddleShape = paddle.getShape();
         paddleShape.setMass(1000);
-        paddleShape.setMaterial(Material.createMaterial(0, 2));
-        paddleShape.addCollisionGroup(CollisionGroup.DEFAULT);
+        paddleShape.setMaterial(Material.createMaterial(0, 1));
+        paddleShape.setCollisionType(CollisionType.DEFAULT);
         controller.addEntityToCollisionDetector(this, paddle);
 
         entities.add(paddle);
@@ -72,7 +73,7 @@ public class BrickBreaker extends Context implements ActionHandler {
 //        CircleEntity ball = new CircleEntity(width / 2, height / 2, ballRadius);
 //        Shape ballShape = ball.getShape();
 //        ballShape.setMass(ballMass);
-//        ballShape.addCollisionGroup(CollisionGroup.DEFAULT);
+//        ballShape.setCollisionType(CollisionType.DEFAULT);
 //        ball.setVelocity(0.1, 0.5);
 //        controller.addEntityToCollisionDetector(this, ball);
 //        balls.add(ball);
@@ -80,12 +81,12 @@ public class BrickBreaker extends Context implements ActionHandler {
 //        entities.add(ball);
 
         initBricks();
-//        initBounding();
+        initBounding();
 
         controlledEntity = paddle;
         controlledEntity.setMotion(new MotionCompositor(
                 new MouseMotion(),
-                new VerticalAttractMotion(paddle.getY(), 0.001, 1,
+                new VerticalAttractMotion(paddle.getY(), 0.01, 0.3,
                         controlledEntity.getShape().getMass())));
 
         setupInput();
@@ -97,20 +98,24 @@ public class BrickBreaker extends Context implements ActionHandler {
         bottomBounds = new BoxEntity(width / 2, height - 50, width, borderThickness);
         leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
         rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
+
         topBounds.getShape().setMass(Double.POSITIVE_INFINITY);
         bottomBounds.getShape().setMass(Double.POSITIVE_INFINITY);
         leftBounds.getShape().setMass(Double.POSITIVE_INFINITY);
         rightBounds.getShape().setMass(Double.POSITIVE_INFINITY);
-        topBounds.getShape().addCollisionGroup(CollisionGroup.WALL);
-        bottomBounds.getShape().addCollisionGroup(CollisionGroup.WALL);
-        leftBounds.getShape().addCollisionGroup(CollisionGroup.WALL);
-        rightBounds.getShape().addCollisionGroup(CollisionGroup.WALL);
-        controller.setCollisionPair(this, CollisionGroup.DEFAULT, CollisionGroup.WALL);
-        Material material = Material.createMaterial(0, 0.5);
+
+        topBounds.getShape().setCollisionType(CollisionType.WALL);
+        bottomBounds.getShape().setCollisionType(CollisionType.WALL);
+        leftBounds.getShape().setCollisionType(CollisionType.WALL);
+        rightBounds.getShape().setCollisionType(CollisionType.WALL);
+        controller.setCollisionPair(this, CollisionType.DEFAULT, CollisionType.WALL);
+
+        Material material = Material.createMaterial(0, 1);
         topBounds.getShape().setMaterial(material);
         bottomBounds.getShape().setMaterial(material);
         leftBounds.getShape().setMaterial(material);
         rightBounds.getShape().setMaterial(material);
+
         controller.addEntityToCollisionDetector(this, topBounds);
         controller.addEntityToCollisionDetector(this, bottomBounds);
         controller.addEntityToCollisionDetector(this, leftBounds);
@@ -124,10 +129,10 @@ public class BrickBreaker extends Context implements ActionHandler {
 
     private void initBricks() {
         bricks.clear();
-        int rows = 1;
-        int columns = 30;
+        int rows = 5;
+        int columns = 20;
         double padding = ballRadius / 2;
-        double borderPadding = ballRadius * 4;
+        double borderPadding = 100;
         double yOffset = borderPadding * 1.75;
         double brickWidth = (width - borderPadding * 2 - (columns + 1) * padding) / columns;
         double brickHeight = brickWidth / 2.75;
@@ -138,7 +143,7 @@ public class BrickBreaker extends Context implements ActionHandler {
                 double yPos = padding * (1 + y) + brickHeight * y + brickHeight / 2 + yOffset;
                 Brick brick = new Brick(xPos, yPos, brickWidth, brickHeight);
                 brick.getShape().setMass(10);
-                brick.getShape().addCollisionGroup(CollisionGroup.DEFAULT);
+                brick.getShape().setCollisionType(CollisionType.DEFAULT);
                 brick.setMotion(new AttractMotion(xPos, yPos, 0.001, 0.3, brick.getShape().getMass()));
                 bricks.add(brick);
                 entities.add(brick);
@@ -157,14 +162,14 @@ public class BrickBreaker extends Context implements ActionHandler {
                 controller.removeEntityFromCollisionDetector(this, brick);
             }
         }
-        if (bricks.size() == 0) {
-            init();
-        }
+//        if (bricks.size() == 0) {
+//            init();
+//        }
     }
 
     @Override
     public void draw(Graphics2D g) {
-        g.setColor(new Color(30, 110, 50));
+        g.setColor(bgColor);
         g.fillRect(0, 0, width, height);
 
         double shiftX = width * (1 - scale) / 2;
@@ -172,13 +177,13 @@ public class BrickBreaker extends Context implements ActionHandler {
         g.translate((int) shiftX, (int) shiftY);
         g.scale(scale, scale);
 
-        controller.drawPartitions(g, Color.WHITE);
+        controller.drawPartitions(g, bgColor);
         for (Entity entity : entities) {
             entity.draw(g);
         }
-        for (Entity entity : entities) {
-            entity.drawLineToPartition(g, Color.RED);
-        }
+//        for (Entity entity : entities) {
+//            entity.drawLineToPartition(g, Color.RED);
+//        }
 
         g.scale(1 / scale, 1 / scale);
         drawText(g);
@@ -192,7 +197,8 @@ public class BrickBreaker extends Context implements ActionHandler {
     @Override
     public void handleCollision(Collision collision, double collisionsPerMilli) {
         Physics.performCollision(collision);
-
+//        bgColor = new Color(
+//                (int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
         double damage = 10;
         Entity a = collision.getA();
         Entity b = collision.getB();
@@ -268,9 +274,9 @@ public class BrickBreaker extends Context implements ActionHandler {
         switch (action) {
             case MOUSE_CLICK:
                 CircleEntity newBall = new CircleEntity(paddle.getX(), paddle.getY() - paddle.getHeight() / 2 - 5, ballRadius);
-                newBall.setVelocity(paddle.getDX() * 5, -0.1);
+                newBall.setVelocity(paddle.getDX() * 5, -1);
                 newBall.getShape().setMass(ballMass);
-                newBall.getShape().addCollisionGroup(CollisionGroup.DEFAULT);
+                newBall.getShape().setCollisionType(CollisionType.DEFAULT);
                 entities.add(newBall);
                 balls.add(newBall);
                 controller.addEntityToCollisionDetector(this, newBall);

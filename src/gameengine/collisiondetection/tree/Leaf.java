@@ -1,14 +1,11 @@
 package gameengine.collisiondetection.tree;
 
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.CollisionGroup;
-import gameengine.collisiondetection.CollisionPair;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 
 import java.awt.*;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
@@ -21,8 +18,8 @@ public class Leaf extends Tree {
     private static ArrayDeque<Leaf> recycledLeafs = new ArrayDeque<>();
 
     private Leaf(Parent parent, double centerX, double centerY,
-                 double halfWidth, double halfHeight) {
-        super(parent, centerX, centerY, halfWidth, halfHeight);
+                 double halfLength) {
+        super(parent, centerX, centerY, halfLength);
     }
 
     public Leaf() {
@@ -30,13 +27,12 @@ public class Leaf extends Tree {
     }
 
     public static Leaf getInstance(Parent parent,
-                                   double centerX, double centerY,
-                                   double halfWidth, double halfHeight) {
+                                   double centerX, double centerY, double halfLength) {
         if (recycledLeafs.isEmpty()) {
-            return new Leaf(parent, centerX, centerY, halfWidth, halfHeight);
+            return new Leaf(parent, centerX, centerY, halfLength);
         }
         Leaf leafInstance = recycledLeafs.pop();
-        leafInstance.init(parent, centerX, centerY, halfWidth, halfHeight);
+        leafInstance.init(parent, centerX, centerY, halfLength);
         return leafInstance;
     }
 
@@ -48,15 +44,10 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public Tree addEntity(Entity entity) {
+    public void addEntity(Entity entity) {
         entities.add(entity);
-        Shape shape = entity.getShape();
-        for (CollisionGroup group : shape.getCollisionGroups()) {
-            collisionGroups[group.ordinal()].add(shape);
-        }
         entity.setPartition(this);
         entityCount++;
-        return this;
     }
 
     @Override
@@ -64,24 +55,9 @@ public class Leaf extends Tree {
         boolean removed = entities.remove(entity);
         if (removed) {
             entity.setPartition(null);
-            removeShape(entity.getShape());
             entityCount--;
         }
         return removed;
-    }
-
-    private void removeShape(Shape shape) {
-        ArrayList<CollisionGroup> groups = shape.getCollisionGroups();
-        for (CollisionGroup group : groups) {
-            collisionGroups[group.ordinal()].remove(shape);
-        }
-    }
-
-    @Override
-    public void addAllEntitiesToTree(Tree tree) {
-        for (Entity entity : entities) {
-            tree.addEntity(entity);
-        }
     }
 
     @Override
@@ -110,7 +86,6 @@ public class Leaf extends Tree {
 
     private void postRelocateRemove(Entity entity, Iterator<Entity> iterator) {
         iterator.remove();
-        removeShape(entity.getShape());
         entityCount--;
     }
 
@@ -125,7 +100,7 @@ public class Leaf extends Tree {
     public Tree tryResize() {
         if (entityCount >= GROW_THRESH) {
             Quad quad = Quad.getInstance(
-                    parent, centerX, centerY, halfWidth, halfHeight);
+                    parent, centerX, centerY, halfLength);
             Iterator<Entity> iterator = entities.iterator();
             while (iterator.hasNext()) {
                 quad.addEntity(iterator.next());
@@ -152,22 +127,12 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void calcCollision(ArrayList<CollisionPair> collisionPairs,
-                              Collision result) {
+    public void calcCollision(
+            int[] collisionGroups, Collision temp, Collision result) {
         if (entityCount == 0) {
             return;
         }
-        for (CollisionPair collisionPair : collisionPairs) {
-            ArrayList<Shape> listA = collisionGroups[collisionPair.getA()];
-            ArrayList<Shape> listB = collisionGroups[collisionPair.getB()];
-
-            if (listA == listB) {
-                checkCollisionsInSingleList(listA, result);
-            } else {
-                checkCollisionsInLists(listA, listB, result);
-            }
-        }
-        parent.checkForCollisionWithTree(this, collisionPairs, result);
+        checkEntityCollisions(collisionGroups, temp, result);
     }
 
     @Override
@@ -179,6 +144,7 @@ public class Leaf extends Tree {
     @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color.darker());
-        g.fillRect((int) minX, (int) minY, (int) (halfWidth * 2), (int) (halfHeight * 2));
+        int length = (int) (halfLength * 2);
+        g.fillRect((int) minX, (int) minY, length, length);
     }
 }

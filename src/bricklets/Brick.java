@@ -40,9 +40,7 @@ public class Brick extends BoxEntity {
     public void draw(Graphics2D g) {
         int grad = (int) ((1 - health / TOTAL_HEALTH) * 255);
         g.setColor(new Color(grad, grad, grad));
-        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight),
-                (int) (width), (int) (height));
-
+        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) (width), (int) (height));
 //        g.setColor(Color.RED.darker().darker());
 //        String text = "\u2665 : " + health;
 //        FontMetrics metrics = g.getFontMetrics();

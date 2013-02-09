@@ -11,16 +11,12 @@ import java.util.HashSet;
 public class World {
     private HashSet<Entity> entities = new HashSet<>();
     private SpatialTree tree;
-    public boolean[] collisionGroups;
-    public int[] collisionGroups2 = new int[CollisionType.values().length];
+    private int[] collisionGroups = new int[CollisionType.values().length];
     private double[] collisionTimes = new double[16];
     private int back = 0, numCollision = 0;
     private double gameTime = 0;
 
-    public World(double centerX, double centerY,
-                 double halfLength) {
-        int n = CollisionType.values().length;
-        collisionGroups = new boolean[n * n]; // plus one to avoid rounding errors
+    public World(double centerX, double centerY, double halfLength) {
         tree = new SpatialTree(centerX, centerY, halfLength);
     }
 
@@ -29,77 +25,27 @@ public class World {
         tree.addEntity(entity);
     }
 
-    public void removeEntity(Entity entity) {
-        entities.remove(entity);
-        // TODO entity has a link to the partition it's in, can use that to
-        // remove the entity faster. but you have to make sure the tree shrinks
-        tree.removeEntity(entity);
-    }
 
-    private void setCollisionGroup1(CollisionType a, CollisionType b) {
-        int x, y;
-        if (a.ordinal() > b.ordinal()) {
-            x = a.ordinal();
-            y = b.ordinal();
-        } else {
-            x = b.ordinal();
-            y = a.ordinal();
-        }
-
-        int length = CollisionType.values().length;
-        int index = y * length + x;
-        collisionGroups[index] = true;
-    }
-
-    private void setCollisionGroup2(CollisionType a, CollisionType b) {
+    public void setCollisionGroup(CollisionType a, CollisionType b) {
         int x = a.ordinal();
         int y = b.ordinal();
 
         int mask = 1 << y;
-        collisionGroups2[x] |= mask;
+        collisionGroups[x] |= mask;
         mask = 1 << x;
-        collisionGroups2[y] |= mask;
+        collisionGroups[y] |= mask;
     }
 
-    private void removeCollisionGroup1(CollisionType a, CollisionType b) {
-        int x, y;
-        if (a.ordinal() > b.ordinal()) {
-            x = a.ordinal();
-            y = b.ordinal();
-        } else {
-            x = b.ordinal();
-            y = a.ordinal();
-        }
-
-        int length = CollisionType.values().length;
-        int index = y * length + x;
-        collisionGroups[index] = false;
-    }
-
-
-    public void removeCollisionGroup2(CollisionType a, CollisionType b) {
+    public void removeCollisionGroup(CollisionType a, CollisionType b) {
         int aOrdinal = a.ordinal();
         int bOrdinal = b.ordinal();
         int mask = 1 << aOrdinal;
-        collisionGroups2[bOrdinal] &= ~mask;
-    }
-
-    public void setCollisionGroup(CollisionType a, CollisionType b) {
-//        setCollisionGroup1(a, b);
-        setCollisionGroup2(a, b);
-    }
-
-    public void removeCollisionPair(CollisionType a, CollisionType b) {
-//        removeCollisionGroup1(a, b);
-        removeCollisionGroup2(a, b);
+        collisionGroups[bOrdinal] &= ~mask;
     }
 
     public void clearCollisions() {
         for (int i = 0; i < collisionGroups.length; i++) {
-            collisionGroups[i] = false;
-        }
-        for (int i = 0; i < collisionGroups2.length; i++) {
-            collisionGroups2[i] = 0;
+            collisionGroups[i] = 0;
         }
         entities.clear();
         tree.clear();
@@ -112,7 +58,7 @@ public class World {
         while (timeLeft > 0 && !context.isPaused()) {
             tree.ensureEntitiesAreContained(timeLeft);
             collision.setCollisionTime(timeLeft);
-            tree.calcCollision(collisionGroups2, collision);
+            tree.calcCollision(collisionGroups, collision);
             double collisionTime = collision.getCollisionTime();
             double updateTime = Math.min(collisionTime, timeLeft);
             updatePositions(updateTime);

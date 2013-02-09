@@ -16,10 +16,8 @@ public class PolygonShape extends Shape {
     private int numPoints;
     private boolean usingBoundingBox = true;
 
-    public PolygonShape(Entity parent, double x, double y, double[] xPoints, double[] yPoints,
-                        Material material, double mass) {
-        super(parent, x, y, getRadius(xPoints, yPoints),
-                getHalfLength(xPoints), getHalfLength(yPoints), material, mass);
+    public PolygonShape(Entity parent, double x, double y, double[] xPoints, double[] yPoints, Material material, double mass) {
+        super(parent, x, y, getRadius(xPoints, yPoints), getHalfLength(xPoints), getHalfLength(yPoints), material, mass);
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
         normals = new Vector2D[numPoints];
@@ -37,14 +35,7 @@ public class PolygonShape extends Shape {
         setupBounding();
     }
 
-    public static PolygonShape getRandConvexPolygon(Entity parent,
-                                                    double x, double y,
-                                                    double radiusMin,
-                                                    double radiusMax,
-                                                    int numPointsMin,
-                                                    int numPointsMax,
-                                                    Material material,
-                                                    double mass) {
+    public static PolygonShape getRandConvexPolygon(Entity parent, double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, Material material, double mass) {
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
         int pointsDiff = numPointsMax - numPointsMin;
         int numPoints = (int) (rand.nextDouble() * pointsDiff) + numPointsMin;

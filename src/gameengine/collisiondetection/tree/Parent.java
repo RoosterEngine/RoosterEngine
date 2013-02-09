@@ -1,6 +1,5 @@
 package gameengine.collisiondetection.tree;
 
-import gameengine.collisiondetection.Collision;
 import gameengine.entities.Entity;
 
 /**
@@ -11,15 +10,13 @@ import gameengine.entities.Entity;
  */
 public interface Parent {
 
-    public void relocateLeft(Entity entity);
+    void relocateLeft(Entity entity);
 
-    public void relocateRight(Entity entity);
+    void relocateRight(Entity entity);
 
-    public void relocateUp(Entity entity);
+    void relocateUp(Entity entity);
 
-    public void relocateDown(Entity entity);
+    void relocateDown(Entity entity);
 
-    public abstract void checkForCollisionWithTree(
-            Tree tree, int[] collisionGroups, Collision temp, Collision result);
-
+    void decrementEntityCount();
 }

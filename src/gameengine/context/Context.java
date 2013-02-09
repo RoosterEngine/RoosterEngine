@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Contexts are where the game is made.
+ * Contexts are where the game is created.
  * To create a game, extend Context and tell the {@link gameengine.GameController} to enter
  * your context.
  * <p/>

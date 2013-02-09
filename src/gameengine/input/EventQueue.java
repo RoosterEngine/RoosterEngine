@@ -69,8 +69,7 @@ public class EventQueue {
      * @param cutOffTime   the time to handle events up to
      * @param inputHandler the handler to handle the input events
      */
-    public synchronized void handleEvents(long cutOffTime,
-                                          InputHandler inputHandler) {
+    public synchronized void handleEvents(long cutOffTime, InputHandler inputHandler) {
         while (size > 0 && queue[front].getEventTime() <= cutOffTime) {
             size--;
             queue[front].handleAction(inputHandler);

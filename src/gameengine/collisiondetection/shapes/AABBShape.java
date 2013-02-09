@@ -12,10 +12,8 @@ import java.awt.*;
 public class AABBShape extends Shape {
     private double width, height, halfWidth, halfHeight;
 
-    public AABBShape(Entity parent, double x, double y, double width,
-                     double height, Material material, double mass) {
-        super(parent, x, y, Utils.pythagoras(width * 0.5, height * 0.5), width * 0.5, height * 0.5,
-                material, mass);
+    public AABBShape(Entity parent, double x, double y, double width, double height, Material material, double mass) {
+        super(parent, x, y, Utils.pythagoras(width * 0.5, height * 0.5), width * 0.5, height * 0.5, material, mass);
         this.width = width;
         this.height = height;
         halfWidth = width * 0.5;

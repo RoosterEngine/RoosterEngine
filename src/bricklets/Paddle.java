@@ -42,8 +42,7 @@ public class Paddle extends Entity {
             yPoints[i] = yPoint;
         }
 
-        setShape(new PolygonShape(this, x, y, xPoints, yPoints,
-                Material.createMaterial(1, 1), 1));
+        setShape(new PolygonShape(this, x, y, xPoints, yPoints, Material.createMaterial(1, 1), 1));
     }
 
     @Override

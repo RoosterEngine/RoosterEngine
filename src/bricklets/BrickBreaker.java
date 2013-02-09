@@ -84,10 +84,7 @@ public class BrickBreaker extends Context implements ActionHandler {
         initBounding();
 
         controlledEntity = paddle;
-        controlledEntity.setMotion(new MotionCompositor(
-                new MouseMotion(),
-                new VerticalAttractMotion(paddle.getY(), 0.01, 0.3,
-                        controlledEntity.getShape().getMass())));
+        controlledEntity.setMotion(new MotionCompositor(new MouseMotion(), new VerticalAttractMotion(paddle.getY(), 0.01, 0.3, controlledEntity.getShape().getMass())));
 
         setupInput();
     }
@@ -159,7 +156,7 @@ public class BrickBreaker extends Context implements ActionHandler {
             if (brick.isDead()) {
                 bricks.remove(i);
                 entities.remove(brick);
-                controller.removeEntityFromCollisionDetector(this, brick);
+                brick.getPartition().removeEntity(brick);
             }
         }
 //        if (bricks.size() == 0) {
@@ -217,7 +214,7 @@ public class BrickBreaker extends Context implements ActionHandler {
                 } else {
                     ball = (CircleEntity) a;
                 }
-                controller.removeEntityFromCollisionDetector(this, ball);
+                ball.getPartition().removeEntity(ball);
                 entities.remove(ball);
                 balls.remove(ball);
 

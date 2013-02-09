@@ -26,14 +26,11 @@ public class BasicMenu extends Context {
     private Graphic background;
     private boolean isMousePressed = false;
 
-    public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons,
-                     ButtonHandler handler, Graphic background) {
+    public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons, ButtonHandler handler, Graphic background) {
         this(controller, type, buttons, handler, background, 0.25, 0.25, 0.1, 0.25, 0.25);
     }
 
-    public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons,
-                     ButtonHandler handler, Graphic background, double leftBorderRatio, double rightBorderRatio,
-                     double topBorderRatio, double bottomBorderRatio, double paddingRatio) {
+    public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons, ButtonHandler handler, Graphic background, double leftBorderRatio, double rightBorderRatio, double topBorderRatio, double bottomBorderRatio, double paddingRatio) {
         super(controller, type);
         this.buttons = buttons;
         Collections.addAll(entities, buttons);

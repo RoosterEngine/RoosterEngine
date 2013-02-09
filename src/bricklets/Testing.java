@@ -26,6 +26,7 @@ public class Testing extends Context implements ActionHandler {
     private double scale = 1;
     private Color bgColor = Color.WHITE;
     private Random rand = new Random(0);
+    private boolean drawing = true;
 
     public Testing(GameController controller) {
         super(controller, ContextType.GAME);
@@ -82,7 +83,7 @@ public class Testing extends Context implements ActionHandler {
     public void initBounding() {
         double borderThickness = 10;
         BoxEntity topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
-        BoxEntity bottomBounds = new BoxEntity(width / 2, height - 50, width, borderThickness);
+        BoxEntity bottomBounds = new BoxEntity(width / 2, height, width, borderThickness);
         BoxEntity leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
         BoxEntity rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
         topBounds.getShape().setMass(Double.POSITIVE_INFINITY);
@@ -130,21 +131,23 @@ public class Testing extends Context implements ActionHandler {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
 
-//        int shiftX = (int) (width * (1 - scale) / 2);
-//        int shiftY = (int) (height * (1 - scale) / 2);
-//        g.translate(shiftX, shiftY);
-//        g.scale(scale, scale);
+        if (drawing) {
+            int shiftX = (int) (width * (1 - scale) / 2);
+            int shiftY = (int) (height * (1 - scale) / 2);
+            g.translate(shiftX, shiftY);
+            g.scale(scale, scale);
 
-//        controller.drawPartitions(g, Color.black);
-        for (Entity entity : entities) {
-            entity.draw(g);
+//            controller.drawPartitions(g, Color.black);
+            for (Entity entity : entities) {
+                entity.draw(g);
+            }
+//            for (Entity entity : entities) {
+//                entity.drawLineToPartition(g, new Color(93, 71, 57));
+//            }
+
+            g.scale(1 / scale, 1 / scale);
+            g.translate(-shiftX, -shiftY);
         }
-//        for (Entity entity : entities) {
-//            entity.drawLineToPartition(g, new Color(93, 71, 57));
-//        }
-
-//        g.scale(1 / scale, 1 / scale);
-//        g.translate(-shiftX, -shiftY);
         drawStats(g);
     }
 
@@ -163,6 +166,8 @@ public class Testing extends Context implements ActionHandler {
     }
 
     private void setupInput() {
+        controller.setContextBinding(contextType, InputCode.KEY_SPACE,
+                Action.TOGGLE_DRAWING);
         controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_UP, Action.ZOOM_OUT);
@@ -188,14 +193,18 @@ public class Testing extends Context implements ActionHandler {
     @Override
     public void stopAction(Action action, int inputCode) {
         switch (action) {
+            case TOGGLE_DRAWING:
+                drawing = !drawing;
+                break;
             case EXIT_GAME:
                 controller.exitContext();
                 break;
             case MOUSE_CLICK:
-//                double radius = 1;
+                double radius = 1;
                 for (int i = 0; i < 100; i++) {
                     addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
-                            height * 0.5 + (rand.nextDouble() - 0.5) * (height - 200), 2);
+                            height * 0.5 + (rand.nextDouble() - 0.5) *
+                                    (height - 100), 2);
 //                    addBall(pointer.getX() + (rand.nextDouble() - 0.5) * radius,
 //                            pointer.getY() + (rand.nextDouble() - 0.5) * radius, 2);
                 }

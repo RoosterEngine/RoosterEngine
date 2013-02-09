@@ -204,12 +204,10 @@ public class InputCode {
     }
 
     public static boolean isMouseButtonInput(int inputCode) {
-        return inputCode >= MOUSE_BUTTON_OFFSET
-                && inputCode < MOUSE_BUTTON_OFFSET + PARTITION;
+        return inputCode >= MOUSE_BUTTON_OFFSET && inputCode < MOUSE_BUTTON_OFFSET + PARTITION;
     }
 
     public static boolean isMouseWheelInput(int inputCode) {
-        return inputCode >= MOUSE_WHEEL_OFFSET
-                && inputCode < MOUSE_WHEEL_OFFSET + PARTITION;
+        return inputCode >= MOUSE_WHEEL_OFFSET && inputCode < MOUSE_WHEEL_OFFSET + PARTITION;
     }
 }

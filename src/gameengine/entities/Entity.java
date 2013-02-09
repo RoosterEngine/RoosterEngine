@@ -17,9 +17,7 @@ public abstract class Entity {
     protected double x, y, dx, dy, ddx, ddy, width, height, halfWidth, halfHeight;
 
     public Entity(double x, double y, double width, double height) {
-        this(x, y, width, height, new CircleShape(null, x, y,
-                Utils.pythagoras(width / 2, height / 2),
-                Material.getRubber(), 1));
+        this(x, y, width, height, new CircleShape(null, x, y, Utils.pythagoras(width / 2, height / 2), Material.getRubber(), 1));
         shape.setParent(this);
     }
 
@@ -127,7 +125,7 @@ public abstract class Entity {
         this.dy += dy;
     }
 
-    public void setPartition(Tree partition) {
+    public void setContainingTree(Tree partition) {
         this.partition = partition;
     }
 
@@ -151,9 +149,9 @@ public abstract class Entity {
             endY = Math.random() * 1024;
         }
         g.drawLine((int) x, (int) y, (int) endX, (int) endY);
-        int shapeWidth = (int) (shape.getMaxCollisionX() - shape.getMinCollisionX());
-        int shapeHeight = (int) (shape.getMaxCollisionY() - shape.getMinCollisionY());
-        g.drawRect((int) shape.getMinCollisionX(), (int) shape.getMinCollisionY(), shapeWidth, shapeHeight);
+        int shapeWidth = (int) (shape.getBoundingMaxX() - shape.getBoundingMinX());
+        int shapeHeight = (int) (shape.getBoundingMaxY() - shape.getBoundingMinY());
+        g.drawRect((int) shape.getBoundingMinX(), (int) shape.getBoundingMinY(), shapeWidth, shapeHeight);
     }
 
     public void setPosition(double x, double y) {

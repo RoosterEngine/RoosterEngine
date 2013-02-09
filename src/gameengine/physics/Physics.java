@@ -29,10 +29,8 @@ public class Physics {
         unitX.set(-unitY.getY(), unitY.getX());
         Entity a = collision.getA();
         Entity b = collision.getB();
-        double friction = Material.getFriction(
-                a.getShape().getMaterial(), b.getShape().getMaterial());
-        double restitution = Material.getRestitution(
-                a.getShape().getMaterial(), b.getShape().getMaterial());
+        double friction = Material.getFriction(a.getShape().getMaterial(), b.getShape().getMaterial());
+        double restitution = Material.getRestitution(a.getShape().getMaterial(), b.getShape().getMaterial());
 
         double xLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitX);
         double yLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitY);
@@ -84,9 +82,7 @@ public class Physics {
         b.setVelocity(xB, yB);
     }
 
-    private static void performInfiniteMassCollision(Entity b, double friction, double restitution,
-                                                     Vector2D unitX, Vector2D unitY, double yLengthA,
-                                                     double xLengthB, double yLengthB) {
+    private static void performInfiniteMassCollision(Entity b, double friction, double restitution, Vector2D unitX, Vector2D unitY, double yLengthA, double xLengthB, double yLengthB) {
         double yFinalB = yLengthA * (1 + restitution) - restitution * yLengthB;
         double xB = unitY.getX() * yFinalB + unitX.getX() * xLengthB;
         double yB = unitY.getY() * yFinalB + unitX.getY() * xLengthB;

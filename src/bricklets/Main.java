@@ -28,15 +28,15 @@ public class Main implements ButtonHandler {
         BasicButton[] buttons = {gameButton, testingButton, exitButton};
         testing = new Testing(controller);
         bricks = new BrickBreaker(controller);
-        menu = new BasicMenu(controller, ContextType.MENU, buttons, this,
-                new SolidColorGraphic(new Color(19, 9, 18),
-                        controller.getWidth(), controller.getHeight()));
+        menu = new BasicMenu(controller, ContextType.MENU, buttons, this, new SolidColorGraphic(new Color(19, 9, 18), controller.getWidth(), controller.getHeight()));
     }
 
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.println("press any key to start");
         input.nextLine();
+//        System.setProperty("sun.java2d.opengl","true");
+//        System.setProperty("apple.awt.graphics.UseQuartz", "true");
         GameController controller = new GameController(60, 60, 50);
         setupInputToActionMappings(controller);
         Main main = new Main(controller);

@@ -17,13 +17,10 @@ public class BasicButton extends Entity {
     private double initialX, initialY;
 
     public BasicButton(String text) {
-        this(text, new SolidColorGraphic(new Color(177, 70, 35), 0, 0),
-                new SolidColorGraphic(new Color(62, 28, 51), 0, 0),
-                new SolidColorGraphic(new Color(96, 39, 73), 0, 0));
+        this(text, new SolidColorGraphic(new Color(177, 70, 35), 0, 0), new SolidColorGraphic(new Color(62, 28, 51), 0, 0), new SolidColorGraphic(new Color(96, 39, 73), 0, 0));
     }
 
-    public BasicButton(String text, Graphic upGraphic,
-                       Graphic downGraphic, Graphic selectedGraphic) {
+    public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic) {
         super(0, 0, 0, 0);
         this.text = text;
         this.upGraphic = upGraphic;

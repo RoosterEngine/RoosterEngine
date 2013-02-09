@@ -5,7 +5,6 @@ import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 
 import java.awt.*;
-import java.util.ArrayList;
 
 /**
  * documentation
@@ -14,16 +13,14 @@ import java.util.ArrayList;
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 30;
-    protected ArrayList<Entity> entities = new ArrayList<>(GROW_THRESH + 2);
+    public static final int GROW_THRESH = 15;
+    private static final double EXPAND_RATE = 1.5;
+    protected Entity[] entities = new Entity[GROW_THRESH + 2];
+    protected int entityListPos, entityCount;
+    private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
     protected Parent parent;
-    protected double centerX, centerY, halfLength;
-    protected double minX, minY, maxX, maxY;
-    // TODO make sure all methods that add or remove entities affect this counter
-    protected int entityCount;
 
-    public Tree(Parent parent, double centerX, double centerY,
-                double halfLength) {
+    public Tree(Parent parent, double centerX, double centerY, double halfLength) {
         init(parent, centerX, centerY, halfLength);
     }
 
@@ -31,48 +28,74 @@ public abstract class Tree {
         parent = null;
     }
 
-    protected void init(Parent parent, double centerX, double centerY,
-                        double halfLength) {
+    protected void init(Parent parent, double centerX, double centerY, double halfLength) {
         this.parent = parent;
-        entityCount = 0;
+        setEntityCount(0);
+        entityListPos = 0;
         resize(centerX, centerY, halfLength);
     }
 
     protected void resize(double centerX, double centerY, double halfLength) {
-        this.centerX = centerX;
-        this.centerY = centerY;
-        this.halfLength = halfLength;
-        minX = centerX - halfLength;
-        minY = centerY - halfLength;
-        maxX = centerX + halfLength;
-        maxY = centerY + halfLength;
+        this.setCenterX(centerX);
+        this.setCenterY(centerY);
+        this.setHalfLength(halfLength);
+        setMinX(centerX - halfLength);
+        setMinY(centerY - halfLength);
+        setMaxX(centerX + halfLength);
+        setMaxY(centerY + halfLength);
     }
 
     public void clear() {
-        entities.clear();
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i] = null;
+        }
         parent = null;
+        setEntityCount(0);
+        entityListPos = 0;
     }
 
-    protected void checkEntityCollisions(
-            int[] collisionGroups, Collision temp, Collision result) {
+    /**
+     * Adds the specified entity to the list of entities that are contained in
+     * this tree.
+     * Does not increment entityCount
+     *
+     * @param entity the entity to add
+     */
+    protected void addEntityToList(Entity entity) {
+        if (entityListPos == entities.length) {
+            grow();
+        }
+        entities[entityListPos] = entity;
+        entityListPos++;
+    }
 
-        int entityCount = entities.size();
-        for (int i = 0; i < entityCount; i++) {
-            Shape shape1 = entities.get(i).getShape();
-            for (int j = i + 1; j < entityCount; j++) {
-                Shape shape2 = entities.get(j).getShape();
+    private void grow() {
+        Entity[] temp = entities;
+        entities = new Entity[(int) (temp.length * EXPAND_RATE) + 1];
+        System.arraycopy(temp, 0, entities, 0, temp.length);
+    }
 
-                if ((collisionGroups[shape1.getCollisionType()]
-                        & 1 << shape2.getCollisionType()) != 0) {
-                    Shape.collideShapes(
-                            shape1, shape2, result.getCollisionTime(), temp);
-                    if (temp.getCollisionTime() < result.getCollisionTime()) {
-                        result.set(temp);
-                    }
-                }
+    public void removeEntity(Entity entity) {
+        for (int i = 0; i < entityListPos; i++) {
+            Entity testEntity = entities[i];
+            if (testEntity == entity) {
+                removeEntityFromList(i);
+                parent.decrementEntityCount();
+                setEntityCount(getEntityCount() - 1);
+                entity.setContainingTree(null);
+                return;
             }
         }
-        parent.checkForCollisionWithTree(this, collisionGroups, temp, result);
+    }
+
+    protected void removeEntityFromList(int index) {
+        entityListPos--;
+        entities[index] = entities[entityListPos];
+        entities[entityListPos] = null;
+    }
+
+    protected boolean doShapeTypesCollide(int[] collisionGroups, Shape a, Shape b) {
+        return (collisionGroups[a.getCollisionType()] & 1 << b.getCollisionType()) != 0;
     }
 
     /**
@@ -92,8 +115,6 @@ public abstract class Tree {
      */
     public abstract void addEntity(Entity entity);
 
-    public abstract boolean removeEntity(Entity entity);
-
     public abstract void ensureEntitiesAreContained(double time);
 
     public abstract void updateEntities(double elapsedTime);
@@ -104,8 +125,9 @@ public abstract class Tree {
 
     public abstract void updateEntityMotions(double elapsedTime);
 
-    public abstract void calcCollision(
-            int[] collisionGroups, Collision temp, Collision result);
+    public abstract void calcCollision(int[] collisionGroups, Collision temp, Collision result);
+
+    public abstract void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result, Entity entity);
 
     public abstract void recycle();
 
@@ -117,5 +139,61 @@ public abstract class Tree {
 
     public double getCenterY() {
         return centerY;
+    }
+
+    public void setCenterX(double centerX) {
+        this.centerX = centerX;
+    }
+
+    public void setCenterY(double centerY) {
+        this.centerY = centerY;
+    }
+
+    public double getHalfLength() {
+        return halfLength;
+    }
+
+    public void setHalfLength(double halfLength) {
+        this.halfLength = halfLength;
+    }
+
+    public double getMinX() {
+        return minX;
+    }
+
+    public void setMinX(double minX) {
+        this.minX = minX;
+    }
+
+    public double getMinY() {
+        return minY;
+    }
+
+    public void setMinY(double minY) {
+        this.minY = minY;
+    }
+
+    public double getMaxX() {
+        return maxX;
+    }
+
+    public void setMaxX(double maxX) {
+        this.maxX = maxX;
+    }
+
+    public double getMaxY() {
+        return maxY;
+    }
+
+    public void setMaxY(double maxY) {
+        this.maxY = maxY;
+    }
+
+    public int getEntityCount() {
+        return entityCount;
+    }
+
+    public void setEntityCount(int entityCount) {
+        this.entityCount = entityCount;
     }
 }

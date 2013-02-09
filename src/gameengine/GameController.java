@@ -192,9 +192,7 @@ public class GameController implements MouseMovedHandler {
     }
 
     private static void setInvisibleMouseCursor(Window window) {
-        window.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(
-                Toolkit.getDefaultToolkit().getImage(""),
-                new Point(0, 0), "invisible"));
+        window.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit().getImage(""), new Point(0, 0), "invisible"));
     }
 
     private static void resetMouseCursor(Window window) {
@@ -333,10 +331,6 @@ public class GameController implements MouseMovedHandler {
 
     public void addEntityToCollisionDetector(Context context, Entity entity) {
         getCollisionDetector(context).addEntity(entity);
-    }
-
-    public void removeEntityFromCollisionDetector(Context context, Entity entity) {
-        getCollisionDetector(context).removeEntity(entity);
     }
 
     public void setCollisionPair(Context context, CollisionType a, CollisionType b) {

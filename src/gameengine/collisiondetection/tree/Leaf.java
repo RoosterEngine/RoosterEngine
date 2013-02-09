@@ -6,7 +6,6 @@ import gameengine.entities.Entity;
 
 import java.awt.*;
 import java.util.ArrayDeque;
-import java.util.Iterator;
 
 /**
  * documentation
@@ -17,17 +16,15 @@ import java.util.Iterator;
 public class Leaf extends Tree {
     private static ArrayDeque<Leaf> recycledLeafs = new ArrayDeque<>();
 
-    private Leaf(Parent parent, double centerX, double centerY,
-                 double halfLength) {
+    private Leaf(Parent parent, double centerX, double centerY, double halfLength) {
         super(parent, centerX, centerY, halfLength);
     }
 
-    public Leaf() {
-        super();    //To change body of overridden methods use File | Settings | File Templates.
+    private Leaf() {
+        super();
     }
 
-    public static Leaf getInstance(Parent parent,
-                                   double centerX, double centerY, double halfLength) {
+    public static Leaf getInstance(Parent parent, double centerX, double centerY, double halfLength) {
         if (recycledLeafs.isEmpty()) {
             return new Leaf(parent, centerX, centerY, halfLength);
         }
@@ -45,48 +42,41 @@ public class Leaf extends Tree {
 
     @Override
     public void addEntity(Entity entity) {
-        entities.add(entity);
-        entity.setPartition(this);
+        addEntityToList(entity);
+        entity.setContainingTree(this);
         entityCount++;
     }
 
     @Override
-    public boolean removeEntity(Entity entity) {
-        boolean removed = entities.remove(entity);
-        if (removed) {
-            entity.setPartition(null);
-            entityCount--;
-        }
-        return removed;
-    }
-
-    @Override
     public void ensureEntitiesAreContained(double time) {
-        Iterator<Entity> iterator = entities.iterator();
-        while (iterator.hasNext()) {
-            Entity entity = iterator.next();
+        int index = 0;
+        int originalEntityListPos = entityListPos;
+        for (int i = 0; i < originalEntityListPos; i++) {
+            Entity entity = entities[index];
             Shape shape = entity.getShape();
             shape.calculateBoundingBox(time);
 
-            if (shape.getMinCollisionX() < minX) {
+            if (shape.getBoundingMinX() < getMinX()) {
                 parent.relocateLeft(entity);
-                postRelocateRemove(entity, iterator);
-            } else if (shape.getMinCollisionY() < minY) {
+                postRelocateRemove(index);
+            } else if (shape.getBoundingMinY() < getMinY()) {
                 parent.relocateUp(entity);
-                postRelocateRemove(entity, iterator);
-            } else if (shape.getMaxCollisionX() > maxX) {
+                postRelocateRemove(index);
+            } else if (shape.getBoundingMaxX() > getMaxX()) {
                 parent.relocateRight(entity);
-                postRelocateRemove(entity, iterator);
-            } else if (shape.getMaxCollisionY() > maxY) {
+                postRelocateRemove(index);
+            } else if (shape.getBoundingMaxY() > getMaxY()) {
                 parent.relocateDown(entity);
-                postRelocateRemove(entity, iterator);
+                postRelocateRemove(index);
+            } else {
+                index++;
             }
         }
     }
 
-    private void postRelocateRemove(Entity entity, Iterator<Entity> iterator) {
-        iterator.remove();
-        entityCount--;
+    private void postRelocateRemove(int i) {
+        removeEntityFromList(i);
+        setEntityCount(getEntityCount() - 1);
     }
 
     @Override
@@ -98,13 +88,11 @@ public class Leaf extends Tree {
 
     @Override
     public Tree tryResize() {
-        if (entityCount >= GROW_THRESH) {
-            Quad quad = Quad.getInstance(
-                    parent, centerX, centerY, halfLength);
-            Iterator<Entity> iterator = entities.iterator();
-            while (iterator.hasNext()) {
-                quad.addEntity(iterator.next());
-                iterator.remove();
+        if (getEntityCount() >= GROW_THRESH) {
+            Quad quad = Quad.getInstance(parent, getCenterX(), getCenterY(), getHalfLength());
+            int totalEntities = getEntityCount();
+            for (int i = 0; i < totalEntities; i++) {
+                quad.addEntity(entities[i]);
             }
             recycle();
             return quad;
@@ -127,12 +115,42 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void calcCollision(
-            int[] collisionGroups, Collision temp, Collision result) {
-        if (entityCount == 0) {
+    public void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result, Entity entity) {
+        Shape a = entity.getShape();
+        for (int i = 0; i < entityListPos; i++) {
+            Entity entityToCheck = entities[i];
+            Shape b = entityToCheck.getShape();
+            if (doShapeTypesCollide(collisionGroups, a, b)) {
+                Shape.collideShapes(a, b, result.getCollisionTime(), temp);
+                if (temp.getCollisionTime() < result.getCollisionTime()) {
+                    result.set(temp);
+                }
+            }
+        }
+    }
+
+    private void checkEntityCollisionsWithinTree(int[] collisionGroups, Collision temp, Collision result) {
+
+        for (int i = 0; i < entityListPos; i++) {
+            Shape a = entities[i].getShape();
+            for (int j = i + 1; j < entityListPos; j++) {
+                Shape b = entities[j].getShape();
+                if (doShapeTypesCollide(collisionGroups, a, b)) {
+                    Shape.collideShapes(a, b, result.getCollisionTime(), temp);
+                    if (temp.getCollisionTime() < result.getCollisionTime()) {
+                        result.set(temp);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void calcCollision(int[] collisionGroups, Collision temp, Collision result) {
+        if (getEntityCount() == 0) {
             return;
         }
-        checkEntityCollisions(collisionGroups, temp, result);
+        checkEntityCollisionsWithinTree(collisionGroups, temp, result);
     }
 
     @Override
@@ -144,7 +162,13 @@ public class Leaf extends Tree {
     @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color.darker());
-        int length = (int) (halfLength * 2);
-        g.fillRect((int) minX, (int) minY, length, length);
+        int length = (int) (getHalfLength() * 2);
+        g.fillRect((int) getMinX(), (int) getMinY(), length, length);
+        g.setColor(Color.RED);
+        int offset = 3;
+        for (int i = 0; i < entityListPos; i++) {
+            Entity entity = entities[i];
+            g.drawLine((int) entity.getX() + offset, (int) entity.getY() + offset, (int) getCenterX() + offset, (int) getCenterY() + offset);
+        }
     }
 }

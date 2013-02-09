@@ -49,50 +49,15 @@ public class PathMotion implements Motion {
         rate = (function.getStop() - function.getStart()) / destination;
     }
 
-//    @Override
-//    public void update(Entity entity, double elapsedTime) {
-//        double velocity = integrator.getVelocity(entity, destination - position, elapsedTime);
-//        double direction = velocity / Math.abs(velocity);
-//        double distToTravel = velocity * elapsedTime * direction;
-//        rate = Math.abs(rate) * direction;
-//        double finalT = t + rate;
-//        double approxDist = function.getArcLength(t, finalT, eps);
-//
-//        while (Math.abs(approxDist - distToTravel) > eps) {
-//            double ratio = distToTravel / approxDist;
-//            // if ratio is < 1 than that means our rate is to large
-//            // else if ratio is > 1 than that means that our rate is to small
-//            rate *= ratio;
-//            finalT = t + rate;
-//            approxDist = function.getArcLength(t, finalT, eps);
-//        }
-//
-//        double currentX = function.getX(t);
-//        double currentY = function.getY(t);
-//        double futureX = function.getX(finalT);
-//        double futureY = function.getY(finalT);
-//        double deltaX = futureX - currentX;
-//        double deltaY = futureY - currentY;
-//        double length = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-//        deltaX /= length;
-//        deltaY /= length;
-//        velocityX = deltaX * velocity;
-//        velocityY = deltaY * velocity;
-//        position += approxDist;
-//        t = finalT;
-//    }
-
     @Override
     public void update(Entity entity, double elapsedTime) {
         double velocity = integrator.getVelocity(entity, destination - position, elapsedTime);
         double sign = Math.signum(velocity);
         double distToTravel = velocity * elapsedTime;
         double tolerance = Math.max(Math.abs(distToTravel * eps), 1E-5);
-//        double tolerance = Math.abs(distToTravel * eps);
         double finalT, actualDist, deltaT;
         if (Math.abs(distToTravel) > tolerance) {
             do {
-
                 deltaT = distToTravel * rate;
                 finalT = t + deltaT;
                 actualDist = sign * function.getArcLength(t, finalT, tolerance);
@@ -113,6 +78,5 @@ public class PathMotion implements Motion {
         velocityY = deltaY / elapsedTime;
         position += actualDist;
         t = finalT;
-
     }
 }

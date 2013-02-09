@@ -11,8 +11,7 @@ import java.awt.*;
 
 public class CircleShape extends Shape {
 
-    public CircleShape(Entity parent, double x, double y, double radius,
-                       Material material, double mass) {
+    public CircleShape(Entity parent, double x, double y, double radius, Material material, double mass) {
         super(parent, x, y, radius, radius, radius, material, mass);
     }
 

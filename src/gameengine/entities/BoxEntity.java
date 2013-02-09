@@ -13,23 +13,19 @@ public class BoxEntity extends Entity {
     protected Color color;
 
     public BoxEntity(double x, double y, double width, double height) {
-        super(x, y, width, height, new AABBShape(
-                null, x, y, width, height, Material.getRubber(), 1));
+        super(x, y, width, height, new AABBShape(null, x, y, width, height, Material.getRubber(), 1));
         getShape().setParent(this);
         color = Color.WHITE;
-//        System.out.println(getShape());
     }
 
     @Override
     public void update(double elapsedTime) {
-//        System.out.println(getShape());
     }
 
     @Override
     public void draw(Graphics2D g) {
         g.setColor(color);
-        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight),
-                (int) width, (int) height);
+        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
     }
 
 }

@@ -10,6 +10,7 @@ import gameengine.input.Action;
 import gameengine.input.InputCode;
 
 import java.awt.*;
+import java.util.Scanner;
 
 public class Main implements ButtonHandler {
     private GameController controller;
@@ -31,12 +32,12 @@ public class Main implements ButtonHandler {
     }
 
     public static void main(String[] args) {
-//        Scanner input = new Scanner(System.in);
-//        System.out.println("press Enter to start");
-//        input.nextLine();
+        Scanner input = new Scanner(System.in);
+        System.out.println("press Enter to start");
+        input.nextLine();
 //        System.setProperty("sun.java2d.opengl","true");
 //        System.setProperty("apple.awt.graphics.UseQuartz", "true");
-        GameController controller = new GameController(60, 60, 50);
+        GameController controller = new GameController(120, 60, 50);
         setupInputToActionMappings(controller);
         Main main = new Main(controller);
         main.startGame();

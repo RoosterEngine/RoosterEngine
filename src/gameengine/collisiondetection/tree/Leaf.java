@@ -5,7 +5,6 @@ import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 
 import java.awt.*;
-import java.util.ArrayDeque;
 
 /**
  * documentation
@@ -14,7 +13,16 @@ import java.util.ArrayDeque;
  * Time: 9:27 PM
  */
 public class Leaf extends Tree {
-    private static ArrayDeque<Leaf> recycledLeafs = new ArrayDeque<>();
+    public static final int INITIAL_NUM_LEAFS = 32;
+    private static final int EXPANSION_FACTOR = 2;
+    private static Leaf[] recycledLeafs = new Leaf[INITIAL_NUM_LEAFS];
+    private static int numRecycledLeafs = INITIAL_NUM_LEAFS;
+
+    static {
+        for (int i = 0; i < INITIAL_NUM_LEAFS; i++) {
+            recycledLeafs[i] = new Leaf();
+        }
+    }
 
     private Leaf(Parent parent, double centerX, double centerY, double halfLength) {
         super(parent, centerX, centerY, halfLength);
@@ -24,20 +32,37 @@ public class Leaf extends Tree {
         super();
     }
 
-    public static Leaf getInstance(Parent parent, double centerX, double centerY, double halfLength) {
-        if (recycledLeafs.isEmpty()) {
+    public static Leaf createInstance(Parent parent, double centerX, double centerY, double halfLength) {
+        if (numRecycledLeafs == 0) {
             return new Leaf(parent, centerX, centerY, halfLength);
         }
-        Leaf leafInstance = recycledLeafs.pop();
+        numRecycledLeafs--;
+        Leaf leafInstance = recycledLeafs[numRecycledLeafs];
+        recycledLeafs[numRecycledLeafs] = null;
         leafInstance.init(parent, centerX, centerY, halfLength);
         return leafInstance;
     }
 
-    public static Leaf getInstance() {
-        if (recycledLeafs.isEmpty()) {
+    public static Leaf createInstance() {
+        if (numRecycledLeafs == 0) {
             return new Leaf();
         }
-        return recycledLeafs.pop();
+        numRecycledLeafs--;
+        Leaf leafInstance = recycledLeafs[numRecycledLeafs];
+        recycledLeafs[numRecycledLeafs] = null;
+        return leafInstance;
+    }
+
+    @Override
+    public void recycle() {
+        if (numRecycledLeafs == recycledLeafs.length) {
+            Leaf[] temp = new Leaf[numRecycledLeafs * EXPANSION_FACTOR];
+            System.arraycopy(recycledLeafs, 0, temp, 0, numRecycledLeafs);
+            recycledLeafs = temp;
+        }
+        clear();
+        recycledLeafs[numRecycledLeafs] = this;
+        numRecycledLeafs++;
     }
 
     @Override
@@ -56,32 +81,26 @@ public class Leaf extends Tree {
             shape.calculateBoundingBox(time);
 
             if (!isContainedInTree(entity)) {
+                preRelocateRemove(index);
                 parent.relocate(entity);
-                postRelocateRemove(index);
             } else {
                 index++;
             }
         }
     }
 
-    private void postRelocateRemove(int i) {
-        removeEntityFromList(i);
-        setEntityCount(getEntityCount() - 1);
-    }
-
     @Override
     public void updateEntities(double elapsedTime) {
-        for (Entity entity : entities) {
-            entity.update(elapsedTime);
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i].update(elapsedTime);
         }
     }
 
     @Override
     public Tree tryResize() {
-        if (getEntityCount() >= GROW_THRESH) {
-            Quad quad = Quad.getInstance(parent, getCenterX(), getCenterY(), getHalfLength());
-            int totalEntities = getEntityCount();
-            for (int i = 0; i < totalEntities; i++) {
+        if (entityCount >= GROW_THRESH) {
+            Quad quad = Quad.createInstance(parent, getCenterX(), getCenterY(), getHalfLength());
+            for (int i = 0; i < entityCount; i++) {
                 quad.addEntity(entities[i]);
             }
             recycle();
@@ -92,15 +111,15 @@ public class Leaf extends Tree {
 
     @Override
     public void updateEntityPositions(double elapsedTime) {
-        for (Entity entity : entities) {
-            entity.updatePosition(elapsedTime);
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i].updatePosition(elapsedTime);
         }
     }
 
     @Override
     public void updateEntityMotions(double elapsedTime) {
-        for (Entity entity : entities) {
-            entity.updateMotion(elapsedTime);
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i].updateMotion(elapsedTime);
         }
     }
 
@@ -108,44 +127,20 @@ public class Leaf extends Tree {
     public void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result, Entity entity) {
         Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
-            Entity entityToCheck = entities[i];
-            Shape b = entityToCheck.getShape();
-            if (doShapeTypesCollide(collisionGroups, a, b)) {
-                Shape.collideShapes(a, b, result.getCollisionTime(), temp);
-                if (temp.getCollisionTime() < result.getCollisionTime()) {
-                    result.set(temp);
-                }
-            }
-        }
-    }
-
-    private void checkEntityCollisionsWithinTree(int[] collisionGroups, Collision temp, Collision result) {
-        for (int i = 0; i < entityListPos; i++) {
-            Shape a = entities[i].getShape();
-            for (int j = i + 1; j < entityListPos; j++) {
-                Shape b = entities[j].getShape();
-                if (doShapeTypesCollide(collisionGroups, a, b)) {
-                    Shape.collideShapes(a, b, result.getCollisionTime(), temp);
-                    if (temp.getCollisionTime() < result.getCollisionTime()) {
-                        result.set(temp);
-                    }
-                }
-            }
+            Shape b = entities[i].getShape();
+            collideShapes(collisionGroups, temp, result, a, b);
         }
     }
 
     @Override
     public void calcCollision(int[] collisionGroups, Collision temp, Collision result) {
-        if (getEntityCount() == 0) {
-            return;
+        for (int i = 0; i < entityListPos; i++) {
+            Shape a = entities[i].getShape();
+            for (int j = i + 1; j < entityListPos; j++) {
+                Shape b = entities[j].getShape();
+                collideShapes(collisionGroups, temp, result, a, b);
+            }
         }
-        checkEntityCollisionsWithinTree(collisionGroups, temp, result);
-    }
-
-    @Override
-    public void recycle() {
-        clear();
-        recycledLeafs.push(this);
     }
 
     @Override
@@ -153,11 +148,11 @@ public class Leaf extends Tree {
         g.setColor(color.darker());
         int length = (int) (getHalfLength() * 2);
         g.fillRect((int) getMinX(), (int) getMinY(), length, length);
-        g.setColor(Color.RED);
-        int offset = 3;
-        for (int i = 0; i < entityListPos; i++) {
-            Entity entity = entities[i];
-            g.drawLine((int) entity.getX() + offset, (int) entity.getY() + offset, (int) getCenterX() + offset, (int) getCenterY() + offset);
-        }
+//        g.setColor(Color.RED);
+//        int offset = 3;
+//        for (int i = 0; i < entityListPos; i++) {
+//            Entity entity = entities[i];
+//            g.drawLine((int) entity.getX() + offset, (int) entity.getY() + offset, (int) getCenterX() + offset, (int) getCenterY() + offset);
+//        }
     }
 }

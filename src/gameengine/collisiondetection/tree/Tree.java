@@ -13,7 +13,7 @@ import java.awt.*;
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 15;
+    public static final int GROW_THRESH = 5;
     private static final double EXPAND_RATE = 1.5;
     protected Entity[] entities = new Entity[GROW_THRESH + 2];
     protected int entityListPos, entityCount;
@@ -30,7 +30,7 @@ public abstract class Tree {
 
     protected void init(Parent parent, double centerX, double centerY, double halfLength) {
         this.parent = parent;
-        setEntityCount(0);
+        entityCount = 0;
         entityListPos = 0;
         resize(centerX, centerY, halfLength);
     }
@@ -50,7 +50,7 @@ public abstract class Tree {
             entities[i] = null;
         }
         parent = null;
-        setEntityCount(0);
+        entityCount = 0;
         entityListPos = 0;
     }
 
@@ -63,25 +63,25 @@ public abstract class Tree {
      */
     protected void addEntityToList(Entity entity) {
         if (entityListPos == entities.length) {
-            grow();
+            Entity[] temp = entities;
+            entities = new Entity[(int) (temp.length * EXPAND_RATE) + 1];
+            System.arraycopy(temp, 0, entities, 0, entityListPos);
         }
         entities[entityListPos] = entity;
         entityListPos++;
     }
 
-    private void grow() {
-        Entity[] temp = entities;
-        entities = new Entity[(int) (temp.length * EXPAND_RATE) + 1];
-        System.arraycopy(temp, 0, entities, 0, temp.length);
+    protected void preRelocateRemove(int i) {
+        removeEntityFromList(i);
+        entityCount--;
     }
 
     public void removeEntity(Entity entity) {
         for (int i = 0; i < entityListPos; i++) {
-            Entity testEntity = entities[i];
-            if (testEntity == entity) {
+            if (entities[i] == entity) {
                 removeEntityFromList(i);
+                entityCount--;
                 parent.decrementEntityCount();
-                setEntityCount(getEntityCount() - 1);
                 entity.setContainingTree(null);
                 return;
             }
@@ -90,10 +90,10 @@ public abstract class Tree {
 
     public boolean isContainedInTree(Entity entity) {
         Shape shape = entity.getShape();
-        return isAxisContained(shape.getBoundingCenterX(), getCenterX(), shape.getBoundingHalfWidth()) && isAxisContained(shape.getBoundingCenterY(), getCenterY(), shape.getBoundingHalfHeight());
+        return isContained(shape.getBoundingCenterX(), getCenterX(), shape.getBoundingHalfWidth()) && isContained(shape.getBoundingCenterY(), getCenterY(), shape.getBoundingHalfHeight());
     }
 
-    private boolean isAxisContained(double shapePosition, double treePosition, double shapeHalfLength) {
+    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
         return Math.abs(treePosition - shapePosition) < getHalfLength() - shapeHalfLength;
     }
 
@@ -103,8 +103,13 @@ public abstract class Tree {
         entities[entityListPos] = null;
     }
 
-    protected boolean doShapeTypesCollide(int[] collisionGroups, Shape a, Shape b) {
-        return (collisionGroups[a.getCollisionType()] & 1 << b.getCollisionType()) != 0;
+    protected void collideShapes(int[] collisionGroups, Collision temp, Collision result, Shape a, Shape b) {
+        if ((collisionGroups[a.getCollisionType()] & 1 << b.getCollisionType()) != 0) {
+            Shape.collideShapes(a, b, result.getCollisionTime(), temp);
+            if (temp.getCollisionTime() < result.getCollisionTime()) {
+                result.set(temp);
+            }
+        }
     }
 
     /**
@@ -196,13 +201,5 @@ public abstract class Tree {
 
     public void setMaxY(double maxY) {
         this.maxY = maxY;
-    }
-
-    public int getEntityCount() {
-        return entityCount;
-    }
-
-    public void setEntityCount(int entityCount) {
-        this.entityCount = entityCount;
     }
 }

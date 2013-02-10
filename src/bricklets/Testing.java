@@ -202,7 +202,7 @@ public class Testing extends Context implements ActionHandler {
                 break;
             case MOUSE_CLICK:
                 double radius = 1;
-                for (int i = 0; i < 100; i++) {
+                for (int i = 0; i < 200; i++) {
                     addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
                             height * 0.5 + (rand.nextDouble() - 0.5) *
                                     (height - 100), 2);

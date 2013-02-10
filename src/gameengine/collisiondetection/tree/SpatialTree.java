@@ -18,7 +18,7 @@ public class SpatialTree implements Parent {
     private double initCenterX, initCenterY, initHalfLength;
 
     public SpatialTree(double centerX, double centerY, double halfLength) {
-        tree = Leaf.getInstance(this, centerX, centerY, halfLength);
+        tree = Leaf.createInstance(this, centerX, centerY, halfLength);
         initCenterX = centerX;
         initCenterY = centerY;
         initHalfLength = halfLength;
@@ -36,15 +36,15 @@ public class SpatialTree implements Parent {
 
     private boolean isNotContainedInTree(Entity entity) {
         Shape shape = entity.getShape();
-        return !isAxisContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth()) || !isAxisContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
+        return !isContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth()) || !isContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
     }
 
-    private boolean isAxisContained(double shapePosition, double treePosition, double shapeHalfLength) {
+    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
         return Math.abs(treePosition - shapePosition) < tree.getHalfLength() - shapeHalfLength;
     }
 
     public void clear() {
-        Tree newTree = Leaf.getInstance(this, initCenterX, initCenterY, initHalfLength);
+        Tree newTree = Leaf.createInstance(this, initCenterX, initCenterY, initHalfLength);
         tree.recycle();
         tree = newTree;
     }
@@ -62,22 +62,6 @@ public class SpatialTree implements Parent {
     public void decrementEntityCount() {
     }
 
-    public void updateEntities(double elapsedTime) {
-        tree.updateEntities(elapsedTime);
-    }
-
-    public void updateEntityPositions(double elapsedTime) {
-        tree.updateEntityPositions(elapsedTime);
-    }
-
-    public void updateEntityMotions(double elapsedTime) {
-        tree.updateEntityMotions(elapsedTime);
-    }
-
-    public int getEntityCount() {
-        return tree.getEntityCount();
-    }
-
     public void tryResize() {
         tree = tree.tryResize();
     }
@@ -92,9 +76,7 @@ public class SpatialTree implements Parent {
         topRight.resize(right, top, quartLength);
         bottomLeft.resize(left, bottom, quartLength);
         bottomRight.resize(right, bottom, quartLength);
-        int prevEntityCount = tree.getEntityCount();
-        tree = Quad.getInstance(this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
-        tree.setEntityCount(prevEntityCount - 1);
+        tree = Quad.createInstance(this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
     }
 
     @Override
@@ -105,38 +87,32 @@ public class SpatialTree implements Parent {
 
         if (shape.getX() < tree.getCenterX()) {
             centerX -= tree.getHalfLength();
+            bottomRight = Leaf.createInstance();
+            topRight = Leaf.createInstance();
             if (shape.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
                 topLeft = tree;
-                topRight = Leaf.getInstance();
-                bottomLeft = Leaf.getInstance();
-                bottomRight = Leaf.getInstance();
+                bottomLeft = Leaf.createInstance();
             } else {
                 centerY += tree.getHalfLength();
-                topLeft = Leaf.getInstance();
-                topRight = Leaf.getInstance();
+                topLeft = Leaf.createInstance();
                 bottomLeft = tree;
-                bottomRight = Leaf.getInstance();
             }
         } else {
             centerX += tree.getHalfLength();
+            topLeft = Leaf.createInstance();
+            bottomLeft = Leaf.createInstance();
             if (shape.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
-                topLeft = Leaf.getInstance();
                 topRight = tree;
-                bottomLeft = Leaf.getInstance();
-                bottomRight = Leaf.getInstance();
+                bottomRight = Leaf.createInstance();
             } else {
                 centerY += tree.getHalfLength();
-                topLeft = Leaf.getInstance();
-                topRight = Leaf.getInstance();
-                bottomLeft = Leaf.getInstance();
+                topRight = Leaf.createInstance();
                 bottomRight = tree;
             }
         }
-
         grow(centerX, centerY, tree.getHalfLength() * 2, topLeft, topRight, bottomLeft, bottomRight);
-
         tree.addEntity(entity);
     }
 

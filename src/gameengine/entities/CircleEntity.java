@@ -8,6 +8,7 @@ import java.awt.*;
 public class CircleEntity extends Entity {
     protected double radius;
     protected Color color = Color.WHITE;
+    private double maxSpeed = 1;
 
     public CircleEntity(double x, double y, double radius) {
         super(x, y, radius * 2, radius * 2);
@@ -26,7 +27,7 @@ public class CircleEntity extends Entity {
     }
 
     private void enforceMaxSpeed() {
-        double maxSpeed = 1;
+        maxSpeed *= 1.001;
         double currentVel = Math.sqrt(dx * dx + dy * dy);
 //        if (currentVel > maxSpeed) {
 //            double ratio = maxSpeed / currentVel;

@@ -139,7 +139,7 @@ public class BrickBreaker extends Context implements ActionHandler {
                 double xPos = padding * (1 + x) + brickWidth * x + brickWidth / 2 + borderPadding;
                 double yPos = padding * (1 + y) + brickHeight * y + brickHeight / 2 + yOffset;
                 Brick brick = new Brick(xPos, yPos, brickWidth, brickHeight);
-                brick.getShape().setMass(10);
+                brick.getShape().setMass(20);
                 brick.getShape().setCollisionType(CollisionType.DEFAULT);
                 brick.setMotion(new AttractMotion(xPos, yPos, 0.001, 0.3, brick.getShape().getMass()));
                 bricks.add(brick);

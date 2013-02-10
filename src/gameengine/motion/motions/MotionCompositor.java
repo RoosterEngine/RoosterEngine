@@ -5,7 +5,7 @@ import gameengine.entities.Entity;
 /**
  * Takes a two separate {@link Motion}s, one for horizontal motion and the other
  * for vertical motion.
- *
+ * <p/>
  * User: davidrusu
  * Date: 29/12/12
  * Time: 12:08 PM

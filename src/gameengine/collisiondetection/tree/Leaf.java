@@ -50,23 +50,13 @@ public class Leaf extends Tree {
     @Override
     public void ensureEntitiesAreContained(double time) {
         int index = 0;
-        int originalEntityListPos = entityListPos;
-        for (int i = 0; i < originalEntityListPos; i++) {
+        while (index < entityListPos) {
             Entity entity = entities[index];
             Shape shape = entity.getShape();
             shape.calculateBoundingBox(time);
 
-            if (shape.getBoundingMinX() < getMinX()) {
-                parent.relocateLeft(entity);
-                postRelocateRemove(index);
-            } else if (shape.getBoundingMinY() < getMinY()) {
-                parent.relocateUp(entity);
-                postRelocateRemove(index);
-            } else if (shape.getBoundingMaxX() > getMaxX()) {
-                parent.relocateRight(entity);
-                postRelocateRemove(index);
-            } else if (shape.getBoundingMaxY() > getMaxY()) {
-                parent.relocateDown(entity);
+            if (!isContainedInTree(entity)) {
+                parent.relocate(entity);
                 postRelocateRemove(index);
             } else {
                 index++;
@@ -130,7 +120,6 @@ public class Leaf extends Tree {
     }
 
     private void checkEntityCollisionsWithinTree(int[] collisionGroups, Collision temp, Collision result) {
-
         for (int i = 0; i < entityListPos; i++) {
             Shape a = entities[i].getShape();
             for (int j = i + 1; j < entityListPos; j++) {

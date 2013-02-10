@@ -77,37 +77,30 @@ public class Quad extends Tree implements Parent {
 
     @Override
     public void addEntity(Entity entity) {
+        insertEntity(entity);
+        entityCount++;
+    }
+
+    private void insertEntity(Entity entity) {
         Shape shape = entity.getShape();
         if (shape.getBoundingMaxX() < getCenterX()) {
-            // left
-            if (shape.getBoundingMaxY() < getCenterY()) {
-                // top
-                addToTopLeft(entity);
-                setEntityCount(getEntityCount() + 1);
-                return;
-            } else if (shape.getBoundingMinY() > getCenterY()) {
-                // bottom
-                addToBottomLeft(entity);
-                setEntityCount(getEntityCount() + 1);
-                return;
-            }
+            insertVertically(entity, topLeft, bottomLeft);
         } else if (shape.getBoundingMinX() > getCenterX()) {
-            // right
-            if (shape.getBoundingMaxY() < getCenterY()) {
-                // top
-                addToTopRight(entity);
-                setEntityCount(getEntityCount() + 1);
-                return;
-            } else if (shape.getBoundingMinY() > getCenterY()) {
-                // bottom
-                addToBottomRight(entity);
-                setEntityCount(getEntityCount() + 1);
-                return;
-            }
+            insertVertically(entity, topRight, bottomRight);
+        } else {
+            addToThis(entity);
         }
-        // stays here
-        addToThis(entity);
-        setEntityCount(getEntityCount() + 1);
+    }
+
+    private void insertVertically(Entity entity, Tree top, Tree bottom) {
+        Shape shape = entity.getShape();
+        if (shape.getBoundingMaxY() < getCenterY()) {
+            top.addEntity(entity);
+        } else if (shape.getBoundingMinY() > getCenterY()) {
+            bottom.addEntity(entity);
+        } else {
+            addToThis(entity);
+        }
     }
 
     private void addToBottomRight(Entity entity) {
@@ -134,77 +127,46 @@ public class Quad extends Tree implements Parent {
     @Override
     public void ensureEntitiesAreContained(double time) {
         int index = 0;
-
-        int originalEntityListPos = entityListPos;
-        for (int i = 0; i < originalEntityListPos; i++) {
+        while (index < entityListPos) {
             Entity entity = entities[index];
             Shape shape = entity.getShape();
             shape.calculateBoundingBox(time);
 
-            if (shape.getBoundingMaxX() < getCenterX()) { // left
-                if (shape.getBoundingMinX() > getMinX()) { // horizontally contained
-                    if (shape.getBoundingMaxY() < getCenterY()) { // top
-                        if (shape.getBoundingMinY() > getMinY()) {
-                            addToTopLeft(entity);
-                            removeEntityFromList(index);
-                        } else {
-                            parent.relocateUp(entity);
-                            postRelocateRemove(index);
-                        }
-                    } else if (shape.getBoundingMinY() > getCenterY()) { // bottom
-                        if (shape.getBoundingMaxY() < getMaxY()) {
-                            addToBottomLeft(entity);
-                            removeEntityFromList(index);
-                        } else {
-                            parent.relocateDown(entity);
-                            postRelocateRemove(index);
-                        }
-                    } else {
-                        index++;
-                    }
-                } else {
-                    parent.relocateLeft(entity);
-                    postRelocateRemove(index);
-                }
-            } else if (shape.getBoundingMinX() > getCenterX()) { // right
-                if (shape.getBoundingMaxX() < getMaxX()) { // horizontally contained
-                    if (shape.getBoundingMaxY() < getCenterY()) { // top
-                        if (shape.getBoundingMinY() > getMinY()) {
-                            addToTopRight(entity);
-                            removeEntityFromList(index);
-                        } else {
-                            parent.relocateUp(entity);
-                            postRelocateRemove(index);
-                        }
-                    } else if (shape.getBoundingMinY() > getCenterY()) { // bottom
-                        if (shape.getBoundingMaxY() < getMaxY()) {
-                            addToBottomRight(entity);
-                            removeEntityFromList(index);
-                        } else {
-                            parent.relocateDown(entity);
-                            postRelocateRemove(index);
-                        }
-                    } else {
-                        index++;
-                    }
-                } else {
-                    parent.relocateRight(entity);
-                    postRelocateRemove(index);
-                }
-            } else if (shape.getBoundingMinY() <= getMinY()) {
-                parent.relocateUp(entity);
-                postRelocateRemove(index);
-            } else if (shape.getBoundingMaxY() >= getMaxY()) {
-                parent.relocateDown(entity);
+            double minY = shape.getBoundingMinY();
+            double maxY = shape.getBoundingMaxY();
+            double minX = shape.getBoundingMinX();
+            double maxX = shape.getBoundingMaxX();
+
+            if (!isContainedInTree(entity)) {
+                parent.relocate(entity);
                 postRelocateRemove(index);
             } else {
-                index++;
+                if (minX > getCenterX()) {
+                    index = ensureVerticallyContained(index, entity, minY, maxY, bottomRight, topRight);
+                } else if (maxX < getCenterX()) {
+                    index = ensureVerticallyContained(index, entity, minY, maxY, bottomLeft, topLeft);
+                } else {
+                    index++;
+                }
             }
         }
         topLeft.ensureEntitiesAreContained(time);
         topRight.ensureEntitiesAreContained(time);
         bottomLeft.ensureEntitiesAreContained(time);
         bottomRight.ensureEntitiesAreContained(time);
+    }
+
+    private int ensureVerticallyContained(int index, Entity entity, double minY, double maxY, Tree bottom, Tree top) {
+        if (minY > getCenterY()) {
+            bottom.addEntity(entity);
+            removeEntityFromList(index);
+        } else if (maxY < getCenterY()) {
+            top.addEntity(entity);
+            removeEntityFromList(index);
+        } else {
+            return index + 1;
+        }
+        return index;
     }
 
     private void postRelocateRemove(int i) {
@@ -375,151 +337,12 @@ public class Quad extends Tree implements Parent {
         super.clear();
     }
 
-    @Override
-    public void relocateLeft(Entity entity) {
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMaxX() < getCenterX()) {
-            // left
-            if (shape.getBoundingMinX() > getMinX()) {
-                // contained horizontally
-                if (shape.getBoundingMaxY() < getCenterY()) {
-                    // top
-                    if (shape.getBoundingMinY() > getMinY()) {
-                        // contained
-                        addToTopLeft(entity);
-                    } else {
-                        parent.relocateUp(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else if (shape.getBoundingMinY() > getCenterY()) {
-                    // bottom
-                    if (shape.getBoundingMaxY() < getMaxY()) {
-                        // contained
-                        addToBottomLeft(entity);
-                    } else {
-                        parent.relocateDown(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else {
-                    addToThis(entity);
-                }
-            } else {
-                parent.relocateLeft(entity);
-                setEntityCount(getEntityCount() - 1);
-            }
+    public void relocate(Entity entity) {
+        if (!isContainedInTree(entity)) {
+            parent.relocate(entity);
+            entityCount--;
         } else {
-            addToThis(entity);
-        }
-    }
-
-    @Override
-    public void relocateRight(Entity entity) {
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMinX() > getCenterX()) {
-            // right
-            if (shape.getBoundingMaxX() < getMaxX()) {
-                // contained horizontally
-                if (shape.getBoundingMaxY() < getCenterY()) {
-                    // top
-                    if (shape.getBoundingMinY() > getMinY()) {
-                        // contained
-                        addToTopRight(entity);
-                    } else {
-                        parent.relocateUp(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else if (shape.getBoundingMinY() > getCenterY()) {
-                    // bottom
-                    if (shape.getBoundingMaxY() < getMaxY()) {
-                        // contained
-                        addToBottomRight(entity);
-                    } else {
-                        parent.relocateDown(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else {
-                    addToThis(entity);
-                }
-            } else {
-                parent.relocateRight(entity);
-                setEntityCount(getEntityCount() - 1);
-            }
-        } else {
-            addToThis(entity);
-        }
-    }
-
-    @Override
-    public void relocateUp(Entity entity) {
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMaxY() < getCenterY()) {
-            // up
-            if (shape.getBoundingMinY() > getMinY()) {
-                // contained vertically
-                if (shape.getBoundingMaxX() < getCenterX()) {
-                    // left
-                    if (shape.getBoundingMinX() > getMinX()) {
-                        // contained
-                        addToTopLeft(entity);
-                    } else {
-                        parent.relocateLeft(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else if (shape.getBoundingMinX() > getCenterX()) {
-                    // right
-                    if (shape.getBoundingMaxX() < getMaxX()) {
-                        // contained
-                        addToTopRight(entity);
-                    } else {
-                        parent.relocateRight(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else {
-                    addToThis(entity);
-                }
-            } else {
-                parent.relocateUp(entity);
-                setEntityCount(getEntityCount() - 1);
-            }
-        } else {
-            addToThis(entity);
-        }
-    }
-
-    @Override
-    public void relocateDown(Entity entity) {
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMinY() > getCenterY()) {
-            // down
-            if (shape.getBoundingMaxY() < getMaxY()) {
-                // contained vertically
-                if (shape.getBoundingMaxX() < getCenterX()) {
-                    // left
-                    if (shape.getBoundingMinX() > getMinX()) {
-                        // contained
-                        addToBottomLeft(entity);
-                    } else {
-                        parent.relocateLeft(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else if (shape.getBoundingMinX() > getCenterX()) {
-                    // right
-                    if (shape.getBoundingMaxX() < getMaxX()) {
-                        // contained
-                        addToBottomRight(entity);
-                    } else {
-                        parent.relocateRight(entity);
-                        setEntityCount(getEntityCount() - 1);
-                    }
-                } else {
-                    addToThis(entity);
-                }
-            } else {
-                parent.relocateDown(entity);
-                setEntityCount(getEntityCount() - 1);
-            }
-        } else {
-            addToThis(entity);
+            insertEntity(entity);
         }
     }
 }

@@ -1,12 +1,10 @@
 package gameengine.graphics;
 
-import gameengine.graphics.Graphic;
-
 import java.awt.*;
 
 /**
  * A {@link Graphic} that does not render anything
- *
+ * <p/>
  * User: davidrusu
  * Date: 17/12/12
  * Time: 8:50 PM

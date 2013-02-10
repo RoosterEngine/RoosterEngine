@@ -27,17 +27,20 @@ public class SpatialTree implements Parent {
     public void addEntity(Entity entity) {
         Shape shape = entity.getShape();
         shape.calculateBoundingBox(0);
-        if (shape.getBoundingMinX() <= tree.getMinX()) {
-            relocateLeft(entity);
-        } else if (shape.getBoundingMinY() <= tree.getMinY()) {
-            relocateUp(entity);
-        } else if (shape.getBoundingMaxX() >= tree.getMaxX()) {
-            relocateRight(entity);
-        } else if (shape.getBoundingMaxY() >= tree.getMaxY()) {
-            relocateDown(entity);
+        if (isNotContainedInTree(entity)) {
+            relocate(entity);
         } else {
             tree.addEntity(entity);
         }
+    }
+
+    private boolean isNotContainedInTree(Entity entity) {
+        Shape shape = entity.getShape();
+        return !isAxisContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth()) || !isAxisContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
+    }
+
+    private boolean isAxisContained(double shapePosition, double treePosition, double shapeHalfLength) {
+        return Math.abs(treePosition - shapePosition) < tree.getHalfLength() - shapeHalfLength;
     }
 
     public void clear() {
@@ -95,86 +98,45 @@ public class SpatialTree implements Parent {
     }
 
     @Override
-    public void relocateLeft(Entity entity) {
+    public void relocate(Entity entity) {
         Shape shape = entity.getShape();
-        double halfLength = tree.getHalfLength() * 2;
-        double centerX = tree.getCenterX() - tree.getHalfLength(), centerY;
-        Tree topLeft = Leaf.getInstance(), bottomLeft = Leaf.getInstance();
-        Tree topRight, bottomRight;
-        if (shape.getY() < tree.getCenterY()) {
-            centerY = tree.getCenterY() - tree.getHalfLength();
-            topRight = Leaf.getInstance();
-            bottomRight = tree;
-        } else {
-            centerY = tree.getCenterY() + tree.getHalfLength();
-            topRight = tree;
-            bottomRight = Leaf.getInstance();
-        }
-        grow(centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
-        // TODO can infer that it'll be on the left
-        tree.addEntity(entity);
-    }
+        double centerX = tree.getCenterX(), centerY = tree.getCenterY();
+        Tree topLeft, topRight, bottomLeft, bottomRight;
 
-    @Override
-    public void relocateRight(Entity entity) {
-        Shape shape = entity.getShape();
-        double halfLength = tree.getHalfLength() * 2;
-        double centerX = tree.getCenterX() + tree.getHalfLength(), centerY;
-        Tree topRight = Leaf.getInstance(), bottomRight = Leaf.getInstance();
-        Tree topLeft, bottomLeft;
-        if (shape.getY() < tree.getCenterY()) {
-            centerY = tree.getCenterY() - tree.getHalfLength();
-            topLeft = Leaf.getInstance();
-            bottomLeft = tree;
-        } else {
-            centerY = tree.getCenterY() + tree.getHalfLength();
-            topLeft = tree;
-            bottomLeft = Leaf.getInstance();
-        }
-        grow(centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
-        // TODO can infer that it'll be on the left
-        tree.addEntity(entity);
-    }
-
-    @Override
-    public void relocateUp(Entity entity) {
-        Shape shape = entity.getShape();
-        double halfLength = tree.getHalfLength() * 2;
-        double centerX, centerY = tree.getCenterY() - tree.getHalfLength();
-        Tree topLeft = Leaf.getInstance(), topRight = Leaf.getInstance();
-        Tree bottomLeft, bottomRight;
         if (shape.getX() < tree.getCenterX()) {
-            centerX = tree.getCenterX() - tree.getHalfLength();
-            bottomLeft = Leaf.getInstance();
-            bottomRight = tree;
+            centerX -= tree.getHalfLength();
+            if (shape.getY() < tree.getCenterY()) {
+                centerY -= tree.getHalfLength();
+                topLeft = tree;
+                topRight = Leaf.getInstance();
+                bottomLeft = Leaf.getInstance();
+                bottomRight = Leaf.getInstance();
+            } else {
+                centerY += tree.getHalfLength();
+                topLeft = Leaf.getInstance();
+                topRight = Leaf.getInstance();
+                bottomLeft = tree;
+                bottomRight = Leaf.getInstance();
+            }
         } else {
-            centerX = tree.getCenterX() + tree.getHalfLength();
-            bottomLeft = tree;
-            bottomRight = Leaf.getInstance();
+            centerX += tree.getHalfLength();
+            if (shape.getY() < tree.getCenterY()) {
+                centerY -= tree.getHalfLength();
+                topLeft = Leaf.getInstance();
+                topRight = tree;
+                bottomLeft = Leaf.getInstance();
+                bottomRight = Leaf.getInstance();
+            } else {
+                centerY += tree.getHalfLength();
+                topLeft = Leaf.getInstance();
+                topRight = Leaf.getInstance();
+                bottomLeft = Leaf.getInstance();
+                bottomRight = tree;
+            }
         }
-        grow(centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
-        // TODO can infer that it'll be on the left
-        tree.addEntity(entity);
-    }
 
-    @Override
-    public void relocateDown(Entity entity) {
-        Shape shape = entity.getShape();
-        double halfLength = tree.getHalfLength() * 2;
-        double centerX, centerY = tree.getCenterY() + tree.getHalfLength();
-        Tree bottomLeft = Leaf.getInstance(), bottomRight = Leaf.getInstance();
-        Tree topLeft, topRight;
-        if (shape.getX() < tree.getCenterX()) {
-            centerX = tree.getCenterX() - tree.getHalfLength();
-            topLeft = Leaf.getInstance();
-            topRight = tree;
-        } else {
-            centerX = tree.getCenterX() + tree.getHalfLength();
-            topLeft = tree;
-            topRight = Leaf.getInstance();
-        }
-        grow(centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
-        // TODO can infer that it'll be on the left
+        grow(centerX, centerY, tree.getHalfLength() * 2, topLeft, topRight, bottomLeft, bottomRight);
+
         tree.addEntity(entity);
     }
 

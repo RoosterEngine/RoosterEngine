@@ -8,7 +8,7 @@ import java.awt.*;
 
 /**
  * A class for generating motion that follows a Bezier curve.
- *
+ * <p/>
  * User: davidrusu
  * Date: 10/12/12
  * Time: 5:42 PM

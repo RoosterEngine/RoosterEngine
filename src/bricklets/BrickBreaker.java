@@ -62,7 +62,7 @@ public class BrickBreaker extends Context implements ActionHandler {
 
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
         Shape paddleShape = paddle.getShape();
-        paddleShape.setMass(1000);
+        paddleShape.setMass(100);
         paddleShape.setMaterial(Material.createMaterial(0, 1));
         paddleShape.setCollisionType(CollisionType.DEFAULT);
         controller.addEntityToCollisionDetector(this, paddle);
@@ -174,7 +174,7 @@ public class BrickBreaker extends Context implements ActionHandler {
         g.translate((int) shiftX, (int) shiftY);
         g.scale(scale, scale);
 
-        controller.drawPartitions(g, bgColor);
+//        controller.drawPartitions(g, bgColor);
         for (Entity entity : entities) {
             entity.draw(g);
         }

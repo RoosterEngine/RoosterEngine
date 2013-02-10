@@ -4,7 +4,7 @@ import gameengine.entities.Entity;
 
 /**
  * To be used if you want your entity to be controlled by the mouse
- *
+ * <p/>
  * User: davidrusu
  * Date: 14/12/12
  * Time: 9:47 PM

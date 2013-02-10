@@ -1,11 +1,12 @@
 package gameengine.input;
 
 import gameengine.context.Context;
+
 /**
  * Handles raw InputCodes.
  * {@link Context} implements InputHandler. It converts from {@link InputCode}
  * to the {@link Action} that was bound.
- *
+ * <p/>
  * User: davidrusu
  * Date: 07/01/13
  * Time: 11:02 AM

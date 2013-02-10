@@ -22,16 +22,26 @@ public class CircleEntity extends Entity {
 
     @Override
     public void update(double elapsedTime) {
+//        enforceMaxSpeed();
     }
 
     private void enforceMaxSpeed() {
-        double maxSpeed = 2;
+        double maxSpeed = 1;
         double currentVel = Math.sqrt(dx * dx + dy * dy);
-        if (currentVel > maxSpeed) {
-            double ratio = maxSpeed / currentVel;
+//        if (currentVel > maxSpeed) {
+//            double ratio = maxSpeed / currentVel;
+//            dx *= ratio;
+//            dy *= ratio;
+//        }
+        double ratio = 0.99;
+        if (Math.abs(dx) > Math.abs(dy)) {
             dx *= ratio;
+        } else {
             dy *= ratio;
         }
+        ratio = 0.99;
+        dx *= ratio + (1 - ratio) * maxSpeed / currentVel;
+        dy *= ratio + (1 - ratio) * maxSpeed / currentVel;
     }
 
     @Override

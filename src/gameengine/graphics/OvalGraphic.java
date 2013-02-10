@@ -4,7 +4,7 @@ import java.awt.*;
 
 /**
  * A {@link Graphic} that renders an oval
- *
+ * <p/>
  * User: davidrusu
  * Date: 17/12/12
  * Time: 6:57 PM

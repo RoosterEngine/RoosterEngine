@@ -4,7 +4,7 @@ import java.awt.*;
 
 /**
  * A class for making Bezier curves
- *
+ * <p/>
  * User: davidrusu
  * Date: 10/12/12
  * Time: 5:43 PM

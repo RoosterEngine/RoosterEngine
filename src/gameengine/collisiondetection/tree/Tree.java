@@ -88,6 +88,15 @@ public abstract class Tree {
         }
     }
 
+    public boolean isContainedInTree(Entity entity) {
+        Shape shape = entity.getShape();
+        return isAxisContained(shape.getBoundingCenterX(), getCenterX(), shape.getBoundingHalfWidth()) && isAxisContained(shape.getBoundingCenterY(), getCenterY(), shape.getBoundingHalfHeight());
+    }
+
+    private boolean isAxisContained(double shapePosition, double treePosition, double shapeHalfLength) {
+        return Math.abs(treePosition - shapePosition) < getHalfLength() - shapeHalfLength;
+    }
+
     protected void removeEntityFromList(int index) {
         entityListPos--;
         entities[index] = entities[entityListPos];

@@ -41,6 +41,7 @@ public class Testing extends Context implements ActionHandler {
         entities.clear();
         controller.clearCollisions(this);
         controller.setCollisionPair(this, CollisionType.BALL, CollisionType.BALL);
+        controller.setCollisionPair(this, CollisionType.BALL, CollisionType.DEFAULT);
 
         pointer = new Pointer(new OvalGraphic(10, 10, Color.RED), width / 4, height / 4);
         controller.addEntityToCollisionDetector(this, pointer);
@@ -152,7 +153,7 @@ public class Testing extends Context implements ActionHandler {
     }
 
     private void drawStats(Graphics2D g) {
-        g.setColor(Color.WHITE);
+        g.setColor(Color.red);
         g.drawString("fps: " + controller.getFrameRate(), 25, 25);
         g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
         g.drawString("entities: " + entities.size(), 25, 75);

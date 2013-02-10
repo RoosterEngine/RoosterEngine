@@ -10,13 +10,7 @@ import gameengine.entities.Entity;
  */
 public interface Parent {
 
-    void relocateLeft(Entity entity);
-
-    void relocateRight(Entity entity);
-
-    void relocateUp(Entity entity);
-
-    void relocateDown(Entity entity);
+    void relocate(Entity entity);
 
     void decrementEntityCount();
 }

@@ -50,6 +50,7 @@ public class Leaf extends Tree {
         numRecycledLeafs--;
         Leaf leafInstance = recycledLeafs[numRecycledLeafs];
         recycledLeafs[numRecycledLeafs] = null;
+        leafInstance.init(null, 0, 0, 0);
         return leafInstance;
     }
 
@@ -60,7 +61,6 @@ public class Leaf extends Tree {
             System.arraycopy(recycledLeafs, 0, temp, 0, numRecycledLeafs);
             recycledLeafs = temp;
         }
-        clear();
         recycledLeafs[numRecycledLeafs] = this;
         numRecycledLeafs++;
     }
@@ -102,7 +102,11 @@ public class Leaf extends Tree {
             Quad quad = Quad.createInstance(parent, getCenterX(), getCenterY(), getHalfLength());
             for (int i = 0; i < entityCount; i++) {
                 quad.addEntity(entities[i]);
+                entities[i] = null;
             }
+            parent = null;
+            entityCount = 0;
+            entityListPos = 0;
             recycle();
             return quad;
         }

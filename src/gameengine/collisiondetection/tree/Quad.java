@@ -266,7 +266,6 @@ public class Quad extends Tree implements Parent {
         topRight.recycle();
         bottomLeft.recycle();
         bottomRight.recycle();
-        clear();
         if (numRecycledQuads == recycledQuads.length) {
             Quad[] temp = new Quad[numRecycledQuads * EXPANSION_FACTOR];
             System.arraycopy(recycledQuads, 0, temp, 0, numRecycledQuads);

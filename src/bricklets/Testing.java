@@ -204,8 +204,7 @@ public class Testing extends Context implements ActionHandler {
                 double radius = 1;
                 for (int i = 0; i < 200; i++) {
                     addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
-                            height * 0.5 + (rand.nextDouble() - 0.5) *
-                                    (height - 100), 2);
+                            height * 0.5 + (rand.nextDouble() - 0.5) * (height - 100), 2);
 //                    addBall(pointer.getX() + (rand.nextDouble() - 0.5) * radius,
 //                            pointer.getY() + (rand.nextDouble() - 0.5) * radius, 2);
                 }

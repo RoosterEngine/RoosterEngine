@@ -45,6 +45,7 @@ public class SpatialTree implements Parent {
 
     public void clear() {
         Tree newTree = Leaf.createInstance(this, initCenterX, initCenterY, initHalfLength);
+        tree.clear();
         tree.recycle();
         tree = newTree;
     }

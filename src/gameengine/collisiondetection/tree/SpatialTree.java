@@ -2,6 +2,7 @@ package gameengine.collisiondetection.tree;
 
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.shapes.Shape;
+import gameengine.context.Context;
 import gameengine.entities.Entity;
 
 import java.awt.*;
@@ -16,9 +17,10 @@ public class SpatialTree implements Parent {
     private Tree tree;
     private Collision tempCollision = new Collision();
     private double initCenterX, initCenterY, initHalfLength;
+    CollisionList list = new CollisionList();
 
     public SpatialTree(double centerX, double centerY, double halfLength) {
-        tree = Leaf.createInstance(this, centerX, centerY, halfLength);
+        tree = Leaf.createInstance(this, centerX, centerY, halfLength, list);
         initCenterX = centerX;
         initCenterY = centerY;
         initHalfLength = halfLength;
@@ -44,19 +46,52 @@ public class SpatialTree implements Parent {
     }
 
     public void clear() {
-        Tree newTree = Leaf.createInstance(this, initCenterX, initCenterY, initHalfLength);
-        tree.clear();
+        tree.clear(list);
         tree.recycle();
-        tree = newTree;
+        // TODO tree already removes all the nodes from the list, may not have to do this
+        list.clear();
+        tree = Leaf.createInstance(this, initCenterX, initCenterY, initHalfLength, list);
     }
 
     public void ensureEntitiesAreContained(double time) {
         tree.ensureEntitiesAreContained(time);
     }
 
-    public void calcCollision(int[] collisionGroups, Collision result) {
-        tempCollision.setCollisionTime(result.getCollisionTime());
-        tree.calcCollision(collisionGroups, tempCollision, result);
+    public void calcCollision(int[] collisionGroups, double elapsedTime, Context context) {
+        assert list.doAllNodesHaveNoCollision();
+        assert list.areNodesSorted();
+
+        double currentTime = 0;
+        double timeLeft = elapsedTime;
+        tree.calcCollision(collisionGroups, tempCollision, timeLeft, currentTime, list);
+
+        assert list.areNodesSorted();
+
+        Collision collision = list.getNextCollision();
+        double timeToUpdate = collision.getCollisionTime();
+        while(timeToUpdate < timeLeft){
+            tree.updateEntityPositions(timeToUpdate);
+            timeLeft -= timeToUpdate;
+            currentTime = collision.getCollisionTime();
+            context.handleCollision(collision);
+            Entity a = collision.getA();
+            Entity b = collision.getB();
+            if(a.getContainingTree() != null){
+                a.getShape().calculateBoundingBox(timeLeft);
+                if(b.getContainingTree() != null){
+                    b.getShape().calculateBoundingBox(timeLeft);
+                    b.getContainingTree().entityUpdated(collisionGroups, tempCollision, timeLeft, currentTime, b, list);
+                }
+                a.getContainingTree().entityUpdated(collisionGroups, tempCollision, timeLeft, currentTime, a, list);
+            }else if(b.getContainingTree() != null){
+                b.getShape().calculateBoundingBox(timeLeft);
+                b.getContainingTree().entityUpdated(collisionGroups, tempCollision, timeLeft, currentTime, b, list);
+            }
+            collision = list.getNextCollision();
+            timeToUpdate = collision.getCollisionTime() - currentTime;
+        }
+        assert list.doAllNodesHaveNoCollision();
+        tree.updateEntityPositions(timeLeft);
     }
 
     @Override
@@ -64,10 +99,11 @@ public class SpatialTree implements Parent {
     }
 
     public void tryResize() {
-        tree = tree.tryResize();
+        tree = tree.tryResize(list);
     }
 
-    private void grow(double centerX, double centerY, double halfLength, Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
+    private void grow(double centerX, double centerY, double halfLength,
+                      Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
         double quartLength = halfLength / 2;
         double left = centerX - quartLength;
         double right = centerX + quartLength;
@@ -77,7 +113,14 @@ public class SpatialTree implements Parent {
         topRight.resize(right, top, quartLength);
         bottomLeft.resize(left, bottom, quartLength);
         bottomRight.resize(right, bottom, quartLength);
-        tree = Quad.createInstance(this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
+        tree = Quad.createInstance(this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight, list);
+    }
+
+    @Override
+    public void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                                 Entity entity, CollisionList list) {
+        relocate(entity);
+        tree.relocateAndCheck(collisionGroups, temp, timeToCheck, currentTime, entity, list);
     }
 
     @Override
@@ -88,29 +131,29 @@ public class SpatialTree implements Parent {
 
         if (shape.getX() < tree.getCenterX()) {
             centerX -= tree.getHalfLength();
-            bottomRight = Leaf.createInstance();
-            topRight = Leaf.createInstance();
+            topLeft = Leaf.createInstance(list);
+            bottomLeft = Leaf.createInstance(list);
             if (shape.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
-                topLeft = tree;
-                bottomLeft = Leaf.createInstance();
+                topRight = Leaf.createInstance(list);
+                bottomRight = tree;
             } else {
                 centerY += tree.getHalfLength();
-                topLeft = Leaf.createInstance();
-                bottomLeft = tree;
+                topRight = tree;
+                bottomRight = Leaf.createInstance(list);
             }
         } else {
             centerX += tree.getHalfLength();
-            topLeft = Leaf.createInstance();
-            bottomLeft = Leaf.createInstance();
+            topRight = Leaf.createInstance(list);
+            bottomRight = Leaf.createInstance(list);
             if (shape.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
-                topRight = tree;
-                bottomRight = Leaf.createInstance();
+                topLeft = Leaf.createInstance(list);
+                bottomLeft = tree;
             } else {
                 centerY += tree.getHalfLength();
-                topRight = Leaf.createInstance();
-                bottomRight = tree;
+                topLeft = tree;
+                bottomLeft = Leaf.createInstance(list);
             }
         }
         grow(centerX, centerY, tree.getHalfLength() * 2, topLeft, topRight, bottomLeft, bottomRight);

@@ -156,7 +156,7 @@ public class BrickBreaker extends Context implements ActionHandler {
             if (brick.isDead()) {
                 bricks.remove(i);
                 entities.remove(brick);
-                brick.getPartition().removeEntity(brick);
+                brick.removeFromWorld();
             }
         }
 //        if (bricks.size() == 0) {
@@ -192,7 +192,7 @@ public class BrickBreaker extends Context implements ActionHandler {
     }
 
     @Override
-    public void handleCollision(Collision collision, double collisionsPerMilli) {
+    public void handleCollision(Collision collision) {
         Physics.performCollision(collision);
 //        bgColor = new Color(
 //                (int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
@@ -214,7 +214,7 @@ public class BrickBreaker extends Context implements ActionHandler {
                 } else {
                     ball = (CircleEntity) a;
                 }
-                ball.getPartition().removeEntity(ball);
+                ball.removeFromWorld();
                 entities.remove(ball);
                 balls.remove(ball);
 

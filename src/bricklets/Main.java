@@ -32,11 +32,10 @@ public class Main implements ButtonHandler {
     }
 
     public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
-        System.out.println("press Enter to start");
-        input.nextLine();
-//        System.setProperty("sun.java2d.opengl","true");
-//        System.setProperty("apple.awt.graphics.UseQuartz", "true");
+//        Scanner input = new Scanner(System.in);
+//        System.out.println("press Enter to start");
+//        input.nextLine();
+
         GameController controller = new GameController(120, 60, 50);
         setupInputToActionMappings(controller);
         Main main = new Main(controller);

@@ -1,5 +1,6 @@
 package gameengine.entities;
 
+import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.shapes.CircleShape;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.collisiondetection.tree.Tree;
@@ -13,7 +14,8 @@ import java.awt.*;
 public abstract class Entity {
     private Motion motion;
     private Shape shape;
-    private Tree partition;
+    private Tree containingTree;
+    private int indexInTree;
     protected double x, y, dx, dy, ddx, ddy, width, height, halfWidth, halfHeight;
 
     public Entity(double x, double y, double width, double height) {
@@ -125,12 +127,26 @@ public abstract class Entity {
         this.dy += dy;
     }
 
-    public void setContainingTree(Tree partition) {
-        this.partition = partition;
+    public int getIndexInTree() {
+        return indexInTree;
     }
 
-    public Tree getPartition() {
-        return partition;
+    public void setIndexInTree(int indexInTree) {
+        this.indexInTree = indexInTree;
+    }
+
+    public void setContainingTree(Tree containingTree, int indexInTree) {
+        this.containingTree = containingTree;
+        setIndexInTree(indexInTree);
+    }
+
+    public Tree getContainingTree() {
+        return containingTree;
+    }
+
+    public void removeFromWorld() {
+        containingTree.removeEntityFromList(indexInTree);
+        setContainingTree(null, 0);
     }
 
     public abstract void update(double elapsedTime);
@@ -141,9 +157,9 @@ public abstract class Entity {
         g.setColor(color);
         double endX;
         double endY;
-        if (partition != null) {
-            endX = partition.getCenterX();
-            endY = partition.getCenterY();
+        if (containingTree != null) {
+            endX = containingTree.getCenterX();
+            endY = containingTree.getCenterY();
         } else {
             endX = Math.random() * 1900;
             endY = Math.random() * 1024;

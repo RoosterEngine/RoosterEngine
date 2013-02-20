@@ -1,5 +1,6 @@
 package gameengine.collisiondetection.tree;
 
+import gameengine.collisiondetection.Collision;
 import gameengine.entities.Entity;
 
 /**
@@ -9,6 +10,9 @@ import gameengine.entities.Entity;
  * Time: 9:31 PM
  */
 public interface Parent {
+
+    void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime, Entity entity,
+                          CollisionList list);
 
     void relocate(Entity entity);
 

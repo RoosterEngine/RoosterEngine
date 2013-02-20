@@ -89,7 +89,7 @@ public class BasicMenu extends Context {
     }
 
     @Override
-    public void handleCollision(Collision collision, double collisionsPerMilli) {
+    public void handleCollision(Collision collision) {
     }
 
     private void setupButtons(double leftBorderRatio, double rightBorderRatio, double topBorderRatio, double bottomBorderRatio, double paddingRatio) {

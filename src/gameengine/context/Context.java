@@ -219,5 +219,5 @@ public abstract class Context implements ActionHandler, InputHandler {
 
     public abstract void draw(Graphics2D g);
 
-    public abstract void handleCollision(Collision collision, double collisionsPerMilli);
+    public abstract void handleCollision(Collision collision);
 }

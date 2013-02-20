@@ -117,14 +117,25 @@ public class Testing extends Context implements ActionHandler {
     @Override
     public void update(double elapsedTime) {
 //        attractMotion.setDestination(pointer.getX(), pointer.getY());
-//        boxMotion.setDestination(pointer.getX(), pointer.getY());
-//        double k = 0.0001;
+//        double k = 0.000001;
 //        double d = 0.001;
+//        double targetD = 500;
 //        for (Entity entity : entities) {
-//            double deltaX = (pointer.getX() - entity.getX()) * k;
-//            double deltaY = (pointer.getY() - entity.getY()) * k;
-//            entity.addVelocity(deltaX * elapsedTime, deltaY * elapsedTime);
+//            double attractStrength = k / entity.getShape().getMass();
+//            double deltaX = pointer.getX() - entity.getX();
+//            double deltaY = pointer.getY() - entity.getY();
+//            double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
+//            double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
+//            entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
 //        }
+        double d = 0.999;
+        double g = 0.001 * elapsedTime;
+        for (Entity entity : entities) {
+            if (!(entity instanceof BoxEntity)) {
+                entity.addVelocity(0, g);
+            }
+            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
+        }
     }
 
     @Override
@@ -138,10 +149,10 @@ public class Testing extends Context implements ActionHandler {
             g.translate(shiftX, shiftY);
             g.scale(scale, scale);
 
-//            controller.drawPartitions(g, Color.black);
             for (Entity entity : entities) {
                 entity.draw(g);
             }
+//            controller.drawPartitions(g, Color.RED);
 //            for (Entity entity : entities) {
 //                entity.drawLineToPartition(g, new Color(93, 71, 57));
 //            }
@@ -160,7 +171,7 @@ public class Testing extends Context implements ActionHandler {
     }
 
     @Override
-    public void handleCollision(Collision collision, double collisionsPerMilli) {
+    public void handleCollision(Collision collision) {
         Physics.performCollision(collision);
 //        double bright = 35;
 //        bgColor = new Color((int) (Math.random() * bright), (int) (Math.random() * bright), (int) (Math.random() * bright));

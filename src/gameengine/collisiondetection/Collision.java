@@ -8,16 +8,12 @@ import gameengine.math.Vector2D;
  * @author davidrusu
  */
 public class Collision {
-    private static final Collision NO_COLLISION = new Collision();
-    private Vector2D collisionNormal;
+    private Vector2D collisionNormal = new Vector2D();
     private Entity a, b;
     private double timeToCollision;
 
     public Collision() {
-        timeToCollision = Shape.NO_COLLISION;
-        collisionNormal = new Vector2D();
-        a = null;
-        b = null;
+        setNoCollision();
     }
 
     public Collision(double timeToCollision, Vector2D collisionNormal, Entity a, Entity b) {
@@ -42,7 +38,10 @@ public class Collision {
     }
 
     public void setNoCollision() {
-        set(NO_COLLISION);
+        timeToCollision = Shape.NO_COLLISION;
+        collisionNormal.clear();
+        a = null;
+        b = null;
     }
 
     public double getCollisionTime() {

@@ -15,23 +15,38 @@ import java.awt.*;
 public abstract class Tree {
     public static final int GROW_THRESH = 5;
     private static final double EXPAND_RATE = 1.5;
+    private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
     protected Entity[] entities = new Entity[GROW_THRESH + 2];
     protected int entityListPos, entityCount;
-    private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
     protected Parent parent;
-
-    public Tree(Parent parent, double centerX, double centerY, double halfLength) {
-        init(parent, centerX, centerY, halfLength);
-    }
+    protected CollisionNode node = new CollisionNode();
 
     public Tree() {
-        parent = null;
     }
 
-    protected void init(Parent parent, double centerX, double centerY, double halfLength) {
+    public Tree(CollisionList list) {
+        init(list);
+    }
+
+    public Tree(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+        init(parent, centerX, centerY, halfLength, list);
+    }
+
+    public void init(CollisionList list) {
+        list.add(this);
+//        node.remove();
+//        node.insertAfter(prev);
+//        node.sort();
+    }
+
+    protected void init(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
         this.parent = parent;
-        entityCount = 0;
-        entityListPos = 0;
+
+        list.add(this);
+//        node.remove();
+//        node.insertAfter(prev);
+//        node.sort();
+
         resize(centerX, centerY, halfLength);
     }
 
@@ -45,13 +60,25 @@ public abstract class Tree {
         setMaxY(centerY + halfLength);
     }
 
-    public void clear() {
+    public void clear(CollisionList list) {
         for (int i = 0; i < entityListPos; i++) {
             entities[i] = null;
         }
         parent = null;
         entityCount = 0;
         entityListPos = 0;
+        list.remove(this);
+        node.clear();
+//        node.remove();
+    }
+
+    public boolean areEntityIndexesNull() {
+        for (int i = 0; i < entities.length; i++) {
+            if (entities[i] != null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -68,6 +95,7 @@ public abstract class Tree {
             System.arraycopy(temp, 0, entities, 0, entityListPos);
         }
         entities[entityListPos] = entity;
+        entity.setContainingTree(this, entityListPos);
         entityListPos++;
     }
 
@@ -76,40 +104,50 @@ public abstract class Tree {
         entityCount--;
     }
 
-    public void removeEntity(Entity entity) {
-        for (int i = 0; i < entityListPos; i++) {
-            if (entities[i] == entity) {
-                removeEntityFromList(i);
-                entityCount--;
-                parent.decrementEntityCount();
-                entity.setContainingTree(null);
-                return;
-            }
-        }
-    }
-
     public boolean isContainedInTree(Entity entity) {
         Shape shape = entity.getShape();
-        return isContained(shape.getBoundingCenterX(), getCenterX(), shape.getBoundingHalfWidth()) && isContained(shape.getBoundingCenterY(), getCenterY(), shape.getBoundingHalfHeight());
+        return isContained(shape.getBoundingCenterX(), getCenterX(), shape.getBoundingHalfWidth())
+                && isContained(shape.getBoundingCenterY(), getCenterY(), shape.getBoundingHalfHeight());
     }
 
     private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
         return Math.abs(treePosition - shapePosition) < getHalfLength() - shapeHalfLength;
     }
 
-    protected void removeEntityFromList(int index) {
+    public void removeEntityFromList(int index) {
         entityListPos--;
-        entities[index] = entities[entityListPos];
+        Entity relocated = entities[entityListPos];
+        entities[index] = relocated;
+        relocated.setIndexInTree(index);
         entities[entityListPos] = null;
     }
 
-    protected void collideShapes(int[] collisionGroups, Collision temp, Collision result, Shape a, Shape b) {
+    protected void collideShapes(int[] collisionGroups, Collision temp, Collision result,
+                                 double timeToCheck, double currentTime, Shape a, Shape b) {
         if ((collisionGroups[a.getCollisionType()] & 1 << b.getCollisionType()) != 0) {
-            Shape.collideShapes(a, b, result.getCollisionTime(), temp);
-            if (temp.getCollisionTime() < result.getCollisionTime()) {
+            temp.setNoCollision();
+            Shape.collideShapes(a, b, timeToCheck, temp);
+            if (temp.getCollisionTime() < result.getCollisionTime() - currentTime) {
+                assert temp.getCollisionTime() <= timeToCheck: "too long" + temp.getCollisionTime() + ", " + timeToCheck;
                 result.set(temp);
+                result.setCollisionTime(result.getCollisionTime() + currentTime);
             }
         }
+    }
+
+    public void entityUpdated(int[] collisionGroups, Collision tempCollision, double timeToCheck, double currentTime,
+                              Entity entity, CollisionList list) {
+        assert doesEntitysIndexMatchIndexInTree(entity) : "entity index doesn't match it's position in the tree " + entity.getIndexInTree();
+        assert list.areNodesSorted();
+
+        removeEntityFromList(entity.getIndexInTree());
+        relocateAndCheck(collisionGroups, tempCollision, timeToCheck, currentTime, entity, list);
+    }
+
+    public boolean doesEntitysIndexMatchIndexInTree(Entity entity) {
+        assert entity.getIndexInTree() < entityListPos : "entities index must be less than entityListPos: "
+                + entityListPos + ", " + entity.getIndexInTree();
+        return entity == entities[entity.getIndexInTree()];
     }
 
     /**
@@ -135,14 +173,28 @@ public abstract class Tree {
 
     public abstract void updateEntityPositions(double elapsedTime);
 
-    public abstract Tree tryResize();
+    public abstract Tree tryResize(CollisionList list);
 
     public abstract void updateEntityMotions(double elapsedTime);
 
-    public abstract void calcCollision(int[] collisionGroups, Collision temp, Collision result);
+    public abstract void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                                       CollisionList list);
 
-    public abstract void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result, Entity entity);
+    public abstract void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                                          Entity entity, CollisionList list);
 
+    public abstract void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                                     Entity entity, CollisionList list);
+
+    public abstract void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
+                                                  double timeToCheck, double currentTime, Entity entity);
+
+    public abstract void ensureCollisionIsNotWithEntity(int[] collisionGroups, Collision temp, double timeToCheck,
+                                                        double currentTime, Entity entity, CollisionList list);
+
+    /**
+     * When this method is called, the tree should already be cleared and ready to be reused
+     */
     public abstract void recycle();
 
     public abstract void draw(Graphics2D g, Color color);
@@ -201,5 +253,18 @@ public abstract class Tree {
 
     public void setMaxY(double maxY) {
         this.maxY = maxY;
+    }
+
+    public boolean isEntityInTree(Entity entity) {
+        for (int i = 0; i < entityListPos; i++) {
+            if (entities[i] == entity) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public CollisionNode getNode() {
+        return node;
     }
 }

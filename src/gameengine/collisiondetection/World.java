@@ -52,26 +52,33 @@ public class World {
     }
 
     public void update(double elapsedTime, Context context) {
-        double timeLeft = elapsedTime;
         updateMotions(elapsedTime);
-        Collision collision = new Collision();
-        while (timeLeft > 0 && !context.isPaused()) {
-            tree.ensureEntitiesAreContained(timeLeft);
-            collision.setCollisionTime(timeLeft);
-            tree.calcCollision(collisionGroups, collision);
-            double collisionTime = collision.getCollisionTime();
-            double updateTime = Math.min(collisionTime, timeLeft);
-            updatePositions(updateTime);
-            gameTime += updateTime;
-            if (collisionTime != Shape.NO_COLLISION && collisionTime < timeLeft) {
-                double collisionRate = getCollisionRate();
-                context.handleCollision(collision, collisionRate);
-            }
-            timeLeft -= updateTime;
-        }
+        tree.ensureEntitiesAreContained(elapsedTime);
+        tree.calcCollision(collisionGroups, elapsedTime, context);
         tree.tryResize();
         updateEntities(elapsedTime);
         context.update(elapsedTime);
+////
+//        double timeLeft = elapsedTime;
+//        updateMotions(elapsedTime);
+//        Collision collision = new Collision();
+//        while (timeLeft > 0 && !context.isPaused()) {
+//            tree.ensureEntitiesAreContained(timeLeft);
+//            collision.setCollisionTime(timeLeft);
+//            tree.calcCollision(collisionGroups, collision);
+//            double collisionTime = collision.getCollisionTime();
+//            double updateTime = Math.min(collisionTime, timeLeft);
+//            updatePositions(updateTime);
+//            gameTime += updateTime;
+//            if (collisionTime != Shape.NO_COLLISION && collisionTime < timeLeft) {
+//                double collisionRate = getCollisionRate();
+//                context.handleCollision(collision, collisionRate);
+//            }
+//            timeLeft -= updateTime;
+//        }
+//        tree.tryResize();
+//        updateEntities(elapsedTime);
+//        context.update(elapsedTime);
     }
 
     private void updateEntities(double elapsedTime) {

@@ -24,38 +24,48 @@ public class Leaf extends Tree {
         }
     }
 
-    private Leaf(Parent parent, double centerX, double centerY, double halfLength) {
-        super(parent, centerX, centerY, halfLength);
+    private Leaf(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+        super(parent, centerX, centerY, halfLength, list);
+    }
+
+    public Leaf(CollisionList list) {
+        super(list);
     }
 
     private Leaf() {
         super();
     }
 
-    public static Leaf createInstance(Parent parent, double centerX, double centerY, double halfLength) {
+    public static Leaf createInstance(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
         if (numRecycledLeafs == 0) {
-            return new Leaf(parent, centerX, centerY, halfLength);
+            return new Leaf(parent, centerX, centerY, halfLength, list);
         }
         numRecycledLeafs--;
         Leaf leafInstance = recycledLeafs[numRecycledLeafs];
         recycledLeafs[numRecycledLeafs] = null;
-        leafInstance.init(parent, centerX, centerY, halfLength);
+        leafInstance.init(parent, centerX, centerY, halfLength, list);
         return leafInstance;
     }
 
-    public static Leaf createInstance() {
+    public static Leaf createInstance(CollisionList list) {
         if (numRecycledLeafs == 0) {
-            return new Leaf();
+            return new Leaf(list);
         }
         numRecycledLeafs--;
         Leaf leafInstance = recycledLeafs[numRecycledLeafs];
         recycledLeafs[numRecycledLeafs] = null;
-        leafInstance.init(null, 0, 0, 0);
+        leafInstance.init(list);
         return leafInstance;
     }
 
     @Override
     public void recycle() {
+        assert areEntityIndexesNull() : "all indexes in 'entities' should be null";
+        assert entityCount == 0 : "entityCount: " + entityCount;
+        assert entityListPos == 0 : "entityListPos: " + entityListPos;
+        assert parent == null : "parent: " + parent;
+        assert node.getPrev() == null && node.getNext() == null : "node.prev: " + node.getPrev() + " node.next: " + node.getNext();
+
         if (numRecycledLeafs == recycledLeafs.length) {
             Leaf[] temp = new Leaf[numRecycledLeafs * EXPANSION_FACTOR];
             System.arraycopy(recycledLeafs, 0, temp, 0, numRecycledLeafs);
@@ -68,7 +78,6 @@ public class Leaf extends Tree {
     @Override
     public void addEntity(Entity entity) {
         addEntityToList(entity);
-        entity.setContainingTree(this);
         entityCount++;
     }
 
@@ -97,16 +106,13 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public Tree tryResize() {
+    public Tree tryResize(CollisionList list) {
         if (entityCount >= GROW_THRESH) {
-            Quad quad = Quad.createInstance(parent, getCenterX(), getCenterY(), getHalfLength());
+            Quad quad = Quad.createInstance(parent, getCenterX(), getCenterY(), getHalfLength(), list);
             for (int i = 0; i < entityCount; i++) {
                 quad.addEntity(entities[i]);
-                entities[i] = null;
             }
-            parent = null;
-            entityCount = 0;
-            entityListPos = 0;
+            clear(list);
             recycle();
             return quad;
         }
@@ -128,35 +134,78 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result, Entity entity) {
+    public void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
+                                         double timeToCheck, double currentTime, Entity entity) {
         Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
             Shape b = entities[i].getShape();
-            collideShapes(collisionGroups, temp, result, a, b);
+            collideShapes(collisionGroups, temp, result, timeToCheck, currentTime, a, b);
         }
     }
 
     @Override
-    public void calcCollision(int[] collisionGroups, Collision temp, Collision result) {
+    public void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                              CollisionList list) {
+        assert node.getCollisionTime() == Shape.NO_COLLISION;
+
         for (int i = 0; i < entityListPos; i++) {
             Shape a = entities[i].getShape();
             for (int j = i + 1; j < entityListPos; j++) {
                 Shape b = entities[j].getShape();
-                collideShapes(collisionGroups, temp, result, a, b);
+                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, currentTime, a, b);
             }
+        }
+
+        list.collisionUpdated(this);
+    }
+
+    @Override
+    public void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                                 Entity entity, CollisionList list) {
+        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method is called";
+
+        Collision collision = node.getCollision();
+        if (entity == collision.getA() || entity == collision.getB()) {
+            collision.setNoCollision();
+            calcCollision(collisionGroups, temp, timeToCheck, currentTime, list);
+        }
+
+        if (isContainedInTree(entity)) {
+            addAndCheck(collisionGroups, temp, timeToCheck, currentTime, entity, list);
+        } else {
+            entityCount--;
+            parent.relocateAndCheck(collisionGroups, temp, timeToCheck, currentTime, entity, list);
+        }
+    }
+
+    @Override
+    public void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                            Entity entity, CollisionList list) {
+//        node.getCollision().setNoCollision();
+        checkCollisionWithEntity(collisionGroups, temp, node.getCollision(), timeToCheck, currentTime, entity);
+        list.collisionUpdated(this);
+        addEntityToList(entity);
+    }
+
+    @Override
+    public void ensureCollisionIsNotWithEntity(int[] collisionGroups, Collision temp, double timeToCheck,
+                                               double currentTime, Entity entity, CollisionList list) {
+        Collision collision = node.getCollision();
+        if (entity == collision.getA() || entity == collision.getB()) {
+            collision.setNoCollision();
+            for (int i = 0; i < entityListPos; i++) {
+                Entity ent = entities[i];
+                Shape a = ent.getShape();
+                for (int j = i + 1; j < entityListPos; j++) {
+                    Shape b = entities[j].getShape();
+                    collideShapes(collisionGroups, temp, collision, timeToCheck, (double) 0, a, b);
+                }
+            }
+            list.collisionUpdated(this);
         }
     }
 
     @Override
     public void draw(Graphics2D g, Color color) {
-        g.setColor(color.darker());
-        int length = (int) (getHalfLength() * 2);
-        g.fillRect((int) getMinX(), (int) getMinY(), length, length);
-//        g.setColor(Color.RED);
-//        int offset = 3;
-//        for (int i = 0; i < entityListPos; i++) {
-//            Entity entity = entities[i];
-//            g.drawLine((int) entity.getX() + offset, (int) entity.getY() + offset, (int) getCenterX() + offset, (int) getCenterY() + offset);
-//        }
     }
 }

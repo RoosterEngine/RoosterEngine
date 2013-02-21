@@ -57,8 +57,7 @@ public class BrickBreaker extends Context implements ActionHandler {
         lives = 100;
         reset();
 
-        controller.setCollisionPair(
-                this, CollisionType.DEFAULT, CollisionType.DEFAULT);
+        controller.setCollisionPair(this, CollisionType.DEFAULT, CollisionType.DEFAULT);
 
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
         Shape paddleShape = paddle.getShape();
@@ -152,12 +151,12 @@ public class BrickBreaker extends Context implements ActionHandler {
     @Override
     public void update(double elapsedTime) {
         for (int i = 0; i < bricks.size(); i++) {
-            Brick brick = bricks.get(i);
-            if (brick.isDead()) {
-                bricks.remove(i);
-                entities.remove(brick);
-                brick.removeFromWorld();
-            }
+//            Brick brick = bricks.get(i);
+//            if (brick.isDead()) {
+//                bricks.remove(i);
+//                entities.remove(brick);
+//                brick.removeFromWorld();
+//            }
         }
 //        if (bricks.size() == 0) {
 //            init();
@@ -174,10 +173,10 @@ public class BrickBreaker extends Context implements ActionHandler {
         g.translate((int) shiftX, (int) shiftY);
         g.scale(scale, scale);
 
-//        controller.drawPartitions(g, bgColor);
         for (Entity entity : entities) {
             entity.draw(g);
         }
+        controller.drawPartitions(g, Color.RED);
 //        for (Entity entity : entities) {
 //            entity.drawLineToPartition(g, Color.RED);
 //        }
@@ -206,22 +205,20 @@ public class BrickBreaker extends Context implements ActionHandler {
         } else if (b instanceof Brick && isABall) {
             ((Brick) b).doDamage(damage);
         } else if (a == bottomBounds && isBBall || isABall && b == bottomBounds) {
-            if (lives > 0) {
-                lives--;
-                CircleEntity ball;
-                if (isBBall) {
-                    ball = (CircleEntity) b;
-                } else {
-                    ball = (CircleEntity) a;
-                }
-                ball.removeFromWorld();
-                entities.remove(ball);
-                balls.remove(ball);
-
-
-            } else {
-                init();
-            }
+//            if (lives > 0) {
+//                lives--;
+//                CircleEntity ball;
+//                if (isBBall) {
+//                    ball = (CircleEntity) b;
+//                } else {
+//                    ball = (CircleEntity) a;
+//                }
+//                ball.removeFromWorld();
+//                entities.remove(ball);
+//                balls.remove(ball);
+//            } else {
+//                init();
+//            }
         }
     }
 

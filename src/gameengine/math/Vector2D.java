@@ -250,10 +250,9 @@ public class Vector2D {
         return dot(x, y, dx, dy) >= 0 == dot(x - dx, y - dy, dx, dy) <= 0;
     }
 
-    public Vector2D clear() {
+    public void clear() {
         x = 0;
         y = 0;
-        return this;
     }
 
     public String toString() {

@@ -43,7 +43,7 @@ public class Main implements ButtonHandler {
     }
 
     public void startGame() {
-        controller.enterContext(menu);
+        controller.enterContext(testing);
         controller.startGame();
     }
 

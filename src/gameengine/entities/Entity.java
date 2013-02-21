@@ -79,7 +79,7 @@ public abstract class Entity {
         x += dx * elapsedTime;
         y += dy * elapsedTime;
         shape.updatePosition(x, y);
-        shape.updateVelocity(dx, dy);
+//        shape.updateVelocity(dx, dy);
     }
 
     public double getX() {
@@ -145,8 +145,7 @@ public abstract class Entity {
     }
 
     public void removeFromWorld() {
-        containingTree.removeEntityFromList(indexInTree);
-        setContainingTree(null, 0);
+        containingTree.removeEntityFromWorld(this);
     }
 
     public abstract void update(double elapsedTime);

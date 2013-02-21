@@ -17,4 +17,7 @@ public interface Parent {
     void relocate(Entity entity);
 
     void decrementEntityCount();
+
+    void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
+                                      Entity entity, CollisionList list);
 }

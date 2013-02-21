@@ -41,16 +41,16 @@ public class Brick extends BoxEntity {
         int grad = (int) ((1 - health / TOTAL_HEALTH) * 255);
         g.setColor(new Color(grad, grad, grad));
         g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) (width), (int) (height));
-//        g.setColor(Color.RED.darker().darker());
-//        String text = "\u2665 : " + health;
-//        FontMetrics metrics = g.getFontMetrics();
-//        int textWidth = metrics.stringWidth(text);
-//        int textHeight = metrics.getHeight();
-//        g.setColor(Color.WHITE);
-//        double xPadding = (width - textWidth) * 0.5;
-//        double yPadding = (height + textHeight / 2) * 0.5;
-//        g.drawString(text, (int) (x - width / 2 + xPadding),
-//                (int) (y - height / 2 + yPadding));
+        g.setColor(Color.RED.darker().darker());
+        String text = "\u2665 : " + health;
+        FontMetrics metrics = g.getFontMetrics();
+        int textWidth = metrics.stringWidth(text);
+        int textHeight = metrics.getHeight();
+        g.setColor(Color.WHITE);
+        double xPadding = (width - textWidth) * 0.5;
+        double yPadding = (height + textHeight / 2) * 0.5;
+        g.drawString(text, (int) (x - width / 2 + xPadding),
+                (int) (y - height / 2 + yPadding));
     }
 
 }

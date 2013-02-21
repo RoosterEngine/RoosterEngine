@@ -119,7 +119,7 @@ public class Testing extends Context implements ActionHandler {
 //        attractMotion.setDestination(pointer.getX(), pointer.getY());
 //        double k = 0.000001;
 //        double d = 0.001;
-//        double targetD = 500;
+//        double targetD = 300;
 //        for (Entity entity : entities) {
 //            double attractStrength = k / entity.getShape().getMass();
 //            double deltaX = pointer.getX() - entity.getX();
@@ -128,14 +128,15 @@ public class Testing extends Context implements ActionHandler {
 //            double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
 //            entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
 //        }
-        double d = 0.999;
-        double g = 0.001 * elapsedTime;
-        for (Entity entity : entities) {
-            if (!(entity instanceof BoxEntity)) {
-                entity.addVelocity(0, g);
-            }
-            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
-        }
+
+//        double d = 0.999;
+//        double g = 0.001 * elapsedTime;
+//        for (Entity entity : entities) {
+////            if (!(entity instanceof BoxEntity)) {
+////                entity.addVelocity(0, g);
+////            }
+//            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
+//        }
     }
 
     @Override
@@ -212,10 +213,11 @@ public class Testing extends Context implements ActionHandler {
                 controller.exitContext();
                 break;
             case MOUSE_CLICK:
+                double ballSize = 2;
                 double radius = 1;
-                for (int i = 0; i < 200; i++) {
+                for (int i = 0; i < 100; i++) {
                     addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
-                            height * 0.5 + (rand.nextDouble() - 0.5) * (height - 100), 2);
+                            height * 0.5 + (rand.nextDouble() - 0.5) * (height - 100), ballSize);
 //                    addBall(pointer.getX() + (rand.nextDouble() - 0.5) * radius,
 //                            pointer.getY() + (rand.nextDouble() - 0.5) * radius, 2);
                 }

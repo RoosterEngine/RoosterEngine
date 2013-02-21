@@ -54,52 +54,87 @@ public class SpatialTree implements Parent {
     }
 
     public void ensureEntitiesAreContained(double time) {
+        assert tree.isEntityCountCorrect();
+
         tree.ensureEntitiesAreContained(time);
+
+        assert tree.isEntityCountCorrect();
     }
 
     public void calcCollision(int[] collisionGroups, double elapsedTime, Context context) {
         assert list.doAllNodesHaveNoCollision();
         assert list.areNodesSorted();
+        assert tree.isEntityCountCorrect();
 
         double currentTime = 0;
         double timeLeft = elapsedTime;
         tree.calcCollision(collisionGroups, tempCollision, timeLeft, currentTime, list);
 
+        assert tree.isEntityCountCorrect();
         assert list.areNodesSorted();
 
         Collision collision = list.getNextCollision();
         double timeToUpdate = collision.getCollisionTime();
         while(timeToUpdate < timeLeft){
             tree.updateEntityPositions(timeToUpdate);
+
+            assert tree.isEntityCountCorrect();
+
             timeLeft -= timeToUpdate;
             currentTime = collision.getCollisionTime();
-            context.handleCollision(collision);
             Entity a = collision.getA();
             Entity b = collision.getB();
+            Parent aParent = a.getContainingTree().getParent();
+            Parent bParent = b.getContainingTree().getParent();
+            context.handleCollision(collision);
+
+            assert tree.isEntityCountCorrect();
+
             if(a.getContainingTree() != null){
                 a.getShape().calculateBoundingBox(timeLeft);
                 if(b.getContainingTree() != null){
                     b.getShape().calculateBoundingBox(timeLeft);
                     b.getContainingTree().entityUpdated(collisionGroups, tempCollision, timeLeft, currentTime, b, list);
+                }else{
+                    bParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, currentTime, b, list);
                 }
                 a.getContainingTree().entityUpdated(collisionGroups, tempCollision, timeLeft, currentTime, a, list);
             }else if(b.getContainingTree() != null){
+                aParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, currentTime, a, list);
                 b.getShape().calculateBoundingBox(timeLeft);
                 b.getContainingTree().entityUpdated(collisionGroups, tempCollision, timeLeft, currentTime, b, list);
+            }else{
+                aParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, currentTime, a, list);
+                bParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, currentTime, b, list);
             }
+
+            assert tree.isEntityCountCorrect();
+
             collision = list.getNextCollision();
-            timeToUpdate = collision.getCollisionTime() - currentTime;
+            timeToUpdate = collision.getCollisionTime() - currentTime;;
         }
         assert list.doAllNodesHaveNoCollision();
+        assert tree.isEntityCountCorrect();
+
         tree.updateEntityPositions(timeLeft);
+
+        assert tree.isEntityCountCorrect();
     }
 
     @Override
     public void decrementEntityCount() {
     }
 
+    @Override
+    public void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime, Entity entity, CollisionList list) {
+    }
+
     public void tryResize() {
+        assert tree.isEntityCountCorrect();
+
         tree = tree.tryResize(list);
+
+        assert tree.isEntityCountCorrect();
     }
 
     private void grow(double centerX, double centerY, double halfLength,

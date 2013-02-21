@@ -13,7 +13,7 @@ import java.awt.*;
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 5;
+    public static final int GROW_THRESH = 18;
     private static final double EXPAND_RATE = 1.5;
     private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
     protected Entity[] entities = new Entity[GROW_THRESH + 2];
@@ -34,19 +34,11 @@ public abstract class Tree {
 
     public void init(CollisionList list) {
         list.add(this);
-//        node.remove();
-//        node.insertAfter(prev);
-//        node.sort();
     }
 
     protected void init(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
         this.parent = parent;
-
         list.add(this);
-//        node.remove();
-//        node.insertAfter(prev);
-//        node.sort();
-
         resize(centerX, centerY, halfLength);
     }
 
@@ -78,6 +70,15 @@ public abstract class Tree {
                 return false;
             }
         }
+        return true;
+    }
+
+    public boolean isClean() {
+        assert areEntityIndexesNull() : "all indexes in 'entities' should be null";
+        assert entityCount == 0 : "entityCount: " + entityCount;
+        assert entityListPos == 0 : "entityListPos: " + entityListPos;
+        assert parent == null : "parent: " + parent;
+        assert node.getPrev() == null && node.getNext() == null : "node.prev: " + node.getPrev() + " node.next: " + node.getNext();
         return true;
     }
 
@@ -120,6 +121,13 @@ public abstract class Tree {
         entities[index] = relocated;
         relocated.setIndexInTree(index);
         entities[entityListPos] = null;
+    }
+
+    public void removeEntityFromWorld(Entity item){
+        entityCount--;
+        removeEntityFromList(item.getIndexInTree());
+        item.setContainingTree(null, -1);
+        parent.decrementEntityCount();
     }
 
     protected void collideShapes(int[] collisionGroups, Collision temp, Collision result,
@@ -188,9 +196,6 @@ public abstract class Tree {
 
     public abstract void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
                                                   double timeToCheck, double currentTime, Entity entity);
-
-    public abstract void ensureCollisionIsNotWithEntity(int[] collisionGroups, Collision temp, double timeToCheck,
-                                                        double currentTime, Entity entity, CollisionList list);
 
     /**
      * When this method is called, the tree should already be cleared and ready to be reused
@@ -264,7 +269,36 @@ public abstract class Tree {
         return false;
     }
 
+    public boolean checkEntities() {
+        for (int i = 0; i < entityListPos; i++) {
+            Entity entity = entities[i];
+            assert entity != null;
+            assert entity.getContainingTree() == this;
+            assert entity.getIndexInTree() == i;
+        }
+        for (int i = entityListPos; i < entities.length; i++) {
+            assert entities[i] == null;
+        }
+        return true;
+    }
+
+    public abstract int getRealEntityCount();
+
     public CollisionNode getNode() {
         return node;
+    }
+
+    public int getEntityCount() {
+        return entityCount;
+    }
+
+    public boolean isEntityCountCorrect() {
+//        assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
+//        return true;
+        return getRealEntityCount() == entityCount;
+    }
+
+    public Parent getParent() {
+        return parent;
     }
 }

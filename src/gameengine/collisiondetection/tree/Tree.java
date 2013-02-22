@@ -13,9 +13,10 @@ import java.awt.*;
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 18;
+    public static final int GROW_THRESH =15;
     private static final double EXPAND_RATE = 1.5;
     private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
+    protected double timeInTree = 0;
     protected Entity[] entities = new Entity[GROW_THRESH + 2];
     protected int entityListPos, entityCount;
     protected Parent parent;
@@ -59,6 +60,7 @@ public abstract class Tree {
         parent = null;
         entityCount = 0;
         entityListPos = 0;
+        timeInTree = 0;
         list.remove(this);
         node.clear();
 //        node.remove();
@@ -79,6 +81,7 @@ public abstract class Tree {
         assert entityListPos == 0 : "entityListPos: " + entityListPos;
         assert parent == null : "parent: " + parent;
         assert node.getPrev() == null && node.getNext() == null : "node.prev: " + node.getPrev() + " node.next: " + node.getNext();
+        assert timeInTree == 0;
         return true;
     }
 
@@ -143,13 +146,13 @@ public abstract class Tree {
         }
     }
 
-    public void entityUpdated(int[] collisionGroups, Collision tempCollision, double timeToCheck, double currentTime,
-                              Entity entity, CollisionList list) {
+    public void entityUpdated(int[] collisionGroups, Collision tempCollision, double timeToCheck, Entity entity,
+                              CollisionList list) {
         assert doesEntitysIndexMatchIndexInTree(entity) : "entity index doesn't match it's position in the tree " + entity.getIndexInTree();
         assert list.areNodesSorted();
+        assert !isEntityInTree(entity);
 
-        removeEntityFromList(entity.getIndexInTree());
-        relocateAndCheck(collisionGroups, tempCollision, timeToCheck, currentTime, entity, list);
+        relocateAndCheck(collisionGroups, tempCollision, timeToCheck, entity, list);
     }
 
     public boolean doesEntitysIndexMatchIndexInTree(Entity entity) {
@@ -179,23 +182,30 @@ public abstract class Tree {
 
     public abstract void updateEntities(double elapsedTime);
 
+    public abstract void updateAllEntityPositions(double currentTime);
+
     public abstract void updateEntityPositions(double elapsedTime);
 
     public abstract Tree tryResize(CollisionList list);
 
     public abstract void updateEntityMotions(double elapsedTime);
 
-    public abstract void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
-                                       CollisionList list);
+    public abstract void initCalcCollision(int[] collisionGroups, Collision temp, double timeToCheck,
+                                           CollisionList list);
 
-    public abstract void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
-                                          Entity entity, CollisionList list);
+    public abstract void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list);
 
-    public abstract void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
-                                     Entity entity, CollisionList list);
+    public abstract void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+                                          CollisionList list);
+
+    public abstract void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+                                     CollisionList list);
+
+    public abstract void initCheckCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
+                                                  double timeToCheck, Entity entity);
 
     public abstract void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
-                                                  double timeToCheck, double currentTime, Entity entity);
+                                                  double timeToCheck, Entity entity);
 
     /**
      * When this method is called, the tree should already be cleared and ready to be reused

@@ -337,7 +337,7 @@ public class GameController implements MouseMovedHandler {
         getCollisionDetector(context).setCollisionGroup(a, b);
     }
 
-    public void clearCollisions(Context context) {
+    public void clearWorld(Context context) {
         World world = getCollisionDetector(context);
         world.clearCollisions();
     }

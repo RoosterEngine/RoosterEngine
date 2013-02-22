@@ -11,13 +11,13 @@ import gameengine.entities.Entity;
  */
 public interface Parent {
 
-    void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime, Entity entity,
+    void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
                           CollisionList list);
 
     void relocate(Entity entity);
 
     void decrementEntityCount();
 
-    void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, double currentTime,
-                                      Entity entity, CollisionList list);
+    void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+                                      CollisionList list);
 }

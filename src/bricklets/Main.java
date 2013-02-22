@@ -36,7 +36,7 @@ public class Main implements ButtonHandler {
 //        System.out.println("press Enter to start");
 //        input.nextLine();
 
-        GameController controller = new GameController(120, 60, 50);
+        GameController controller = new GameController(60, 60, 60);
         setupInputToActionMappings(controller);
         Main main = new Main(controller);
         main.startGame();

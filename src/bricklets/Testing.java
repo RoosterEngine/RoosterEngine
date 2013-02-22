@@ -27,6 +27,7 @@ public class Testing extends Context implements ActionHandler {
     private Color bgColor = Color.WHITE;
     private Random rand = new Random(0);
     private boolean drawing = true;
+    private boolean attracting = false;
 
     public Testing(GameController controller) {
         super(controller, ContextType.GAME);
@@ -39,11 +40,13 @@ public class Testing extends Context implements ActionHandler {
 //            togglePause();
 //        }
         entities.clear();
-        controller.clearCollisions(this);
+        // TODO each context should have its own world, also clearWorld() should not clear the collision pairs
+        controller.clearWorld(this);
         controller.setCollisionPair(this, CollisionType.BALL, CollisionType.BALL);
         controller.setCollisionPair(this, CollisionType.BALL, CollisionType.DEFAULT);
 
         pointer = new Pointer(new OvalGraphic(10, 10, Color.RED), width / 4, height / 4);
+        pointer.getShape().setMass(1000);
         controller.addEntityToCollisionDetector(this, pointer);
         entities.add(pointer);
         attractMotion = new AttractMotion(pointer.getX(), pointer.getY(),
@@ -116,27 +119,30 @@ public class Testing extends Context implements ActionHandler {
 
     @Override
     public void update(double elapsedTime) {
-//        attractMotion.setDestination(pointer.getX(), pointer.getY());
-//        double k = 0.000001;
-//        double d = 0.001;
-//        double targetD = 300;
-//        for (Entity entity : entities) {
-//            double attractStrength = k / entity.getShape().getMass();
-//            double deltaX = pointer.getX() - entity.getX();
-//            double deltaY = pointer.getY() - entity.getY();
-//            double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
-//            double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
-//            entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
-//        }
+        if (attracting) {
+            attractMotion.setDestination(pointer.getX(), pointer.getY());
+            double k = 0.000001;
+            double d = 0.001;
+            double targetD = 300;
+            for (Entity entity : entities) {
+                double attractStrength = k / entity.getShape().getMass();
+                double deltaX = pointer.getX() - entity.getX();
+                double deltaY = pointer.getY() - entity.getY();
+                double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
+                double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
+                entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
+            }
+        }
 
-//        double d = 0.999;
-//        double g = 0.001 * elapsedTime;
-//        for (Entity entity : entities) {
-////            if (!(entity instanceof BoxEntity)) {
-////                entity.addVelocity(0, g);
-////            }
-//            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
-//        }
+        double d = 0.99;
+        double g = 0.001 * elapsedTime;
+        for (int i = 0; i < entities.size(); i++) {
+            Entity entity = entities.get(i);
+//            if (!(entity instanceof BoxEntity)) {
+//                entity.addVelocity(0, g);
+//            }
+            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
+        }
     }
 
     @Override
@@ -185,6 +191,7 @@ public class Testing extends Context implements ActionHandler {
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_UP, Action.ZOOM_OUT);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_DOWN, Action.ZOOM_IN);
+        controller.setContextBinding(contextType, InputCode.MOUSE_RIGHT_BUTTON, Action.ATTRACT);
     }
 
     @Override
@@ -213,14 +220,29 @@ public class Testing extends Context implements ActionHandler {
                 controller.exitContext();
                 break;
             case MOUSE_CLICK:
-                double ballSize = 2;
+                int ballSize = 2;
                 double radius = 1;
-                for (int i = 0; i < 100; i++) {
+                int xOffset = width / 2;
+                int yOffset = 50;
+//                int width = 50;
+//                int height = 1;
+                int diameter = ballSize * 2 + 5;
+
+//                for (int y = 0; y < height; y++) {
+////                    xOffset += (Math.random() - 0.5) * 1;
+//                    for (int x = 0; x < width; x++) {
+//                        addBall((x * diameter) + xOffset, (y * diameter) + yOffset, ballSize);
+//                    }
+//                }
+                for (int i = 0; i < 200; i++) {
                     addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
                             height * 0.5 + (rand.nextDouble() - 0.5) * (height - 100), ballSize);
 //                    addBall(pointer.getX() + (rand.nextDouble() - 0.5) * radius,
 //                            pointer.getY() + (rand.nextDouble() - 0.5) * radius, 2);
                 }
+                break;
+            case ATTRACT:
+                attracting = !attracting;
                 break;
         }
     }
@@ -228,6 +250,7 @@ public class Testing extends Context implements ActionHandler {
     private void addBall(double x, double y, double radius) {
         double speed = 0.1;
         CircleEntity entity = new CircleEntity(x, y, radius);
+//        entity.setVelocity(0, 1);
         entity.setVelocity((Math.random() - 0.5) * speed, (Math.random() - 0.5) * speed);
         entity.getShape().setMaterial(Material.createMaterial(0, 1));
         entity.getShape().setCollisionType(CollisionType.BALL);

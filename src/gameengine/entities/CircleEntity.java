@@ -50,4 +50,8 @@ public class CircleEntity extends Entity {
         g.setColor(color);
         g.fillOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
     }
+
+    public void setColor(Color color) {
+        this.color = color;
+    }
 }

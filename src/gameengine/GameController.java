@@ -372,7 +372,7 @@ public class GameController implements MouseMovedHandler {
     }
 
     public void drawPartitions(Graphics2D g, Color color) {
-        activeWorld.draw(g, color);
+        activeWorld.drawTree(g, color);
     }
 
     public void draw() {

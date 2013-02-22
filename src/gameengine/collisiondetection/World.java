@@ -1,6 +1,5 @@
 package gameengine.collisiondetection;
 
-import gameengine.collisiondetection.shapes.Shape;
 import gameengine.collisiondetection.tree.SpatialTree;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
@@ -58,27 +57,10 @@ public class World {
         tree.tryResize();
         updateEntities(elapsedTime);
         context.update(elapsedTime);
-////
-//        double timeLeft = elapsedTime;
-//        updateMotions(elapsedTime);
-//        Collision collision = new Collision();
-//        while (timeLeft > 0 && !context.isPaused()) {
-//            tree.ensureEntitiesAreContained(timeLeft);
-//            collision.setCollisionTime(timeLeft);
-//            tree.calcCollision(collisionGroups, collision);
-//            double collisionTime = collision.getCollisionTime();
-//            double updateTime = Math.min(collisionTime, timeLeft);
-//            updatePositions(updateTime);
-//            gameTime += updateTime;
-//            if (collisionTime != Shape.NO_COLLISION && collisionTime < timeLeft) {
-//                double collisionRate = getCollisionRate();
-//                context.handleCollision(collision, collisionRate);
-//            }
-//            timeLeft -= updateTime;
-//        }
-//        tree.tryResize();
-//        updateEntities(elapsedTime);
-//        context.update(elapsedTime);
+    }
+
+    public void drawTree(Graphics2D g, Color color) {
+        tree.draw(g, color);
     }
 
     private void updateEntities(double elapsedTime) {
@@ -90,12 +72,6 @@ public class World {
     private void updateMotions(double elapsedTime) {
         for (Entity entity : entities) {
             entity.updateMotion(elapsedTime);
-        }
-    }
-
-    private void updatePositions(double updateTime) {
-        for (Entity entity : entities) {
-            entity.updatePosition(updateTime);
         }
     }
 
@@ -113,9 +89,5 @@ public class World {
             collisionRate = collisionTimes.length / dt;
         }
         return collisionRate;
-    }
-
-    public void draw(Graphics2D g, Color color) {
-        tree.draw(g, color);
     }
 }

@@ -7,7 +7,8 @@ import gameengine.entities.Entity;
 import java.awt.*;
 
 /**
- * documentation
+ * The Leaf node of the spatial tree data structure
+ * <p/>
  * User: davidrusu
  * Date: 15/01/13
  * Time: 9:27 PM
@@ -17,7 +18,6 @@ public class Leaf extends Tree {
     private static final int EXPANSION_FACTOR = 2;
     private static Leaf[] recycledLeafs = new Leaf[INITIAL_NUM_LEAFS];
     private static int numRecycledLeafs = INITIAL_NUM_LEAFS;
-
     static {
         for (int i = 0; i < INITIAL_NUM_LEAFS; i++) {
             recycledLeafs[i] = new Leaf();
@@ -28,7 +28,7 @@ public class Leaf extends Tree {
         super(parent, centerX, centerY, halfLength, list);
     }
 
-    public Leaf(CollisionList list) {
+    private Leaf(CollisionList list) {
         super(list);
     }
 
@@ -122,13 +122,6 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void updateEntities(double elapsedTime) {
-        for (int i = 0; i < entityListPos; i++) {
-            entities[i].update(elapsedTime);
-        }
-    }
-
-    @Override
     public void updateAllEntityPositions(double currentTime) {
         updateEntityPositions(currentTime);
     }
@@ -146,13 +139,6 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void updateEntityMotions(double elapsedTime) {
-        for (int i = 0; i < entityListPos; i++) {
-            entities[i].updateMotion(elapsedTime);
-        }
-    }
-
-    @Override
     public void initCalcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
         timeInTree = 0;
         calcCollision(collisionGroups, temp, timeToCheck, list);
@@ -161,10 +147,11 @@ public class Leaf extends Tree {
     @Override
     public void initCheckCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
                                              double timeToCheck, Entity entity) {
+        timeInTree = 0;
         Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
             Shape b = entities[i].getShape();
-            collideShapes(collisionGroups, temp, result, timeToCheck, 0, a, b);
+            collideShapes(collisionGroups, temp, result, timeToCheck, a, b);
         }
     }
 
@@ -175,26 +162,8 @@ public class Leaf extends Tree {
         Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
             Shape b = entities[i].getShape();
-            collideShapes(collisionGroups, temp, result, timeToCheck, timeInTree, a, b);
+            collideShapes(collisionGroups, temp, result, timeToCheck, a, b);
         }
-    }
-
-    @Override
-    public void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
-        assert node.getCollisionTime() == Shape.NO_COLLISION;
-        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
-
-        for (int i = 0; i < entityListPos; i++) {
-            Shape a = entities[i].getShape();
-            for (int j = i + 1; j < entityListPos; j++) {
-                Shape b = entities[j].getShape();
-                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, timeInTree, a, b);
-            }
-        }
-
-        list.collisionUpdated(this);
-
-        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
     }
 
     @Override
@@ -246,5 +215,22 @@ public class Leaf extends Tree {
             }
         }
         return count;
+    }
+
+    private void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
+        assert node.getCollisionTime() == Shape.NO_COLLISION;
+        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
+
+        for (int i = 0; i < entityListPos; i++) {
+            Shape a = entities[i].getShape();
+            for (int j = i + 1; j < entityListPos; j++) {
+                Shape b = entities[j].getShape();
+                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, a, b);
+            }
+        }
+
+        list.collisionUpdated(this);
+
+        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
     }
 }

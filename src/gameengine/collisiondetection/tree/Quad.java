@@ -8,27 +8,25 @@ import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 /**
- * documentation
+ * A node in the spatial tree that has four chilfr
  * User: davidrusu
  * Date: 15/01/13
  * Time: 9:30 PM
  */
 public class Quad extends Tree implements Parent {
-    private Tree topLeft = null;
-    private Tree topRight = null;
-    private Tree bottomLeft = null;
-    private Tree bottomRight = null;
-
     private static final int INITIAL_NUM_QUADS = Leaf.INITIAL_NUM_LEAFS / 4 + 1;
     private static final int EXPANSION_FACTOR = 2;
     private static Quad[] recycledQuads = new Quad[INITIAL_NUM_QUADS];
     private static int numRecycledQuads = INITIAL_NUM_QUADS;
-
     static {
         for (int i = 0; i < INITIAL_NUM_QUADS; i++) {
             recycledQuads[i] = new Quad();
         }
     }
+    private Tree topLeft = null;
+    private Tree topRight = null;
+    private Tree bottomLeft = null;
+    private Tree bottomRight = null;
 
     private Quad(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
         super(parent, centerX, centerY, halfLength, list);
@@ -69,65 +67,10 @@ public class Quad extends Tree implements Parent {
         return quad;
     }
 
-    private void initQuads(Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
-        this.topLeft = topLeft;
-        topLeft.parent = this;
-        this.topRight = topRight;
-        topRight.parent = this;
-        this.bottomLeft = bottomLeft;
-        bottomLeft.parent = this;
-        this.bottomRight = bottomRight;
-        bottomRight.parent = this;
-        entityCount = topLeft.entityCount + topRight.entityCount + bottomLeft.entityCount + bottomRight.entityCount;
-    }
-
-    private void initQuads(CollisionList list) {
-        double quadLength = getHalfLength() * 0.5;
-        double left = getCenterX() - quadLength;
-        double right = getCenterX() + quadLength;
-        double top = getCenterY() - quadLength;
-        double bottom = getCenterY() + quadLength;
-
-        topLeft = Leaf.createInstance(this, left, top, quadLength, list);
-        topRight = Leaf.createInstance(this, right, top, quadLength, list);
-        bottomLeft = Leaf.createInstance(this, left, bottom, quadLength, list);
-        bottomRight = Leaf.createInstance(this, right, bottom, quadLength, list);
-    }
-
     @Override
     public void addEntity(Entity entity) {
         insertEntity(entity);
         entityCount++;
-    }
-
-    private void insertEntity(Entity entity) {
-        assert checkEntities();
-        assert entity != null;
-
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMaxX() < getCenterX()) {
-            insertVertically(entity, topLeft, bottomLeft);
-        } else if (shape.getBoundingMinX() > getCenterX()) {
-            insertVertically(entity, topRight, bottomRight);
-        } else {
-            addToThis(entity);
-        }
-        assert checkEntities();
-    }
-
-    private void insertVertically(Entity entity, Tree top, Tree bottom) {
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMaxY() < getCenterY()) {
-            top.addEntity(entity);
-        } else if (shape.getBoundingMinY() > getCenterY()) {
-            bottom.addEntity(entity);
-        } else {
-            addToThis(entity);
-        }
-    }
-
-    private void addToThis(Entity entity) {
-        addEntityToList(entity);
     }
 
     @Override
@@ -167,19 +110,6 @@ public class Quad extends Tree implements Parent {
         assert isEntityCountCorrect();
     }
 
-    private int ensureVerticallyContained(int index, Entity entity, double minY, double maxY, Tree bottom, Tree top) {
-        if (minY > getCenterY()) {
-            removeEntityFromList(index);
-            bottom.addEntity(entity);
-        } else if (maxY < getCenterY()) {
-            removeEntityFromList(index);
-            top.addEntity(entity);
-        } else {
-            return index + 1;
-        }
-        return index;
-    }
-
     @Override
     public Tree tryResize(CollisionList list) {
         assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
@@ -197,17 +127,6 @@ public class Quad extends Tree implements Parent {
 
         assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
         return this;
-    }
-
-    @Override
-    public void updateEntities(double elapsedTime) {
-        for (int i = 0; i < entityListPos; i++) {
-            entities[i].update(elapsedTime);
-        }
-        topLeft.updateEntities(elapsedTime);
-        topRight.updateEntities(elapsedTime);
-        bottomLeft.updateEntities(elapsedTime);
-        bottomRight.updateEntities(elapsedTime);
     }
 
     @Override
@@ -232,17 +151,6 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
-    public void updateEntityMotions(double elapsedTime) {
-        for (int i = 0; i < entityListPos; i++) {
-            entities[i].updateMotion(elapsedTime);
-        }
-        topLeft.updateEntityMotions(elapsedTime);
-        topRight.updateEntityMotions(elapsedTime);
-        bottomLeft.updateEntityMotions(elapsedTime);
-        bottomRight.updateEntityMotions(elapsedTime);
-    }
-
-    @Override
     public void initCalcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
         assert node.getCollision().getCollisionTime() == Shape.NO_COLLISION;
         assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
@@ -253,7 +161,7 @@ public class Quad extends Tree implements Parent {
             Shape a = entity.getShape();
             for (int j = i + 1; j < entityListPos; j++) {
                 Shape b = entities[j].getShape();
-                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, timeInTree, a, b);
+                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, a, b);
             }
             initCheckCollisionInSubTrees(collisionGroups, temp, node.getCollision(), timeToCheck, entity);
         }
@@ -267,35 +175,14 @@ public class Quad extends Tree implements Parent {
         assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
     }
 
-    private void initCheckCollisionInSubTrees(int[] collisionGroups, Collision temp, Collision result,
-                                              double timeToCheck, Entity entity) {
-        initCheckHalfTree(collisionGroups, temp, result, timeToCheck, entity, topLeft, bottomLeft);
-        initCheckHalfTree(collisionGroups, temp, result, timeToCheck, entity, topRight, bottomRight);
-    }
-
-    private void initCheckHalfTree(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
-                                   Entity entity, Tree top, Tree bottom) {
-        Shape shape = entity.getShape();
-        if (Math.abs(top.getCenterX() - shape.getBoundingCenterX())
-                < shape.getBoundingHalfWidth() + top.getHalfLength()) {
-            if (Math.abs(top.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + top.getHalfLength()) {
-                top.initCheckCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
-            }
-            if (Math.abs(bottom.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + bottom.getHalfLength()) {
-                bottom.initCheckCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
-            }
-        }
-    }
-
     @Override
     public void initCheckCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
-                                         double timeToCheck, Entity entity) {
+                                             double timeToCheck, Entity entity) {
+        timeInTree = 0;
         Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
             Shape b = entities[i].getShape();
-            collideShapes(collisionGroups, temp, result, timeToCheck, 0, a, b);
+            collideShapes(collisionGroups, temp, result, timeToCheck, a, b);
         }
         initCheckCollisionInSubTrees(collisionGroups, temp, result, timeToCheck, entity);
     }
@@ -307,59 +194,9 @@ public class Quad extends Tree implements Parent {
         Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
             Shape b = entities[i].getShape();
-            collideShapes(collisionGroups, temp, result, timeToCheck, timeInTree, a, b);
+            collideShapes(collisionGroups, temp, result, timeToCheck, a, b);
         }
         checkCollisionInSubTrees(collisionGroups, temp, result, timeToCheck, entity);
-    }
-
-    private void checkCollisionInSubTrees(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
-                                          Entity entity) {
-        checkHalfTree(collisionGroups, temp, result, timeToCheck, entity, topLeft, bottomLeft);
-        checkHalfTree(collisionGroups, temp, result, timeToCheck, entity, topRight, bottomRight);
-    }
-
-    private void checkHalfTree(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
-                               Entity entity, Tree top, Tree bottom) {
-        Shape shape = entity.getShape();
-        if (Math.abs(top.getCenterX() - shape.getBoundingCenterX())
-                < shape.getBoundingHalfWidth() + top.getHalfLength()) {
-            if (Math.abs(top.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + top.getHalfLength()) {
-                top.checkCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
-            }
-            if (Math.abs(bottom.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + bottom.getHalfLength()) {
-                bottom.checkCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
-            }
-        }
-    }
-
-    @Override
-    public void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
-        assert node.getCollision().getCollisionTime() == Shape.NO_COLLISION;
-        assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
-
-        calcCollisionsAtLevel(collisionGroups, temp, timeToCheck, list);
-
-        topLeft.calcCollision(collisionGroups, temp, timeToCheck, list);
-        topRight.calcCollision(collisionGroups, temp, timeToCheck, list);
-        bottomLeft.calcCollision(collisionGroups, temp, timeToCheck, list);
-        bottomRight.calcCollision(collisionGroups, temp, timeToCheck, list);
-
-        assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
-    }
-
-    private void calcCollisionsAtLevel(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
-        for (int i = 0; i < entityListPos; i++) {
-            Entity entity = entities[i];
-            Shape a = entity.getShape();
-            for (int j = i + 1; j < entityListPos; j++) {
-                Shape b = entities[j].getShape();
-                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, timeInTree, a, b);
-            }
-            checkCollisionInSubTrees(collisionGroups, temp, node.getCollision(), timeToCheck, entity);
-        }
-        list.collisionUpdated(this);
     }
 
     @Override
@@ -398,7 +235,7 @@ public class Quad extends Tree implements Parent {
                                              CollisionList list) {
         assert isEntityCountCorrect();
 
-        //entitycount has already been decremented by the removeFromWorld method
+        // entityCount has already been decremented by the removeFromWorld method
         Collision collision = node.getCollision();
         if (collision.getA() == entity || collision.getB() == entity) {
             updateEntityPositions(entity.getContainingTree().timeInTree);
@@ -443,20 +280,6 @@ public class Quad extends Tree implements Parent {
 //        drawNumEntities(g, Color.BLACK);
     }
 
-    private void drawNumEntities(Graphics2D g, Color color) {
-        g.setColor(color);
-        int offset = 10;
-        int size = offset * 2;
-        g.fillRect((int) getCenterX() - offset, (int) getCenterY() - offset, size, size);
-        g.setColor(Color.WHITE);
-
-        String string = "" + entityCount;
-        FontMetrics metrics = g.getFontMetrics();
-        Rectangle2D rect = metrics.getStringBounds(string, g);
-
-        g.drawString(string, (int) (getCenterX() - rect.getWidth() / 2), (int) (getCenterY()));
-    }
-
     @Override
     public int getRealEntityCount() {
         int count = 0;
@@ -492,5 +315,144 @@ public class Quad extends Tree implements Parent {
         } else {
             insertEntity(entity);
         }
+    }
+
+    private void drawNumEntities(Graphics2D g, Color color) {
+        g.setColor(color);
+        int offset = 10;
+        int size = offset * 2;
+        g.fillRect((int) getCenterX() - offset, (int) getCenterY() - offset, size, size);
+        g.setColor(Color.WHITE);
+
+        String string = "" + entityCount;
+        FontMetrics metrics = g.getFontMetrics();
+        Rectangle2D rect = metrics.getStringBounds(string, g);
+
+        g.drawString(string, (int) (getCenterX() - rect.getWidth() / 2), (int) (getCenterY()));
+    }
+
+    private void calcCollisionsAtLevel(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
+        for (int i = 0; i < entityListPos; i++) {
+            Entity entity = entities[i];
+            Shape a = entity.getShape();
+            for (int j = i + 1; j < entityListPos; j++) {
+                Shape b = entities[j].getShape();
+                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, a, b);
+            }
+            checkCollisionInSubTrees(collisionGroups, temp, node.getCollision(), timeToCheck, entity);
+        }
+        list.collisionUpdated(this);
+    }
+
+    private void checkHalfTree(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
+                               Entity entity, Tree top, Tree bottom) {
+        Shape shape = entity.getShape();
+        if (Math.abs(top.getCenterX() - shape.getBoundingCenterX())
+                < shape.getBoundingHalfWidth() + top.getHalfLength()) {
+            if (Math.abs(top.getCenterY() - shape.getBoundingCenterY())
+                    < shape.getBoundingHalfHeight() + top.getHalfLength()) {
+                top.checkCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
+            }
+            if (Math.abs(bottom.getCenterY() - shape.getBoundingCenterY())
+                    < shape.getBoundingHalfHeight() + bottom.getHalfLength()) {
+                bottom.checkCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
+            }
+        }
+    }
+
+    private void checkCollisionInSubTrees(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
+                                          Entity entity) {
+        checkHalfTree(collisionGroups, temp, result, timeToCheck, entity, topLeft, bottomLeft);
+        checkHalfTree(collisionGroups, temp, result, timeToCheck, entity, topRight, bottomRight);
+    }
+
+    private void initCheckCollisionInSubTrees(int[] collisionGroups, Collision temp, Collision result,
+                                              double timeToCheck, Entity entity) {
+        initCheckHalfTree(collisionGroups, temp, result, timeToCheck, entity, topLeft, bottomLeft);
+        initCheckHalfTree(collisionGroups, temp, result, timeToCheck, entity, topRight, bottomRight);
+    }
+
+    private void initCheckHalfTree(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
+                                   Entity entity, Tree top, Tree bottom) {
+        Shape shape = entity.getShape();
+        if (Math.abs(top.getCenterX() - shape.getBoundingCenterX())
+                < shape.getBoundingHalfWidth() + top.getHalfLength()) {
+            if (Math.abs(top.getCenterY() - shape.getBoundingCenterY())
+                    < shape.getBoundingHalfHeight() + top.getHalfLength()) {
+                top.initCheckCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
+            }
+            if (Math.abs(bottom.getCenterY() - shape.getBoundingCenterY())
+                    < shape.getBoundingHalfHeight() + bottom.getHalfLength()) {
+                bottom.initCheckCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
+            }
+        }
+    }
+
+    private int ensureVerticallyContained(int index, Entity entity, double minY, double maxY, Tree bottom, Tree top) {
+        if (minY > getCenterY()) {
+            removeEntityFromList(index);
+            bottom.addEntity(entity);
+        } else if (maxY < getCenterY()) {
+            removeEntityFromList(index);
+            top.addEntity(entity);
+        } else {
+            return index + 1;
+        }
+        return index;
+    }
+
+    private void addToThis(Entity entity) {
+        addEntityToList(entity);
+    }
+
+    private void insertVertically(Entity entity, Tree top, Tree bottom) {
+        Shape shape = entity.getShape();
+        if (shape.getBoundingMaxY() < getCenterY()) {
+            top.addEntity(entity);
+        } else if (shape.getBoundingMinY() > getCenterY()) {
+            bottom.addEntity(entity);
+        } else {
+            addToThis(entity);
+        }
+    }
+
+    private void insertEntity(Entity entity) {
+        assert checkEntities();
+        assert entity != null;
+
+        Shape shape = entity.getShape();
+        if (shape.getBoundingMaxX() < getCenterX()) {
+            insertVertically(entity, topLeft, bottomLeft);
+        } else if (shape.getBoundingMinX() > getCenterX()) {
+            insertVertically(entity, topRight, bottomRight);
+        } else {
+            addToThis(entity);
+        }
+        assert checkEntities();
+    }
+
+    private void initQuads(Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
+        this.topLeft = topLeft;
+        topLeft.parent = this;
+        this.topRight = topRight;
+        topRight.parent = this;
+        this.bottomLeft = bottomLeft;
+        bottomLeft.parent = this;
+        this.bottomRight = bottomRight;
+        bottomRight.parent = this;
+        entityCount = topLeft.entityCount + topRight.entityCount + bottomLeft.entityCount + bottomRight.entityCount;
+    }
+
+    private void initQuads(CollisionList list) {
+        double quadLength = getHalfLength() * 0.5;
+        double left = getCenterX() - quadLength;
+        double right = getCenterX() + quadLength;
+        double top = getCenterY() - quadLength;
+        double bottom = getCenterY() + quadLength;
+
+        topLeft = Leaf.createInstance(this, left, top, quadLength, list);
+        topRight = Leaf.createInstance(this, right, top, quadLength, list);
+        bottomLeft = Leaf.createInstance(this, left, bottom, quadLength, list);
+        bottomRight = Leaf.createInstance(this, right, bottom, quadLength, list);
     }
 }

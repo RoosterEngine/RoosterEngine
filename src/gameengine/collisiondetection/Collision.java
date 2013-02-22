@@ -5,6 +5,8 @@ import gameengine.entities.Entity;
 import gameengine.math.Vector2D;
 
 /**
+ * Stores collision data
+ *
  * @author davidrusu
  */
 public class Collision {

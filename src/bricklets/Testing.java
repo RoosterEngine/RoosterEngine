@@ -24,7 +24,6 @@ public class Testing extends Context implements ActionHandler {
     private Pointer pointer;
     private AttractMotion attractMotion;
     private double scale = 1;
-    private Color bgColor = Color.WHITE;
     private Random rand = new Random(0);
     private boolean drawing = true;
     private boolean attracting = false;
@@ -35,10 +34,6 @@ public class Testing extends Context implements ActionHandler {
     }
 
     public void init() {
-//        scale = 1;
-//        if (!isPaused()) {
-//            togglePause();
-//        }
         entities.clear();
         // TODO each context should have its own world, also clearWorld() should not clear the collision pairs
         controller.clearWorld(this);
@@ -53,34 +48,6 @@ public class Testing extends Context implements ActionHandler {
                 0.00001, 0.1, 1);
 
         initBounding();
-
-//        BoxEntity box = new BoxEntity(width / 2, height / 2, 25, height * 0.8);
-//        box.getShape().setMass(Double.POSITIVE_INFINITY);
-//        box.getShape().setMaterial(Material.createMaterial(0, 1));
-//        box.getShape().setCollisionType(CollisionType.BALL);
-//        entities.add(box);
-//        controller.addEntityToCollisionDetector(this, box);
-
-//        double radius = 10;
-//        addBall(box.getX() - box.getWidth() / 2 - radius * 1.2, box.getY(), radius);
-//        box = new BoxEntity(width / 4, height / 2, 100, 50);
-//        boxMotion = new AttractMotion(width / 2, height / 2, 0.0001, 0.3, box.getShape().getMass());
-//        box.setMotion(boxMotion);
-//        entities.add(box);
-//
-//        Material material = Material.createMaterial(0.1, 0.001);
-//        box.getShape().setMaterial(material);
-//        box.getShape().setCollisionType(CollisionType.DEFAULT);
-//        controller.addEntityToCollisionDetector(this, box);
-//
-//        BoxEntity box2 = new BoxEntity(width - width / 4, height / 2, 100, 50);
-//        box2.getShape().setMass(10000);
-//        entities.add(box2);
-//
-//        box2.getShape().setMaterial(material);
-//        box2.getShape().setCollisionType(CollisionType.DEFAULT);
-//        controller.addEntityToCollisionDetector(this, box2);
-
         setupInput();
     }
 
@@ -119,30 +86,30 @@ public class Testing extends Context implements ActionHandler {
 
     @Override
     public void update(double elapsedTime) {
-        if (attracting) {
-            attractMotion.setDestination(pointer.getX(), pointer.getY());
-            double k = 0.000001;
-            double d = 0.001;
-            double targetD = 300;
-            for (Entity entity : entities) {
-                double attractStrength = k / entity.getShape().getMass();
-                double deltaX = pointer.getX() - entity.getX();
-                double deltaY = pointer.getY() - entity.getY();
-                double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
-                double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
-                entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
-            }
-        }
-
-        double d = 0.99;
-        double g = 0.001 * elapsedTime;
-        for (int i = 0; i < entities.size(); i++) {
-            Entity entity = entities.get(i);
-//            if (!(entity instanceof BoxEntity)) {
-//                entity.addVelocity(0, g);
+//        if (attracting) {
+//            attractMotion.setDestination(pointer.getX(), pointer.getY());
+//            double k = 0.000001;
+//            double d = 0.001;
+//            double targetD = 300;
+//            for (Entity entity : entities) {
+//                double attractStrength = k / entity.getShape().getMass();
+//                double deltaX = pointer.getX() - entity.getX();
+//                double deltaY = pointer.getY() - entity.getY();
+//                double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
+//                double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
+//                entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
 //            }
-            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
-        }
+//        }
+//
+//        double d = 0.99;
+//        double g = 0.001 * elapsedTime;
+//        for (int i = 0; i < entities.size(); i++) {
+//            Entity entity = entities.get(i);
+////            if (!(entity instanceof BoxEntity)) {
+////                entity.addVelocity(0, g);
+////            }
+//            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
+//        }
     }
 
     @Override
@@ -180,8 +147,6 @@ public class Testing extends Context implements ActionHandler {
     @Override
     public void handleCollision(Collision collision) {
         Physics.performCollision(collision);
-//        double bright = 35;
-//        bgColor = new Color((int) (Math.random() * bright), (int) (Math.random() * bright), (int) (Math.random() * bright));
     }
 
     private void setupInput() {
@@ -256,7 +221,5 @@ public class Testing extends Context implements ActionHandler {
         entity.getShape().setCollisionType(CollisionType.BALL);
         controller.addEntityToCollisionDetector(this, entity);
         entities.add(entity);
-//        entity.setMotion(attractMotion);
-//        entity.setVelocity(5, 0);
     }
 }

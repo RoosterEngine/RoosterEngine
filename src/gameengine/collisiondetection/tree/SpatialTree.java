@@ -8,7 +8,8 @@ import gameengine.entities.Entity;
 import java.awt.*;
 
 /**
- * documentation
+ * The root of the spatial tree, used to access the spatial tree
+ *
  * User: davidrusu
  * Date: 15/01/13
  * Time: 9:31 PM
@@ -34,15 +35,6 @@ public class SpatialTree implements Parent {
         } else {
             tree.addEntity(entity);
         }
-    }
-
-    private boolean isNotContainedInTree(Entity entity) {
-        Shape shape = entity.getShape();
-        return !isContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth()) || !isContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
-    }
-
-    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
-        return Math.abs(treePosition - shapePosition) < tree.getHalfLength() - shapeHalfLength;
     }
 
     public void clear() {
@@ -120,10 +112,6 @@ public class SpatialTree implements Parent {
         tree.updateAllEntityPositions(elapsedTime);
         assert list.doAllNodesHaveNoCollision();
         assert tree.isEntityCountCorrect();
-
-//        tree.updateEntityPositions(timeLeft);
-
-        assert tree.isEntityCountCorrect();
     }
 
     @Override
@@ -141,20 +129,6 @@ public class SpatialTree implements Parent {
         tree = tree.tryResize(list);
 
         assert tree.isEntityCountCorrect();
-    }
-
-    private void grow(double centerX, double centerY, double halfLength,
-                      Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
-        double quartLength = halfLength / 2;
-        double left = centerX - quartLength;
-        double right = centerX + quartLength;
-        double top = centerY - quartLength;
-        double bottom = centerY + quartLength;
-        topLeft.resize(left, top, quartLength);
-        topRight.resize(right, top, quartLength);
-        bottomLeft.resize(left, bottom, quartLength);
-        bottomRight.resize(right, bottom, quartLength);
-        tree = Quad.createInstance(this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight, list);
     }
 
     @Override
@@ -203,5 +177,28 @@ public class SpatialTree implements Parent {
 
     public void draw(Graphics2D g, Color color) {
         tree.draw(g, color);
+    }
+
+    private void grow(double centerX, double centerY, double halfLength,
+                      Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
+        double quartLength = halfLength / 2;
+        double left = centerX - quartLength;
+        double right = centerX + quartLength;
+        double top = centerY - quartLength;
+        double bottom = centerY + quartLength;
+        topLeft.resize(left, top, quartLength);
+        topRight.resize(right, top, quartLength);
+        bottomLeft.resize(left, bottom, quartLength);
+        bottomRight.resize(right, bottom, quartLength);
+        tree = Quad.createInstance(this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight, list);
+    }
+
+    private boolean isNotContainedInTree(Entity entity) {
+        Shape shape = entity.getShape();
+        return !isContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth()) || !isContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
+    }
+
+    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
+        return Math.abs(treePosition - shapePosition) < tree.getHalfLength() - shapeHalfLength;
     }
 }

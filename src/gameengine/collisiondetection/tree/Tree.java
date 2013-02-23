@@ -271,5 +271,7 @@ public abstract class Tree {
 
     public abstract void recycle();
 
-    public abstract void draw(Graphics2D g, Color color);
+    public abstract void draw(double minX, double maxX, double minY, double maxY, Graphics2D g);
+
+    public abstract void drawTree(Graphics2D g, Color color);
 }

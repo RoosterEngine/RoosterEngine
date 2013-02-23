@@ -391,4 +391,8 @@ public class GameController implements MouseMovedHandler {
     public User getUser() {
         return user;
     }
+
+    public void drawWorld(Context context, Graphics2D g) {
+        activeWorld.draw(context,  g);
+    }
 }

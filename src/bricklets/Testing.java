@@ -17,6 +17,7 @@ import gameengine.motion.motions.AttractMotion;
 import gameengine.physics.Material;
 import gameengine.physics.Physics;
 
+import javax.swing.text.AbstractDocument;
 import java.awt.*;
 import java.util.Random;
 
@@ -27,6 +28,7 @@ public class Testing extends Context implements ActionHandler {
     private Random rand = new Random(0);
     private boolean drawing = true;
     private boolean attracting = false;
+    private boolean panning = false;
 
     public Testing(GameController controller) {
         super(controller, ContextType.GAME);
@@ -40,7 +42,7 @@ public class Testing extends Context implements ActionHandler {
         controller.setCollisionPair(this, CollisionType.BALL, CollisionType.BALL);
         controller.setCollisionPair(this, CollisionType.BALL, CollisionType.DEFAULT);
 
-        pointer = new Pointer(new OvalGraphic(10, 10, Color.RED), width / 4, height / 4);
+        pointer = new Pointer(new OvalGraphic(10, 10, Color.RED), width / 2, height / 2);
         pointer.getShape().setMass(1000);
         controller.addEntityToCollisionDetector(this, pointer);
         entities.add(pointer);
@@ -49,6 +51,8 @@ public class Testing extends Context implements ActionHandler {
 
         initBounding();
         setupInput();
+        viewport.setX(width / 2);
+        viewport.setY(height / 2);
     }
 
     public void initBounding() {
@@ -86,28 +90,31 @@ public class Testing extends Context implements ActionHandler {
 
     @Override
     public void update(double elapsedTime) {
-//        if (attracting) {
-//            attractMotion.setDestination(pointer.getX(), pointer.getY());
-//            double k = 0.000001;
-//            double d = 0.001;
-//            double targetD = 300;
-//            for (Entity entity : entities) {
-//                double attractStrength = k / entity.getShape().getMass();
-//                double deltaX = pointer.getX() - entity.getX();
-//                double deltaY = pointer.getY() - entity.getY();
-//                double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
-//                double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
-//                entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
-//            }
+//        if (panning) {
+//            viewport.setPosition(pointer.getX(), pointer.getY());
 //        }
+        if (attracting) {
+            attractMotion.setDestination(pointer.getX(), pointer.getY());
+            double k = 0.00001;
+            double d = 0.001;
+            double targetD = 300;
+            for (Entity entity : entities) {
+                double attractStrength = k / entity.getShape().getMass();
+                double deltaX = pointer.getX() - entity.getX();
+                double deltaY = pointer.getY() - entity.getY();
+                double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
+                double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
+                entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
+            }
+        }
 //
 //        double d = 0.99;
 //        double g = 0.001 * elapsedTime;
 //        for (int i = 0; i < entities.size(); i++) {
 //            Entity entity = entities.get(i);
-////            if (!(entity instanceof BoxEntity)) {
-////                entity.addVelocity(0, g);
-////            }
+//            if (!(entity instanceof BoxEntity)) {
+//                entity.addVelocity(0, g);
+//            }
 //            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
 //        }
     }
@@ -117,7 +124,10 @@ public class Testing extends Context implements ActionHandler {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
 
+//        controller.drawWorld(this, g);
+
         if (drawing) {
+            double scale = viewport.getScale();
             int shiftX = (int) (width * (1 - scale) / 2);
             int shiftY = (int) (height * (1 - scale) / 2);
             g.translate(shiftX, shiftY);
@@ -126,7 +136,7 @@ public class Testing extends Context implements ActionHandler {
             for (Entity entity : entities) {
                 entity.draw(g);
             }
-//            controller.drawPartitions(g, Color.RED);
+            controller.drawPartitions(g, Color.RED);
 //            for (Entity entity : entities) {
 //                entity.drawLineToPartition(g, new Color(93, 71, 57));
 //            }
@@ -142,6 +152,7 @@ public class Testing extends Context implements ActionHandler {
         g.drawString("fps: " + controller.getFrameRate(), 25, 25);
         g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
         g.drawString("entities: " + entities.size(), 25, 75);
+        g.drawString("scale: " + viewport.getScale(), 25, 100);
     }
 
     @Override
@@ -156,6 +167,7 @@ public class Testing extends Context implements ActionHandler {
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_UP, Action.ZOOM_OUT);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_DOWN, Action.ZOOM_IN);
+        controller.setContextBinding(contextType, InputCode.KEY_SHIFT, Action.PAN);
         controller.setContextBinding(contextType, InputCode.MOUSE_RIGHT_BUTTON, Action.ATTRACT);
     }
 
@@ -168,10 +180,14 @@ public class Testing extends Context implements ActionHandler {
             case MOUSE_CLICK:
                 break;
             case ZOOM_IN:
-                scale *= 1 - scaleAmount;
+                viewport.scaleScale(1 - scaleAmount);
                 break;
             case ZOOM_OUT:
-                scale *= 1 + scaleAmount;
+                viewport.scaleScale(1 + scaleAmount);
+                break;
+            case PAN:
+                panning = true;
+                break;
         }
     }
 
@@ -186,20 +202,24 @@ public class Testing extends Context implements ActionHandler {
                 break;
             case MOUSE_CLICK:
                 int ballSize = 2;
-                double radius = 1;
-                int xOffset = width / 2;
-                int yOffset = 50;
-//                int width = 50;
+//                double radius = 1;
+//                int xOffset = width / 6;
+//                int yOffset = 50;
+//                int width = 1;
 //                int height = 1;
-                int diameter = ballSize * 2 + 5;
-
-//                for (int y = 0; y < height; y++) {
-////                    xOffset += (Math.random() - 0.5) * 1;
-//                    for (int x = 0; x < width; x++) {
+//                int diameter = ballSize * 2 + 10;
+//                int rows = 1;
+//                for (int x = 0; x < width; x++) {
+//                    if (x % 2 == 0) {
+//                        rows = x / 2;
+//                    } else {
+//                        rows = 1;
+//                    }
+//                    for (int y = 0; y < height; y++) {
 //                        addBall((x * diameter) + xOffset, (y * diameter) + yOffset, ballSize);
 //                    }
 //                }
-                for (int i = 0; i < 200; i++) {
+                for (int i = 0; i < 100; i++) {
                     addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
                             height * 0.5 + (rand.nextDouble() - 0.5) * (height - 100), ballSize);
 //                    addBall(pointer.getX() + (rand.nextDouble() - 0.5) * radius,
@@ -209,12 +229,16 @@ public class Testing extends Context implements ActionHandler {
             case ATTRACT:
                 attracting = !attracting;
                 break;
+            case PAN:
+                panning = false;
+                break;
         }
     }
 
     private void addBall(double x, double y, double radius) {
         double speed = 0.1;
         CircleEntity entity = new CircleEntity(x, y, radius);
+//        entity.setColor(new Color((float)Math.random(), (float)Math.random(), (float)Math.random()));
 //        entity.setVelocity(0, 1);
         entity.setVelocity((Math.random() - 0.5) * speed, (Math.random() - 0.5) * speed);
         entity.getShape().setMaterial(Material.createMaterial(0, 1));

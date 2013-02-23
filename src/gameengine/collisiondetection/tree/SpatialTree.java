@@ -68,12 +68,13 @@ public class SpatialTree implements Parent {
         Collision collision = list.getNextCollision();
         double timeToUpdate = collision.getCollisionTime();
         while (timeToUpdate < timeLeft) {
+            currentTime = collision.getCollisionTime();
+
             Entity a = collision.getA();
             Entity b = collision.getB();
             a.getContainingTree().updateEntityPositions(currentTime);
             b.getContainingTree().updateEntityPositions(currentTime);
 
-            currentTime = collision.getCollisionTime();
             Parent aParent = a.getContainingTree().getParent();
             Parent bParent = b.getContainingTree().getParent();
             context.handleCollision(collision);
@@ -132,6 +133,10 @@ public class SpatialTree implements Parent {
     }
 
     @Override
+    public void childEntityUpdated(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity, CollisionList list) {
+    }
+
+    @Override
     public void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
                                  CollisionList list) {
         relocate(entity);
@@ -175,8 +180,12 @@ public class SpatialTree implements Parent {
         tree.addEntity(entity);
     }
 
-    public void draw(Graphics2D g, Color color) {
-        tree.draw(g, color);
+    public void draw(double minX, double maxX, double minY, double maxY, Graphics2D g) {
+        tree.draw(minX, maxX, minY, maxY, g);
+    }
+
+    public void drawTree(Graphics2D g, Color color) {
+        tree.drawTree(g, color);
     }
 
     private void grow(double centerX, double centerY, double halfLength,

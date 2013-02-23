@@ -200,6 +200,19 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
+    public void childEntityUpdated(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity, CollisionList list) {
+        Collision collision = node.getCollision();
+        updateEntityPositions(entity.getContainingTree().timeInTree);
+        Shape a = entity.getShape();
+        for (int i = 0; i < entityListPos; i++) {
+            Shape b = entities[i].getShape();
+            collideShapes(collisionGroups, temp, collision, timeToCheck, a, b);
+        }
+        list.collisionUpdated(this);
+        parent.childEntityUpdated(collisionGroups, temp, timeToCheck, entity, list);
+    }
+
+    @Override
     public void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
                                  CollisionList list) {
         assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method is called";
@@ -212,6 +225,7 @@ public class Quad extends Tree implements Parent {
         }
         if (isContainedInTree(entity)) {
             addAndCheck(collisionGroups, temp, timeToCheck, entity, list);
+            parent.childEntityUpdated(collisionGroups, temp, timeToCheck, entity, list);
         } else {
             parent.relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
         }
@@ -269,11 +283,34 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
-    public void draw(Graphics2D g, Color color) {
-        topLeft.draw(g, color);
-        topRight.draw(g, color);
-        bottomLeft.draw(g, color);
-        bottomRight.draw(g, color);
+    public void draw(double minX, double maxX, double minY, double maxY, Graphics2D g) {
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i].draw(g);
+        }
+        if (minX < topLeft.getMaxX()) {
+            if (minY < topLeft.getMaxY()) {
+                topLeft.draw(minX, maxX, minY, maxY, g);
+            }
+            if (maxY > bottomLeft.getMinY()) {
+                bottomLeft.draw(minX, maxX, minY, maxY, g);
+            }
+        }
+        if (maxX > topRight.getMinX()) {
+            if (minY < topRight.getMaxY()) {
+                topRight.draw(minX, maxX, minY, maxY, g);
+            }
+            if (maxY > bottomRight.getMinY()) {
+                bottomRight.draw(minX, maxX, minY, maxY, g);
+            }
+        }
+    }
+
+    @Override
+    public void drawTree(Graphics2D g, Color color) {
+        topLeft.drawTree(g, color);
+        topRight.drawTree(g, color);
+        bottomLeft.drawTree(g, color);
+        bottomRight.drawTree(g, color);
         g.setColor(color);
         g.drawLine((int) getMinX(), (int) getCenterY(), (int) getMaxX(), (int) getCenterY());
         g.drawLine((int) getCenterX(), (int) getMinY(), (int) getCenterX(), (int) getMaxY());

@@ -12,6 +12,9 @@ import gameengine.entities.Entity;
  */
 public interface Parent {
 
+    void childEntityUpdated(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+                            CollisionList list);
+
     void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
                           CollisionList list);
 

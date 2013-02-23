@@ -180,6 +180,7 @@ public class Leaf extends Tree {
 
         if (isContainedInTree(entity)) {
             addAndCheck(collisionGroups, temp, timeToCheck, entity, list);
+            parent.childEntityUpdated(collisionGroups, temp, timeToCheck, entity, list);
         } else {
             parent.relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
         }
@@ -199,7 +200,17 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void draw(Graphics2D g, Color color) {
+    public void draw(double minX, double maxX, double minY, double maxY, Graphics2D g) {
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i].draw(g);
+        }
+    }
+
+    @Override
+    public void drawTree(Graphics2D g, Color color) {
+        g.setColor(Color.RED);
+        int width = (int) (getHalfLength() * 2);
+        g.drawRect((int)getMinX(), (int)getMinY(), width, width);
     }
 
     @Override

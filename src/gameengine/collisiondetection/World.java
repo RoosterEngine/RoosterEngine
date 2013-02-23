@@ -24,7 +24,6 @@ public class World {
         tree.addEntity(entity);
     }
 
-
     public void setCollisionGroup(CollisionType a, CollisionType b) {
         int x = a.ordinal();
         int y = b.ordinal();
@@ -59,8 +58,29 @@ public class World {
         context.update(elapsedTime);
     }
 
+    public void draw(Context context, Graphics2D g) {
+        Viewport viewport = context.getViewport();
+
+        double halfWidth = context.getWidth() / 2;
+        double halfHeight = context.getHeight() / 2;
+        double scaledHalfWidth = halfWidth / viewport.getScale();
+        double scaledHalfHeight = halfHeight / viewport.getScale();
+        double minX = viewport.getX() - scaledHalfWidth;
+        double maxX = viewport.getX() + scaledHalfWidth;
+        double minY = viewport.getY() - scaledHalfHeight;
+        double maxY = viewport.getY() + scaledHalfHeight;
+
+        g.scale(viewport.getScale(), viewport.getScale());
+        double deltaX = (int)((viewport.getX()) / viewport.getScale() - halfWidth);
+        double deltaY = (int)((viewport.getY()) / viewport.getScale() - halfHeight);
+        g.translate(deltaX, deltaY);
+        tree.draw(minX, maxX, minY, maxY, g);
+        g.translate(-deltaX, -deltaY);
+        g.scale(1 / viewport.getScale(), 1 / viewport.getScale());
+    }
+
     public void drawTree(Graphics2D g, Color color) {
-        tree.draw(g, color);
+        tree.drawTree(g, color);
     }
 
     private void updateEntities(double elapsedTime) {

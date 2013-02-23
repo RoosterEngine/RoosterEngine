@@ -2,6 +2,7 @@ package gameengine.context;
 
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
+import gameengine.collisiondetection.Viewport;
 import gameengine.entities.Entity;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
@@ -28,6 +29,7 @@ public abstract class Context implements ActionHandler, InputHandler {
     protected ArrayList<Entity> entities = new ArrayList<>();
     protected GameController controller;
     protected ContextType contextType;
+    protected Viewport viewport = new Viewport();
     protected int width, height;
 
     /**
@@ -104,6 +106,10 @@ public abstract class Context implements ActionHandler, InputHandler {
 
     public int getHeight() {
         return height;
+    }
+
+    public Viewport getViewport() {
+        return viewport;
     }
 
     /**

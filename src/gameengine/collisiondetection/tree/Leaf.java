@@ -184,8 +184,6 @@ public class Leaf extends Tree {
         } else {
             parent.relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
         }
-
-        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
     }
 
     @Override
@@ -195,8 +193,6 @@ public class Leaf extends Tree {
         addEntityToList(entity);
         entityCount++;
         list.collisionUpdated(this);
-
-        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
     }
 
     @Override
@@ -230,7 +226,6 @@ public class Leaf extends Tree {
 
     private void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
         assert node.getCollisionTime() == Shape.NO_COLLISION;
-        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
 
         for (int i = 0; i < entityListPos; i++) {
             Shape a = entities[i].getShape();
@@ -242,6 +237,5 @@ public class Leaf extends Tree {
 
         list.collisionUpdated(this);
 
-        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
     }
 }

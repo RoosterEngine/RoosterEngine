@@ -63,7 +63,7 @@ public class Testing extends Context implements ActionHandler {
                 circle.getShape().setMass(10);
                 circle.setColor(Color.DARK_GRAY);
             }
-            SpringMotion spring = new SpringMotion(ballX, yOffset, 200, 0.001, 0.2, 1);
+            SpringMotion spring = new SpringMotion(ballX, yOffset, 200, 0.0001, 0.5, 1);
             circle.setMotion(spring);
             controller.addEntityToCollisionDetector(this, circle);
             entities.add(circle);

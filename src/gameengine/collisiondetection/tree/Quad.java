@@ -229,8 +229,6 @@ public class Quad extends Tree implements Parent {
         } else {
             parent.relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
         }
-
-        assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
     }
 
     @Override
@@ -240,8 +238,6 @@ public class Quad extends Tree implements Parent {
         addEntityToList(entity);
         entityCount++;
         list.collisionUpdated(this);
-
-        assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
     }
 
     @Override

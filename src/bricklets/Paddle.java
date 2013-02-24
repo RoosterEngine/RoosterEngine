@@ -18,12 +18,14 @@ public class Paddle extends Entity {
 
 
     public Paddle(double x, double y, double width, double height) {
-        super(x, y, width, height);
+        super(x, y, width, height, createPaddlePolygon(x, y, width, height));
         color = Color.WHITE;
-        createPaddlePolygon(x, y);
     }
 
-    private void createPaddlePolygon(double x, double y) {
+    private static PolygonShape createPaddlePolygon(double x, double y, double width, double height) {
+        double halfWidth = width * 0.5;
+        double halfHeight = height * 0.5;
+
         int numPoints = 20;
         double topToBaseRatio = 0.8;
         double topHeight = height * topToBaseRatio;
@@ -42,7 +44,7 @@ public class Paddle extends Entity {
             yPoints[i] = yPoint;
         }
 
-        setShape(new PolygonShape(this, x, y, xPoints, yPoints, Material.createMaterial(1, 1), 1));
+        return new PolygonShape(x, y, xPoints, yPoints, 1);
     }
 
     @Override

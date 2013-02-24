@@ -12,7 +12,7 @@ public class Material {
     private static MaterialData[][] table;
     private static double growRate = 1.5;
     private static int width = 1, numberOfMaterials = 0;
-    private static Material rubber, steel, ice;
+    private static Material defaultMaterial, rubber, steel, ice;
 
     private int materialNumber;
 
@@ -21,6 +21,7 @@ public class Material {
         for (int i = 0; i < table.length; i++) {
             table[i][0] = new MaterialData(1, 1);
         }
+        defaultMaterial = createMaterial(0, 1);
         rubber = new Material(getNextMaterialNumber());
         steel = new Material(getNextMaterialNumber());
         ice = new Material(getNextMaterialNumber());
@@ -35,6 +36,10 @@ public class Material {
     private Material(int materialNumber) {
         this.materialNumber = materialNumber;
 
+    }
+
+    public static Material getDefaultMaterial() {
+        return defaultMaterial;
     }
 
     public static Material getRubber() {

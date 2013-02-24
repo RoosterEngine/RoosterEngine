@@ -1,7 +1,6 @@
 package gameengine.collisiondetection.shapes;
 
-import gameengine.entities.Entity;
-import gameengine.math.Utils;
+import gameengine.collisiondetection.Collision;
 import gameengine.physics.Material;
 
 import java.awt.*;
@@ -10,14 +9,41 @@ import java.awt.*;
  * @author david
  */
 public class AABBShape extends Shape {
-    private double width, height, halfWidth, halfHeight;
+    private double width, height;
 
-    public AABBShape(Entity parent, double x, double y, double width, double height, Material material, double mass) {
-        super(parent, x, y, Utils.pythagoras(width * 0.5, height * 0.5), width * 0.5, height * 0.5, material, mass);
+    public AABBShape(double x, double y, double width, double height, double mass) {
+        super(x, y, width * 0.5, height * 0.5, mass);
+        init(width, height);
+    }
+
+    public AABBShape(double x, double y, double width, double height, double mass, Material material) {
+        super(x, y, width * 0.5, height * 0.5, mass, material);
+        init(width, height);
+    }
+
+    @Override
+    public void collideWithShape(Shape shape, double maxTime, Collision result) {
+        shape.collideWithAABB(this, maxTime, result);
+    }
+
+    @Override
+    public void collideWithCircle(CircleShape circleShape, double maxTime, Collision result) {
+        Shape.collideCircleAABB(circleShape, this, maxTime, result);
+    }
+
+    @Override
+    public void collideWithAABB(AABBShape aabbShape, double maxTime, Collision result) {
+        Shape.collideAABBAABB(this, aabbShape, maxTime,  result);
+    }
+
+    @Override
+    public void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision result) {
+        Shape.collideAABBPoly(this, polygonShape, maxTime, result);
+    }
+
+    private void init(double width, double height) {
         this.width = width;
         this.height = height;
-        halfWidth = width * 0.5;
-        halfHeight = height * 0.5;
     }
 
     public double getWidth() {
@@ -26,14 +52,6 @@ public class AABBShape extends Shape {
 
     public double getHeight() {
         return height;
-    }
-
-    public double getHalfWidth() {
-        return halfWidth;
-    }
-
-    public double getHalfHeight() {
-        return halfHeight;
     }
 
     @Override

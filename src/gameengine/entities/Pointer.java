@@ -3,7 +3,6 @@ package gameengine.entities;
 import gameengine.collisiondetection.shapes.CircleShape;
 import gameengine.graphics.Graphic;
 import gameengine.motion.motions.MouseMotion;
-import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -16,11 +15,10 @@ import java.awt.*;
  */
 public class Pointer extends Entity {
     Graphic graphic;
-
+    private static double scale = 100;
     public Pointer(Graphic graphic, double startX, double startY) {
-        super(startX, startY, graphic.getWidth(), graphic.getHeight());
-        setShape(new CircleShape(this, startX, startY, graphic.getWidth() / 2, Material.createMaterial(0, 1), 1));
-        setPosition(startX, startY);
+        super(startX, startY, graphic.getWidth(), graphic.getHeight(),
+                new CircleShape(startX, startY, graphic.getWidth() / 2, 1));
         this.graphic = graphic;
         setMotion(new MouseMotion());
     }

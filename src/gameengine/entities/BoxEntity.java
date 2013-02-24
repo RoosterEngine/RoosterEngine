@@ -13,8 +13,7 @@ public class BoxEntity extends Entity {
     protected Color color;
 
     public BoxEntity(double x, double y, double width, double height) {
-        super(x, y, width, height, new AABBShape(null, x, y, width, height, Material.getRubber(), 1));
-        getShape().setParent(this);
+        super(x, y, width, height, new AABBShape(x, y, width, height, 1));
         color = Color.WHITE;
     }
 

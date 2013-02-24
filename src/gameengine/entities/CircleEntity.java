@@ -11,9 +11,7 @@ public class CircleEntity extends Entity {
     private double maxSpeed = 1;
 
     public CircleEntity(double x, double y, double radius) {
-        super(x, y, radius * 2, radius * 2);
-        setShape(new CircleShape(this, x, y, radius,
-                Material.createMaterial(0, 1), 1));
+        super(x, y, radius * 2, radius * 2, new CircleShape(x, y, radius, 1));
         this.radius = radius;
     }
 
@@ -49,6 +47,7 @@ public class CircleEntity extends Entity {
     public void draw(Graphics2D g) {
         g.setColor(color);
         g.fillOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
+//        getShape().drawBoundingBoxes(g, Color.ORANGE);
     }
 
     public void setColor(Color color) {

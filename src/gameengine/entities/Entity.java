@@ -1,13 +1,9 @@
 package gameengine.entities;
 
-import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.shapes.CircleShape;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.collisiondetection.tree.Tree;
-import gameengine.math.Utils;
 import gameengine.motion.motions.Motion;
 import gameengine.motion.motions.NormalMotion;
-import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -16,12 +12,7 @@ public abstract class Entity {
     private Shape shape;
     private Tree containingTree;
     private int indexInTree;
-    protected double x, y, dx, dy, ddx, ddy, width, height, halfWidth, halfHeight;
-
-    public Entity(double x, double y, double width, double height) {
-        this(x, y, width, height, new CircleShape(null, x, y, Utils.pythagoras(width / 2, height / 2), Material.getRubber(), 1));
-        shape.setParent(this);
-    }
+    protected double x, y, dx, dy, width, height, halfWidth, halfHeight;
 
     public Entity(double x, double y, double width, double height, Shape shape) {
         this.x = x;
@@ -32,11 +23,13 @@ public abstract class Entity {
         halfHeight = height / 2;
         motion = new NormalMotion();
         this.shape = shape;
+        shape.setParent(this);
         shape.setParentOffset(x - shape.getX(), y - shape.getY());
     }
 
     public void setShape(Shape shape) {
         this.shape = shape;
+        shape.setParent(this);
     }
 
     public Shape getShape() {
@@ -172,5 +165,9 @@ public abstract class Entity {
     public void setPosition(double x, double y) {
         this.x = x;
         this.y = y;
+    }
+
+    public Motion getMotion() {
+        return motion;
     }
 }

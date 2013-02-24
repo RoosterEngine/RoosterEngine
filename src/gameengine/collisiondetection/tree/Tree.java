@@ -14,7 +14,7 @@ import java.awt.*;
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 15;
+    public static final int GROW_THRESH = 20;
     private static final double EXPAND_RATE = 1.5;
     protected double timeInTree = 0;
     protected Entity[] entities = new Entity[GROW_THRESH + 2];
@@ -105,7 +105,6 @@ public abstract class Tree {
 
     public void entityUpdated(int[] collisionGroups, Collision tempCollision, double timeToCheck, Entity entity,
                               CollisionList list) {
-        assert doesEntitysIndexMatchIndexInTree(entity) : "entity index doesn't match index in the tree " + entity.getIndexInTree();
         assert list.areNodesSorted();
         assert !isEntityInTree(entity);
 

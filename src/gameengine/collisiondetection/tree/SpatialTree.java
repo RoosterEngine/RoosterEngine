@@ -79,6 +79,7 @@ public class SpatialTree implements Parent {
             Parent bParent = b.getContainingTree().getParent();
             context.handleCollision(collision);
 
+            assert ensureNoCollisionAfterHandleCollision(a, b);
             assert tree.isEntityCountCorrect();
 
             timeLeft -= timeToUpdate;
@@ -113,6 +114,11 @@ public class SpatialTree implements Parent {
         tree.updateAllEntityPositions(elapsedTime);
         assert list.doAllNodesHaveNoCollision();
         assert tree.isEntityCountCorrect();
+    }
+
+    private boolean ensureNoCollisionAfterHandleCollision(Entity a, Entity b) {
+        Shape.collideShapes(a.getShape(), b.getShape(), Double.MAX_VALUE, tempCollision);
+        return tempCollision.getCollisionTime() == Shape.NO_COLLISION;
     }
 
     @Override

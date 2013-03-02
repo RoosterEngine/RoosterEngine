@@ -17,7 +17,7 @@ public class World {
     private UnsortedArrayList<WorldEffect> worldEffects = new UnsortedArrayList<>();
 
     public World(double centerX, double centerY, double halfLength) {
-        //test
+        //t
         tree = new SpatialTree(this, centerX, centerY, halfLength);
     }
 

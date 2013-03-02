@@ -15,10 +15,10 @@ import java.awt.*;
  */
 public class Pointer extends Entity {
     Graphic graphic;
-    private static double scale = 100;
+
     public Pointer(Graphic graphic, double startX, double startY) {
         super(startX, startY, graphic.getWidth(), graphic.getHeight(),
-                new CircleShape(startX, startY, graphic.getWidth() / 2, 1));
+                new CircleShape(startX, startY, graphic.getWidth() / 2));
         this.graphic = graphic;
         setMotion(new MouseMotion());
     }

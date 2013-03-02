@@ -1,6 +1,7 @@
 package gameengine.collisiondetection.tree;
 
 import gameengine.collisiondetection.Collision;
+import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
@@ -9,7 +10,7 @@ import java.awt.*;
 
 /**
  * The root of the spatial tree, used to access the spatial tree
- *
+ * <p/>
  * User: davidrusu
  * Date: 15/01/13
  * Time: 9:31 PM
@@ -19,9 +20,11 @@ public class SpatialTree implements Parent {
     private Collision tempCollision = new Collision();
     private double initCenterX, initCenterY, initHalfLength;
     CollisionList list = new CollisionList();
+    private World world;
 
-    public SpatialTree(double centerX, double centerY, double halfLength) {
-        tree = Leaf.createInstance(this, centerX, centerY, halfLength, list);
+    public SpatialTree(World world, double centerX, double centerY, double halfLength) {
+        this.world = world;
+        tree = Leaf.createInstance(world, this, centerX, centerY, halfLength, list);
         initCenterX = centerX;
         initCenterY = centerY;
         initHalfLength = halfLength;
@@ -42,7 +45,7 @@ public class SpatialTree implements Parent {
         tree.recycle();
         // TODO tree already removes all the nodes from the list, may not have to do this
         list.clear();
-        tree = Leaf.createInstance(this, initCenterX, initCenterY, initHalfLength, list);
+        tree = Leaf.createInstance(world, this, initCenterX, initCenterY, initHalfLength, list);
     }
 
     public void ensureEntitiesAreContained(double time) {
@@ -54,7 +57,7 @@ public class SpatialTree implements Parent {
     }
 
     public void calcCollision(int[] collisionGroups, double elapsedTime, Context context) {
-        assert list.doAllNodesHaveNoCollision();
+        assert list.doAllNodesHaveNoCollision(-1);
         assert list.areNodesSorted();
         assert tree.isEntityCountCorrect();
 
@@ -67,58 +70,67 @@ public class SpatialTree implements Parent {
 
         Collision collision = list.getNextCollision();
         double timeToUpdate = collision.getCollisionTime();
-        while (timeToUpdate < timeLeft) {
+        while (timeToUpdate <= timeLeft) {
             currentTime = collision.getCollisionTime();
 
             Entity a = collision.getA();
             Entity b = collision.getB();
+            assert a != null;
+            assert b != null;
+            assert a.getContainingTree() != null;
+            assert b.getContainingTree() != null;
             a.getContainingTree().updateEntityPositions(currentTime);
             b.getContainingTree().updateEntityPositions(currentTime);
 
-            Parent aParent = a.getContainingTree().getParent();
-            Parent bParent = b.getContainingTree().getParent();
+            Tree aTree = a.getContainingTree();
+            Tree bTree = b.getContainingTree();
             context.handleCollision(collision);
 
-            assert ensureNoCollisionAfterHandleCollision(a, b);
+//            assert ensureNoCollisionAfterHandleCollision(collision);
             assert tree.isEntityCountCorrect();
 
             timeLeft -= timeToUpdate;
-            Tree aTree = a.getContainingTree();
-            Tree bTree = b.getContainingTree();
-            if (aTree != null) {
+            if (a.getContainingTree() != null) {
                 aTree.removeEntityFromList(a.getIndexInTree());
                 a.getShape().calculateBoundingBox(timeLeft);
-                if (bTree != null) {
+                if (b.getContainingTree() != null) {
                     bTree.removeEntityFromList(b.getIndexInTree());
                     b.getShape().calculateBoundingBox(timeLeft);
                     bTree.entityUpdated(collisionGroups, tempCollision, timeLeft, b, list);
                 } else {
-                    bParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, b, list);
+                    bTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, b, currentTime, list);
                 }
                 aTree.entityUpdated(collisionGroups, tempCollision, timeLeft, a, list);
             } else if (b.getContainingTree() != null) {
                 bTree.removeEntityFromList(b.getIndexInTree());
-                aParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, list);
+                aTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, currentTime, list);
                 b.getShape().calculateBoundingBox(timeLeft);
                 bTree.entityUpdated(collisionGroups, tempCollision, timeLeft, b, list);
             } else {
-                aParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, list);
-                bParent.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, b, list);
+                aTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, currentTime, list);
+                bTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, b, currentTime, list);
             }
 
             assert tree.isEntityCountCorrect();
-
+            assert list.checkNodeCollision();
             collision = list.getNextCollision();
             timeToUpdate = collision.getCollisionTime() - currentTime;
         }
         tree.updateAllEntityPositions(elapsedTime);
-        assert list.doAllNodesHaveNoCollision();
+        assert list.checkNodeCollision();
+        assert list.doAllNodesHaveNoCollision(elapsedTime);
         assert tree.isEntityCountCorrect();
     }
 
-    private boolean ensureNoCollisionAfterHandleCollision(Entity a, Entity b) {
+    private boolean ensureNoCollisionAfterHandleCollision(Collision collision) {
+        tempCollision.set(collision);
+        Entity a = tempCollision.getA();
+        Entity b = tempCollision.getB();
         Shape.collideShapes(a.getShape(), b.getShape(), Double.MAX_VALUE, tempCollision);
-        return tempCollision.getCollisionTime() == Shape.NO_COLLISION;
+        if (tempCollision.getCollisionTime() != Shape.NO_COLLISION) {
+            throw new AssertionError(tempCollision.getCollisionTime());
+        }
+        return true;
     }
 
     @Override
@@ -127,7 +139,7 @@ public class SpatialTree implements Parent {
 
     @Override
     public void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
-                                             CollisionList list) {
+                                             double currentTime, CollisionList list) {
     }
 
     public void tryResize() {
@@ -139,14 +151,18 @@ public class SpatialTree implements Parent {
     }
 
     @Override
-    public void childEntityUpdated(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity, CollisionList list) {
+    public void childEntityUpdated(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+                                   CollisionList list) {
     }
 
     @Override
     public void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
                                  CollisionList list) {
         relocate(entity);
-        tree.relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
+        // TODO adding the entity in the relocate method and then removing it here
+        assert tree == entity.getContainingTree();
+        entity.getContainingTree().removeEntityFromList(entity.getIndexInTree());
+        entity.getContainingTree().relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
     }
 
     @Override
@@ -157,29 +173,29 @@ public class SpatialTree implements Parent {
 
         if (shape.getX() < tree.getCenterX()) {
             centerX -= tree.getHalfLength();
-            topLeft = Leaf.createInstance(list);
-            bottomLeft = Leaf.createInstance(list);
+            topLeft = Leaf.createInstance(world, list);
+            bottomLeft = Leaf.createInstance(world, list);
             if (shape.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
-                topRight = Leaf.createInstance(list);
+                topRight = Leaf.createInstance(world, list);
                 bottomRight = tree;
             } else {
                 centerY += tree.getHalfLength();
                 topRight = tree;
-                bottomRight = Leaf.createInstance(list);
+                bottomRight = Leaf.createInstance(world, list);
             }
         } else {
             centerX += tree.getHalfLength();
-            topRight = Leaf.createInstance(list);
-            bottomRight = Leaf.createInstance(list);
+            topRight = Leaf.createInstance(world, list);
+            bottomRight = Leaf.createInstance(world, list);
             if (shape.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
-                topLeft = Leaf.createInstance(list);
+                topLeft = Leaf.createInstance(world, list);
                 bottomLeft = tree;
             } else {
                 centerY += tree.getHalfLength();
                 topLeft = tree;
-                bottomLeft = Leaf.createInstance(list);
+                bottomLeft = Leaf.createInstance(world, list);
             }
         }
         grow(centerX, centerY, tree.getHalfLength() * 2, topLeft, topRight, bottomLeft, bottomRight);
@@ -205,15 +221,21 @@ public class SpatialTree implements Parent {
         topRight.resize(right, top, quartLength);
         bottomLeft.resize(left, bottom, quartLength);
         bottomRight.resize(right, bottom, quartLength);
-        tree = Quad.createInstance(this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight, list);
+        tree = Quad.createInstance(
+                world, this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight, list);
     }
 
     private boolean isNotContainedInTree(Entity entity) {
         Shape shape = entity.getShape();
-        return !isContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth()) || !isContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
+        return !isContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth())
+                || !isContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
     }
 
     private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
         return Math.abs(treePosition - shapePosition) < tree.getHalfLength() - shapeHalfLength;
+    }
+
+    public int getEntityCount() {
+        return tree.getEntityCount();
     }
 }

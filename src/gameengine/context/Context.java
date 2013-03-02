@@ -2,14 +2,13 @@ package gameengine.context;
 
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.Viewport;
-import gameengine.entities.Entity;
+import gameengine.collisiondetection.ViewPort;
+import gameengine.collisiondetection.World;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputHandler;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -26,10 +25,10 @@ public abstract class Context implements ActionHandler, InputHandler {
     private InputHandler inputHandler = this;
     private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
     private boolean paused = false;
-    protected ArrayList<Entity> entities = new ArrayList<>();
+    protected World world;
     protected GameController controller;
     protected ContextType contextType;
-    protected Viewport viewport = new Viewport();
+    protected ViewPort viewPort;
     protected int width, height;
 
     /**
@@ -45,10 +44,11 @@ public abstract class Context implements ActionHandler, InputHandler {
         isRelativeMouseMovedEnabled = true;
         actionMap = new HashMap<>();
         setSize(controller.getWidth(), controller.getHeight());
+        world = new World(width * 0.5, height * 0.5, Math.max(width, height) * 0.5);
+        viewPort = new ViewPort(0, 0, 1, width, height);
     }
 
     public void reset() {
-        entities.clear();
         paused = false;
     }
 
@@ -108,8 +108,8 @@ public abstract class Context implements ActionHandler, InputHandler {
         return height;
     }
 
-    public Viewport getViewport() {
-        return viewport;
+    public ViewPort getViewPort() {
+        return viewPort;
     }
 
     /**
@@ -121,16 +121,8 @@ public abstract class Context implements ActionHandler, InputHandler {
         return contextType;
     }
 
-    public void updatePositions(double elapsedTime) {
-        for (Entity entity : entities) {
-            entity.updatePosition(elapsedTime);
-        }
-    }
-
-    public void updateMotions(double elapsedTime) {
-        for (Entity entity : entities) {
-            entity.updateMotion(elapsedTime);
-        }
+    public void updateWorld(double elapsedTime) {
+        world.update(elapsedTime, this);
     }
 
     /**
@@ -175,11 +167,11 @@ public abstract class Context implements ActionHandler, InputHandler {
         inputMap.clear();
     }
 
+
     @Override
     public void addInputMapping(int inputCode, Action action) {
         inputMap.put(inputCode, action);
     }
-
 
     @Override
     public final void startInput(int inputCode) {
@@ -198,8 +190,9 @@ public abstract class Context implements ActionHandler, InputHandler {
         }
         stopAction(action, inputCode);
     }
-    //------------------ end InputHandler implementation -----------------------
 
+
+    //------------------ end InputHandler implementation -----------------------
 
     //------------------ start ActionHandler implementation --------------------
     @Override
@@ -219,6 +212,7 @@ public abstract class Context implements ActionHandler, InputHandler {
         }
         actionHandler.stopAction(action, inputCode);
     }
+
     //------------------- stop ActionHandler implementation --------------------
 
     public abstract void update(double elapsedTime);

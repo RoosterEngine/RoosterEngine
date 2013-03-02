@@ -51,7 +51,7 @@ public class HorizontalAttractMotion implements Motion {
     @Override
     public void update(Entity entity, double elapsedTime) {
         double delta = destination - entity.getX();
-        double attractAcceleration = k * delta / entity.getShape().getMass();
+        double attractAcceleration = k * delta / entity.getMass();
         double damping = d * entity.getDX();
         velocity = entity.getDX() + (attractAcceleration - damping) * elapsedTime;
     }

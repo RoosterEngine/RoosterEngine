@@ -10,7 +10,6 @@ import gameengine.input.Action;
 import gameengine.input.InputCode;
 
 import java.awt.*;
-import java.util.Scanner;
 
 public class Main implements ButtonHandler {
     private GameController controller;
@@ -43,7 +42,7 @@ public class Main implements ButtonHandler {
     }
 
     public void startGame() {
-        controller.enterContext(testing);
+        controller.enterContext(menu);
         controller.startGame();
     }
 

@@ -64,7 +64,7 @@ public class AttractMotion implements Motion {
         double dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         deltaX /= dist;
         deltaY /= dist;
-        double attractAcceleration = (k * dist) / entity.getShape().getMass();
+        double attractAcceleration = (k * dist) / entity.getMass();
         double accelX = deltaX * attractAcceleration;
         double accelY = deltaY * attractAcceleration;
         double dampX = entity.getDX() * d;

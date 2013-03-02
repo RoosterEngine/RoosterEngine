@@ -65,4 +65,19 @@ public class Collision {
     public void setCollisionTime(double collisionTime) {
         this.timeToCollision = collisionTime;
     }
+
+    public boolean assertCollision() {
+        if (timeToCollision != Shape.NO_COLLISION) {
+            assert a != null : timeToCollision;
+            assert b != null : timeToCollision;
+            assert a.getContainingTree() != null;
+            assert a.getContainingTree().isEntityInTree(a);
+            assert b.getContainingTree() != null;
+            assert b.getContainingTree().isEntityInTree(b);
+        } else {
+            assert a == null;
+            assert b == null;
+        }
+        return true;
+    }
 }

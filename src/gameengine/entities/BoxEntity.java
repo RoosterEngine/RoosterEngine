@@ -5,7 +5,6 @@
 package gameengine.entities;
 
 import gameengine.collisiondetection.shapes.AABBShape;
-import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -13,7 +12,7 @@ public class BoxEntity extends Entity {
     protected Color color;
 
     public BoxEntity(double x, double y, double width, double height) {
-        super(x, y, width, height, new AABBShape(x, y, width, height, 1));
+        super(x, y, width, height, new AABBShape(x, y, width, height));
         color = Color.WHITE;
     }
 

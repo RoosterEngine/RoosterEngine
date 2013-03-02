@@ -30,7 +30,7 @@ public class SpringIntegrator implements Integrator {
     public double getVelocity(Entity entity, double displacementFromDestination, double elapsedTime) {
         double entityVelocity = Math.sqrt(entity.getDX() * entity.getDX() + entity.getDY() * entity.getDY());
         double springForce = k * displacementFromDestination - d * velocity;
-        velocity += springForce / entity.getShape().getMass() * elapsedTime;
+        velocity += springForce / entity.getMass() * elapsedTime;
         return velocity;
     }
 

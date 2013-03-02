@@ -14,7 +14,7 @@ import java.awt.*;
  */
 public class SpringMotion implements Motion {
     private double destinationX, destinationY, targetLength;
-    private double velocityX, velocityY;
+    private double velocityX = 0, velocityY = 0;
     private double k, d;
     private double mass;
 
@@ -65,7 +65,7 @@ public class SpringMotion implements Motion {
             deltaX = 0.001;
         }
         double dist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-        if(dist <= targetLength){
+        if (dist <= targetLength) {
             velocityX = entity.getDX();
             velocityY = entity.getDY();
             return;
@@ -86,6 +86,6 @@ public class SpringMotion implements Motion {
 
     public void draw(Graphics2D g, Color color, Entity entity) {
         g.setColor(color);
-        g.drawLine((int)destinationX, (int)destinationY, (int)entity.getX(), (int)entity.getY());
+        g.drawLine((int) destinationX, (int) destinationY, (int) entity.getX(), (int) entity.getY());
     }
 }

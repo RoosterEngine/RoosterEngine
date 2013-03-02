@@ -52,7 +52,7 @@ public class VerticalAttractMotion implements Motion {
     @Override
     public void update(Entity entity, double elapsedTime) {
         double delta = destination - entity.getY();
-        double attract = (k * delta) / entity.getShape().getMass();
+        double attract = (k * delta) / entity.getMass();
         double damping = entity.getDY() * d;
         velocity = entity.getDY() + (attract - damping) * elapsedTime;
     }

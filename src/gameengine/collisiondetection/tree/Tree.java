@@ -1,6 +1,7 @@
 package gameengine.collisiondetection.tree;
 
 import gameengine.collisiondetection.Collision;
+import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 
@@ -8,30 +9,35 @@ import java.awt.*;
 
 /**
  * Base class of spatial tree nodes
- *
+ * <p/>
  * User: davidrusu
  * Date: 15/01/13
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 20;
+    public static final int GROW_THRESH = 18;
     private static final double EXPAND_RATE = 1.5;
+    protected World world = null;
+    private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
     protected double timeInTree = 0;
     protected Entity[] entities = new Entity[GROW_THRESH + 2];
     protected int entityListPos, entityCount;
     protected Parent parent;
     protected CollisionNode node = new CollisionNode();
-    private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
 
     public Tree() {
     }
 
-    public Tree(CollisionList list) {
-        init(list);
+    public Tree(World world, CollisionList list) {
+        assert world != null;
+        this.world = world;
+        init(world, list);
     }
 
-    public Tree(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
-        init(parent, centerX, centerY, halfLength, list);
+    public Tree(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+        assert world != null;
+        this.world = world;
+        init(world, parent, centerX, centerY, halfLength, list);
     }
 
     public double getCenterX() {
@@ -79,6 +85,7 @@ public abstract class Tree {
         entityListPos = 0;
         timeInTree = 0;
         list.remove(this);
+        world = null;
         node.clear();
     }
 
@@ -89,6 +96,7 @@ public abstract class Tree {
     }
 
     public void removeEntityFromList(int index) {
+        assert entityListPos > 0;
         entityListPos--;
         Entity relocated = entities[entityListPos];
         entities[index] = relocated;
@@ -96,11 +104,12 @@ public abstract class Tree {
         entities[entityListPos] = null;
     }
 
-    public void removeEntityFromWorld(Entity item) {
+    public void removeEntityFromWorld(Entity entity) {
         entityCount--;
-        removeEntityFromList(item.getIndexInTree());
-        item.setContainingTree(null, -1);
+        removeEntityFromList(entity.getIndexInTree());
+        entity.setContainingTree(null, -1);
         parent.decrementEntityCount();
+        world.entityHasBeenRemoved(entity);
     }
 
     public void entityUpdated(int[] collisionGroups, Collision tempCollision, double timeToCheck, Entity entity,
@@ -112,10 +121,10 @@ public abstract class Tree {
     }
 
     protected void collideShapes(int[] collisionGroups, Collision temp, Collision result,
-                                 double timeToCheck, Shape a, Shape b) {
-        if ((collisionGroups[a.getCollisionType()] & 1 << b.getCollisionType()) != 0) {
+                                 double timeToCheck, Entity a, Entity b) {
+        if ((collisionGroups[a.getCollisionType()] & b.getCollisionTypeBitMask()) != 0) {
             temp.setNoCollision();
-            Shape.collideShapes(a, b, timeToCheck, temp);
+            Shape.collideShapes(a.getShape(), b.getShape(), timeToCheck, temp);
             if (temp.getCollisionTime() < result.getCollisionTime() - timeInTree) {
                 assert temp.getCollisionTime() <= timeToCheck : "too long" + temp.getCollisionTime() + ", " + timeToCheck;
                 result.set(temp);
@@ -147,11 +156,15 @@ public abstract class Tree {
         entityListPos++;
     }
 
-    protected void init(CollisionList list) {
+    protected void init(World world, CollisionList list) {
+        assert world != null;
+        this.world = world;
         list.add(this);
     }
 
-    protected void init(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+    protected void init(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+        assert world != null;
+        this.world = world;
         this.parent = parent;
         list.add(this);
         resize(centerX, centerY, halfLength);
@@ -189,6 +202,7 @@ public abstract class Tree {
         assert parent == null : "parent: " + parent;
         assert node.getPrev() == null && node.getNext() == null : "node.prev: " + node.getPrev() + " node.next: " + node.getNext();
         assert timeInTree == 0;
+        assert world == null;
         return true;
     }
 
@@ -208,7 +222,8 @@ public abstract class Tree {
     }
 
     public boolean isEntityCountCorrect() {
-        return getRealEntityCount() == entityCount;
+        assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
+        return true;
     }
 
     public boolean checkEntities() {
@@ -259,6 +274,9 @@ public abstract class Tree {
     public abstract void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
                                           CollisionList list);
 
+    public abstract void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck,
+                                                      Entity entity, double currentTime, CollisionList list);
+
     public abstract void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
                                      CollisionList list);
 
@@ -273,4 +291,8 @@ public abstract class Tree {
     public abstract void draw(double minX, double maxX, double minY, double maxY, Graphics2D g);
 
     public abstract void drawTree(Graphics2D g, Color color);
+
+    public int getEntityCount() {
+        return entityCount;
+    }
 }

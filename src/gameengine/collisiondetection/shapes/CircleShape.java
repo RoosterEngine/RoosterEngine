@@ -5,25 +5,24 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
-import gameengine.physics.Material;
 
 import java.awt.*;
 
 public class CircleShape extends Shape {
     private double radius;
 
-    public CircleShape(double x, double y, double radius, double mass) {
-        super(x, y, radius, radius, mass);
-        this.radius = radius;
-    }
-
-    public CircleShape(double x, double y, double radius, double mass, Material material) {
-        super(x, y, radius, radius, mass, material);
+    public CircleShape(double x, double y, double radius) {
+        super(x, y, radius, radius);
         this.radius = radius;
     }
 
     public double getRadius() {
         return radius;
+    }
+
+    @Override
+    public double getArea() {
+        return Math.PI * radius * radius;
     }
 
     @Override
@@ -44,11 +43,6 @@ public class CircleShape extends Shape {
     @Override
     public void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision result) {
         Shape.collideCirclePoly(this, polygonShape, maxTime, result);
-    }
-
-    @Override
-    public int getShapeType() {
-        return TYPE_CIRCLE;
     }
 
     @Override

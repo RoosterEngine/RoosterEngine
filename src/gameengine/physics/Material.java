@@ -9,22 +9,23 @@ package gameengine.physics;
  * Time: 11:33 PM
  */
 public class Material {
+    private static final double growRate = 1.5;
+    private static final Material defaultMaterial, rubber, steel, ice;
     private static MaterialData[][] table;
-    private static double growRate = 1.5;
     private static int width = 1, numberOfMaterials = 0;
-    private static Material defaultMaterial, rubber, steel, ice;
 
-    private int materialNumber;
+    private final int materialNumber;
+    private final double density;
 
     static {
         table = new MaterialData[10][1];
         for (int i = 0; i < table.length; i++) {
             table[i][0] = new MaterialData(1, 1);
         }
-        defaultMaterial = createMaterial(0, 1);
-        rubber = new Material(getNextMaterialNumber());
-        steel = new Material(getNextMaterialNumber());
-        ice = new Material(getNextMaterialNumber());
+        defaultMaterial = createMaterial(0, 1, 1);
+        rubber = new Material(getNextMaterialNumber(), 1.1);
+        steel = new Material(getNextMaterialNumber(), 7.82);
+        ice = new Material(getNextMaterialNumber(), 0.917);
         setMaterialData(rubber.materialNumber, rubber.materialNumber, 1.16, 1);
         setMaterialData(rubber.materialNumber, steel.materialNumber, 0.5, 1);
         setMaterialData(rubber.materialNumber, ice.materialNumber, 0.15, 1);
@@ -33,9 +34,9 @@ public class Material {
         setMaterialData(ice.materialNumber, ice.materialNumber, 0.05, 1);
     }
 
-    private Material(int materialNumber) {
+    private Material(int materialNumber, double density) {
         this.materialNumber = materialNumber;
-
+        this.density = density;
     }
 
     public static Material getDefaultMaterial() {
@@ -54,10 +55,10 @@ public class Material {
         return ice;
     }
 
-    public static Material createMaterial(double friction, double restitution) {
+    public static Material createMaterial(double friction, double restitution, double density) {
         int materialNumber = getNextMaterialNumber();
         setMaterialData(materialNumber, 0, friction, restitution);
-        return new Material(materialNumber);
+        return new Material(materialNumber, density);
     }
 
     public static double getFriction(Material a, Material b) {
@@ -111,7 +112,8 @@ public class Material {
         return numberOfMaterials;
     }
 
-    private static void setMaterialData(int materialNumberA, int materialNumberB, double friction, double restitution) {
+    private static void setMaterialData(int materialNumberA, int materialNumberB, double friction,
+                                        double restitution) {
         int x = Math.max(materialNumberA, materialNumberB);
         int y = Math.min(materialNumberA, materialNumberB);
 
@@ -132,5 +134,9 @@ public class Material {
             }
             table[x][y] = new MaterialData(friction, restitution);
         }
+    }
+
+    public double getDensity() {
+        return density;
     }
 }

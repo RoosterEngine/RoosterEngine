@@ -1,6 +1,7 @@
 package gameengine.collisiondetection.tree;
 
 import gameengine.collisiondetection.Collision;
+import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 
@@ -18,43 +19,44 @@ public class Leaf extends Tree {
     private static final int EXPANSION_FACTOR = 2;
     private static Leaf[] recycledLeafs = new Leaf[INITIAL_NUM_LEAFS];
     private static int numRecycledLeafs = INITIAL_NUM_LEAFS;
+
     static {
         for (int i = 0; i < INITIAL_NUM_LEAFS; i++) {
             recycledLeafs[i] = new Leaf();
         }
     }
 
-    private Leaf(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
-        super(parent, centerX, centerY, halfLength, list);
+    private Leaf(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+        super(world, parent, centerX, centerY, halfLength, list);
     }
 
-    private Leaf(CollisionList list) {
-        super(list);
+    private Leaf(World world, CollisionList list) {
+        super(world, list);
     }
 
     private Leaf() {
         super();
     }
 
-    public static Leaf createInstance(Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+    public static Leaf createInstance(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
         if (numRecycledLeafs == 0) {
-            return new Leaf(parent, centerX, centerY, halfLength, list);
+            return new Leaf(world, parent, centerX, centerY, halfLength, list);
         }
         numRecycledLeafs--;
         Leaf leafInstance = recycledLeafs[numRecycledLeafs];
         recycledLeafs[numRecycledLeafs] = null;
-        leafInstance.init(parent, centerX, centerY, halfLength, list);
+        leafInstance.init(world, parent, centerX, centerY, halfLength, list);
         return leafInstance;
     }
 
-    public static Leaf createInstance(CollisionList list) {
+    public static Leaf createInstance(World world, CollisionList list) {
         if (numRecycledLeafs == 0) {
-            return new Leaf(list);
+            return new Leaf(world, list);
         }
         numRecycledLeafs--;
         Leaf leafInstance = recycledLeafs[numRecycledLeafs];
         recycledLeafs[numRecycledLeafs] = null;
-        leafInstance.init(list);
+        leafInstance.init(world, list);
         return leafInstance;
     }
 
@@ -104,7 +106,8 @@ public class Leaf extends Tree {
 
         if (entityCount >= GROW_THRESH) {
             assert checkEntities();
-            Quad quad = Quad.createInstance(parent, getCenterX(), getCenterY(), getHalfLength(), list);
+            assert world != null;
+            Quad quad = Quad.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength(), list);
 
             assert checkEntities();
 
@@ -148,10 +151,8 @@ public class Leaf extends Tree {
     public void initCheckCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
                                              double timeToCheck, Entity entity) {
         timeInTree = 0;
-        Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
-            Shape b = entities[i].getShape();
-            collideShapes(collisionGroups, temp, result, timeToCheck, a, b);
+            collideShapes(collisionGroups, temp, result, timeToCheck, entity, entities[i]);
         }
     }
 
@@ -159,10 +160,8 @@ public class Leaf extends Tree {
     public void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
                                          Entity entity) {
         updateEntityPositions(entity.getContainingTree().timeInTree);
-        Shape a = entity.getShape();
         for (int i = 0; i < entityListPos; i++) {
-            Shape b = entities[i].getShape();
-            collideShapes(collisionGroups, temp, result, timeToCheck, a, b);
+            collideShapes(collisionGroups, temp, result, timeToCheck, entity, entities[i]);
         }
     }
 
@@ -187,6 +186,22 @@ public class Leaf extends Tree {
     }
 
     @Override
+    public void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+                                             double currentTime, CollisionList list) {
+        assert entity.getContainingTree() == null;
+        assert checkEntities();
+        assert !isEntityInTree(entity);
+
+        Collision collision = node.getCollision();
+        if (collision.getA() == entity || collision.getB() == entity) {
+            updateEntityPositions(currentTime);
+            collision.setNoCollision();
+            calcCollision(collisionGroups, temp, timeToCheck, list);
+        }
+        parent.entityRemovedDuringCollision(collisionGroups, temp, timeToCheck, entity, currentTime, list);
+    }
+
+    @Override
     public void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck,
                             Entity entity, CollisionList list) {
         checkCollisionWithEntity(collisionGroups, temp, node.getCollision(), timeToCheck, entity);
@@ -206,7 +221,7 @@ public class Leaf extends Tree {
     public void drawTree(Graphics2D g, Color color) {
         g.setColor(Color.RED);
         int width = (int) (getHalfLength() * 2);
-        g.drawRect((int)getMinX(), (int)getMinY(), width, width);
+        g.drawRect((int) getMinX(), (int) getMinY(), width, width);
     }
 
     @Override
@@ -228,10 +243,9 @@ public class Leaf extends Tree {
         assert node.getCollisionTime() == Shape.NO_COLLISION;
 
         for (int i = 0; i < entityListPos; i++) {
-            Shape a = entities[i].getShape();
+            Entity a = entities[i];
             for (int j = i + 1; j < entityListPos; j++) {
-                Shape b = entities[j].getShape();
-                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, a, b);
+                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, a, entities[j]);
             }
         }
 

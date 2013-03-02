@@ -5,7 +5,7 @@ import gameengine.collisiondetection.shapes.Shape;
 
 /**
  * A linked list that stores all of the active trees sorted by the time of the next collision in the tree
- *
+ * <p/>
  * User: davidrusu
  * Date: 19/02/13
  * Time: 2:56 PM
@@ -51,6 +51,7 @@ public class CollisionList {
 
     /**
      * Adds the {@link Tree} to this list
+     *
      * @param tree the {@link Tree} to add
      */
     public void add(Tree tree) {
@@ -64,6 +65,7 @@ public class CollisionList {
 
     /**
      * Removes the {@link Tree} from the list
+     *
      * @param tree the {@link Tree} to remove
      */
     public void remove(Tree tree) {
@@ -87,6 +89,7 @@ public class CollisionList {
 
     /**
      * Returns the next {@link CollisionNode} in the list
+     *
      * @return
      */
     public Collision getNextCollision() {
@@ -117,13 +120,22 @@ public class CollisionList {
         return true;
     }
 
-    public boolean doAllNodesHaveNoCollision() {
+    public boolean checkNodeCollision() {
+        CollisionNode current = sentinel.getNext();
+        while (current != null) {
+            assert current.getCollision().assertCollision();
+            current = current.getNext();
+        }
+        return true;
+    }
+
+    public boolean doAllNodesHaveNoCollision(double elapsedTime) {
         CollisionNode current = sentinel.getNext();
         while (current != null) {
             Collision collision = current.getCollision();
-            assert collision.getCollisionTime() == Shape.NO_COLLISION : "nodes are not all set to NoCollision: " + collision.getCollisionTime();
-            assert collision.getA() == null: "nodes are not all set to NoCollision";
-            assert collision.getB() == null: "nodes are not all set to NoCollision";
+            assert collision.getCollisionTime() == Shape.NO_COLLISION : "nodes are not all set to NoCollision: " + collision.getCollisionTime() + " " + elapsedTime;
+            assert collision.getA() == null : "nodes are not all set to NoCollision";
+            assert collision.getB() == null : "nodes are not all set to NoCollision";
             current = current.getNext();
         }
         return true;

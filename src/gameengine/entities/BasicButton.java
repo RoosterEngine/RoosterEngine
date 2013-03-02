@@ -23,7 +23,7 @@ public class BasicButton extends Entity {
     }
 
     public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic) {
-        super(0, 0, 0, 0, new CircleShape(0, 0, 0, 0));
+        super(0, 0, 0, 0, new CircleShape(0, 0, 0));
         this.text = text;
         this.upGraphic = upGraphic;
         this.pressedGraphic = downGraphic;
@@ -42,7 +42,7 @@ public class BasicButton extends Entity {
         upGraphic.resize((int) width, (int) height);
         pressedGraphic.resize((int) width, (int) height);
         selectedGraphic.resize((int) width, (int) height);
-        setShape(new AABBShape(x, y, width, height, 1));
+        setShape(new AABBShape(x, y, width, height));
     }
 
     public void select() {

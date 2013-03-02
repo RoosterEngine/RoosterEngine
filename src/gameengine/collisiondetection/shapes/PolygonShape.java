@@ -2,7 +2,6 @@ package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
 import gameengine.math.Vector2D;
-import gameengine.physics.Material;
 
 import java.awt.*;
 import java.util.Random;
@@ -15,17 +14,8 @@ public class PolygonShape extends Shape {
     private double width, height, minX, maxX, minY, maxY;
     private int numPoints;
 
-    public PolygonShape(double x, double y, double[] xPoints, double[] yPoints, double mass) {
-        super(x, y, getHalfLength(xPoints), getHalfLength(yPoints), mass);
-        init(xPoints, yPoints);
-    }
-
-    public PolygonShape(double x, double y, double[] xPoints, double[] yPoints, double mass, Material material) {
-        super(x, y, getHalfLength(xPoints), getHalfLength(yPoints), mass, material);
-        init(xPoints, yPoints);
-    }
-
-    private void init(double[] xPoints, double[] yPoints){
+    public PolygonShape(double x, double y, double[] xPoints, double[] yPoints) {
+        super(x, y, getHalfLength(xPoints), getHalfLength(yPoints));
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
         normals = new Vector2D[numPoints];
@@ -38,7 +28,8 @@ public class PolygonShape extends Shape {
         setupNormalsAndShadows();
     }
 
-    public static PolygonShape getRandConvexPolygon(double x, double y, double radiusMin, double radiusMax, int numPointsMin, int numPointsMax, Material material, double mass) {
+    public static PolygonShape getRandConvexPolygon(double x, double y, double radiusMin, double radiusMax,
+                                                    int numPointsMin, int numPointsMax) {
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
         int pointsDiff = numPointsMax - numPointsMin;
         int numPoints = (int) (rand.nextDouble() * pointsDiff) + numPointsMin;
@@ -54,18 +45,7 @@ public class PolygonShape extends Shape {
             xPoints[p] = pX;
             yPoints[p] = pY;
         }
-        return new PolygonShape(x, y, xPoints, yPoints, mass, material);
-    }
-
-    private static double getRadius(double[] xPoints, double[] yPoints) {
-        double maxDistSquared = 0;
-        for (int p = 0; p < xPoints.length; p++) {
-            double x = xPoints[p];
-            double y = yPoints[p];
-            double distSquared = x * x + y * y;
-            maxDistSquared = Math.max(distSquared, maxDistSquared);
-        }
-        return Math.sqrt(maxDistSquared);
+        return new PolygonShape(x, y, xPoints, yPoints);
     }
 
     private static double getHalfLength(double[] points) {
@@ -94,11 +74,6 @@ public class PolygonShape extends Shape {
     @Override
     public void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision result) {
         Shape.collidePolyPoly(this, polygonShape, maxTime, result);
-    }
-
-    @Override
-    public int getShapeType() {
-        return TYPE_POLYGON;
     }
 
     /**
@@ -140,6 +115,7 @@ public class PolygonShape extends Shape {
         return numPoints;
     }
 
+    @Override
     public double getArea() {
         double sum = 0;
         double lastX = points[numPoints - 1].getX(), lastY = points[numPoints - 1].getY();
@@ -161,8 +137,6 @@ public class PolygonShape extends Shape {
         }
         g.setColor(color);
         g.fillPolygon(xInts, yInts, numPoints);
-        drawPoints(g, Color.RED);
-//        drawNormals(g, Color.RED);
     }
 
     private void drawPoints(Graphics2D g, Color color) {

@@ -1,30 +1,146 @@
 package gameengine.entities;
 
+import gameengine.collisiondetection.CollisionType;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.collisiondetection.tree.Tree;
 import gameengine.motion.motions.Motion;
 import gameengine.motion.motions.NormalMotion;
+import gameengine.physics.Material;
 
 import java.awt.*;
 
 public abstract class Entity {
+    protected Material material;
+    protected double mass;
+    protected double x, y, dx, dy, width, height, halfWidth, halfHeight;
+    private int collisionType = CollisionType.DEFAULT.ordinal();
+    private int collisionTypeBitMask = 1 << collisionType;
     private Motion motion;
     private Shape shape;
     private Tree containingTree;
     private int indexInTree;
-    protected double x, y, dx, dy, width, height, halfWidth, halfHeight;
 
     public Entity(double x, double y, double width, double height, Shape shape) {
+        this(x, y, width, height, 1, Material.getDefaultMaterial(), shape);
+    }
+
+    public Entity(double x, double y, double width, double height, Material material, Shape shape) {
+        init(x, y, width, height, material, shape);
+        updateMass();
+    }
+
+    public Entity(double x, double y, double width, double height, double mass, Material material, Shape shape) {
+        init(x, y, width, height, material, shape);
+        this.mass = mass;
+    }
+
+    private void init(double x, double y, double width, double height, Material material, Shape shape) {
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
+        this.material = material;
+        this.shape = shape;
         halfWidth = width / 2;
         halfHeight = height / 2;
         motion = new NormalMotion();
-        this.shape = shape;
         shape.setParent(this);
         shape.setParentOffset(x - shape.getX(), y - shape.getY());
+    }
+
+    public double getX() {
+        return x;
+    }
+
+    public double getY() {
+        return y;
+    }
+
+    public double getDX() {
+        return dx;
+    }
+
+    public double getDY() {
+        return dy;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+        halfWidth = width / 2;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public void setHeight(double height) {
+        this.height = height;
+        halfHeight = height / 2;
+    }
+
+    public void setVelocity(double dx, double dy) {
+        this.dx = dx;
+        this.dy = dy;
+        shape.updateVelocity(this.dx, this.dy);
+    }
+
+    public void setCollisionType(CollisionType type) {
+        collisionType = type.ordinal();
+        collisionTypeBitMask = 1 << collisionType;
+    }
+
+    public int getCollisionType() {
+        return collisionType;
+    }
+
+    public int getCollisionTypeBitMask() {
+        return collisionTypeBitMask;
+    }
+
+    public void addVelocity(double dx, double dy) {
+        this.dx += dx;
+        this.dy += dy;
+    }
+
+    public void setMass(double mass) {
+        this.mass = mass;
+    }
+
+    public double getMass() {
+        return mass;
+    }
+
+    public void setMaterial(Material material) {
+        this.material = material;
+    }
+
+    public Material getMaterial() {
+        return material;
+    }
+
+    public int getIndexInTree() {
+        return indexInTree;
+    }
+
+    public void setIndexInTree(int indexInTree) {
+        this.indexInTree = indexInTree;
+    }
+
+    public Tree getContainingTree() {
+        return containingTree;
+    }
+
+    public void setContainingTree(Tree containingTree, int indexInTree) {
+        this.containingTree = containingTree;
+        setIndexInTree(indexInTree);
+    }
+
+    public Shape getShape() {
+        return shape;
     }
 
     public void setShape(Shape shape) {
@@ -32,19 +148,8 @@ public abstract class Entity {
         shape.setParent(this);
     }
 
-    public Shape getShape() {
-        return shape;
-    }
-
-    /**
-     * Sets the {@link Motion} that will controlling the velocity of this
-     * {@link Entity}
-     *
-     * @param motion the {@link Motion} that will control the velocity of this
-     *               {@link Entity}
-     */
-    public void setMotion(Motion motion) {
-        this.motion = motion;
+    public void updateMass() {
+        mass = material.getDensity() * shape.getArea();
     }
 
     public void resetMotion() {
@@ -73,68 +178,6 @@ public abstract class Entity {
         y += dy * elapsedTime;
         shape.updatePosition(x, y);
 //        shape.updateVelocity(dx, dy);
-    }
-
-    public double getX() {
-        return x;
-    }
-
-    public double getY() {
-        return y;
-    }
-
-    public double getDX() {
-        return dx;
-    }
-
-    public double getDY() {
-        return dy;
-    }
-
-    public double getWidth() {
-        return width;
-    }
-
-    public double getHeight() {
-        return height;
-    }
-
-    public void setWidth(double width) {
-        this.width = width;
-        halfWidth = width / 2;
-    }
-
-    public void setHeight(double height) {
-        this.height = height;
-        halfHeight = height / 2;
-    }
-
-    public void setVelocity(double dx, double dy) {
-        this.dx = dx;
-        this.dy = dy;
-        shape.updateVelocity(this.dx, this.dy);
-    }
-
-    public void addVelocity(double dx, double dy) {
-        this.dx += dx;
-        this.dy += dy;
-    }
-
-    public int getIndexInTree() {
-        return indexInTree;
-    }
-
-    public void setIndexInTree(int indexInTree) {
-        this.indexInTree = indexInTree;
-    }
-
-    public void setContainingTree(Tree containingTree, int indexInTree) {
-        this.containingTree = containingTree;
-        setIndexInTree(indexInTree);
-    }
-
-    public Tree getContainingTree() {
-        return containingTree;
     }
 
     public void removeFromWorld() {
@@ -169,5 +212,16 @@ public abstract class Entity {
 
     public Motion getMotion() {
         return motion;
+    }
+
+    /**
+     * Sets the {@link Motion} that will controlling the velocity of this
+     * {@link Entity}
+     *
+     * @param motion the {@link Motion} that will control the velocity of this
+     *               {@link Entity}
+     */
+    public void setMotion(Motion motion) {
+        this.motion = motion;
     }
 }

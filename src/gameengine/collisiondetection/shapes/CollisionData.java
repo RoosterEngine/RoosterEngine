@@ -23,10 +23,6 @@ public class CollisionData {
         return collisionNormal;
     }
 
-    public void setCollisionNormal(Vector2D collisionNormal) {
-        this.collisionNormal.set(collisionNormal);
-    }
-
     public Vector2D getOverlapNormal() {
         return overlapNormal;
     }
@@ -39,22 +35,14 @@ public class CollisionData {
         return overlapVelocity;
     }
 
-    public void setTempOverlapVelocity(double velocity) {
-        tempOverlapVelocity = velocity;
-    }
-
-    private void setTempOverlapData(double x, double y, double velocity, double time) {
-        overlapUpdated = true;
-        tempOverlapNormal.set(x, y);
-        tempOverlapVelocity = velocity;
-        overlapTime = time;
-    }
-
     public void updateTempOverlapData(double dist, double velocity, double normalX, double normalY) {
         if (dist > 0) {
             double time = dist / Math.abs(velocity);
             if (time < overlapTime) {
-                setTempOverlapData(normalX, normalY, velocity, time);
+                overlapUpdated = true;
+                tempOverlapNormal.set(normalX, normalY);
+                tempOverlapVelocity = velocity;
+                overlapTime = time;
             }
         }
     }
@@ -82,10 +70,6 @@ public class CollisionData {
             overlapNormal.set(tempOverlapNormal);
             overlapVelocity = tempOverlapVelocity;
         }
-    }
-
-    public void updateEntryTime(double time, Vector2D normal) {
-        updateEntryTime(time, normal.getX(), normal.getY());
     }
 
     public void updateLeaveTime(double time) {
@@ -135,19 +119,7 @@ public class CollisionData {
         return entryTime == -Double.MAX_VALUE;
     }
 
-    public boolean wasEntryTimeNotUpdated() {
-        return entryTime != -Double.MAX_VALUE;
-    }
-
     public void setNoCollision() {
         entryTime = NO_COLLISION;
-    }
-
-    public void setOverlapNormal(Vector2D overlapNormal) {
-        this.overlapNormal = overlapNormal;
-    }
-
-    public void setTempOverlapNormal(Vector2D tempOverlapNormal) {
-        this.tempOverlapNormal = tempOverlapNormal;
     }
 }

@@ -1,7 +1,6 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
-import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -11,14 +10,19 @@ import java.awt.*;
 public class AABBShape extends Shape {
     private double width, height;
 
-    public AABBShape(double x, double y, double width, double height, double mass) {
-        super(x, y, width * 0.5, height * 0.5, mass);
+    public AABBShape(double x, double y, double width, double height) {
+        super(x, y, width * 0.5, height * 0.5);
         init(width, height);
     }
 
-    public AABBShape(double x, double y, double width, double height, double mass, Material material) {
-        super(x, y, width * 0.5, height * 0.5, mass, material);
-        init(width, height);
+    @Override
+    public double getArea() {
+        return width * height;
+    }
+
+    private void init(double width, double height) {
+        this.width = width;
+        this.height = height;
     }
 
     @Override
@@ -33,17 +37,12 @@ public class AABBShape extends Shape {
 
     @Override
     public void collideWithAABB(AABBShape aabbShape, double maxTime, Collision result) {
-        Shape.collideAABBAABB(this, aabbShape, maxTime,  result);
+        Shape.collideAABBAABB(this, aabbShape, maxTime, result);
     }
 
     @Override
     public void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision result) {
         Shape.collideAABBPoly(this, polygonShape, maxTime, result);
-    }
-
-    private void init(double width, double height) {
-        this.width = width;
-        this.height = height;
     }
 
     public double getWidth() {
@@ -52,11 +51,6 @@ public class AABBShape extends Shape {
 
     public double getHeight() {
         return height;
-    }
-
-    @Override
-    public int getShapeType() {
-        return Shape.TYPE_AABB;
     }
 
     @Override

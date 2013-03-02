@@ -29,16 +29,16 @@ public class Physics {
         unitX.set(-unitY.getY(), unitY.getX());
         Entity a = collision.getA();
         Entity b = collision.getB();
-        double friction = Material.getFriction(a.getShape().getMaterial(), b.getShape().getMaterial());
-        double restitution = Material.getRestitution(a.getShape().getMaterial(), b.getShape().getMaterial());
+        double friction = Material.getFriction(a.getMaterial(), b.getMaterial());
+        double restitution = Material.getRestitution(a.getMaterial(), b.getMaterial());
 
         double xLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitX);
         double yLengthA = Vector2D.unitScalarProject(a.getDX(), a.getDY(), unitY);
         double xLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitX);
         double yLengthB = Vector2D.unitScalarProject(b.getDX(), b.getDY(), unitY);
 
-        double aMass = a.getShape().getMass();
-        double bMass = b.getShape().getMass();
+        double aMass = a.getMass();
+        double bMass = b.getMass();
         boolean isMassAInfinite = aMass == Double.POSITIVE_INFINITY;
         boolean isMassBInfinite = bMass == Double.POSITIVE_INFINITY;
         if (isMassAInfinite && isMassBInfinite) {

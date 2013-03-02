@@ -2,7 +2,6 @@ package bricklets;
 
 import gameengine.collisiondetection.shapes.PolygonShape;
 import gameengine.entities.Entity;
-import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -44,7 +43,7 @@ public class Paddle extends Entity {
             yPoints[i] = yPoint;
         }
 
-        return new PolygonShape(x, y, xPoints, yPoints, 1);
+        return new PolygonShape(x, y, xPoints, yPoints);
     }
 
     @Override

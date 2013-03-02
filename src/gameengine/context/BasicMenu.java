@@ -3,16 +3,15 @@ package gameengine.context;
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
 import gameengine.entities.BasicButton;
-import gameengine.entities.Entity;
 import gameengine.entities.Pointer;
 import gameengine.graphics.Graphic;
 import gameengine.graphics.OvalGraphic;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
+import gameengine.motion.EffectFactory;
 
 import java.awt.*;
-import java.util.Collections;
 
 /**
  * @author davidrusu
@@ -33,14 +32,12 @@ public class BasicMenu extends Context {
     public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons, ButtonHandler handler, Graphic background, double leftBorderRatio, double rightBorderRatio, double topBorderRatio, double bottomBorderRatio, double paddingRatio) {
         super(controller, type);
         this.buttons = buttons;
-        Collections.addAll(entities, buttons);
-        entities.add(pointer);
 
         for (BasicButton button : buttons) {
-            controller.addEntityToCollisionDetector(this, button);
+            world.addEntity(button);
         }
 
-        controller.addEntityToCollisionDetector(this, pointer);
+        world.addEntity(pointer);
 
         this.background = background;
         setupButtons(leftBorderRatio, rightBorderRatio, topBorderRatio, bottomBorderRatio, paddingRatio);
@@ -59,9 +56,6 @@ public class BasicMenu extends Context {
     @Override
     public void update(double elapsedTime) {
         updateButtons();
-        for (Entity entity : entities) {
-            entity.update(elapsedTime);
-        }
         background.update(elapsedTime);
     }
 
@@ -83,9 +77,7 @@ public class BasicMenu extends Context {
     @Override
     public void draw(Graphics2D g) {
         background.draw(g, 0, 0);
-        for (Entity entity : entities) {
-            entity.draw(g);
-        }
+        world.draw(this, g);
     }
 
     @Override
@@ -104,7 +96,7 @@ public class BasicMenu extends Context {
             button.initialize(width / 2, currentY, buttonWidth, buttonHeight);
             currentY += buttonHeight + padding;
         }
-//        EffectFactory.setZipperEffect(buttons, width / 2, width, 1);
+        EffectFactory.setZipperEffect(buttons, width / 2, width, 0.2);
     }
 
     /**

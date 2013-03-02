@@ -1,8 +1,10 @@
 package gameengine.collisiondetection;
 
+import Utilities.UnsortedArrayList;
 import gameengine.collisiondetection.tree.SpatialTree;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
+import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -11,17 +13,24 @@ public class World {
     private HashSet<Entity> entities = new HashSet<>();
     private SpatialTree tree;
     private int[] collisionGroups = new int[CollisionType.values().length];
-    private double[] collisionTimes = new double[16];
-    private int back = 0, numCollision = 0;
-    private double gameTime = 0;
+    private UnsortedArrayList<Entity> removedEntityBuffer = new UnsortedArrayList<>();
+    private UnsortedArrayList<WorldEffect> worldEffects = new UnsortedArrayList<>();
 
     public World(double centerX, double centerY, double halfLength) {
-        tree = new SpatialTree(centerX, centerY, halfLength);
+        tree = new SpatialTree(this, centerX, centerY, halfLength);
+    }
+
+    public void addEnvironmentMotion(WorldEffect worldEffect) {
+        worldEffects.add(worldEffect);
     }
 
     public void addEntity(Entity entity) {
         entities.add(entity);
         tree.addEntity(entity);
+    }
+
+    public void entityHasBeenRemoved(Entity entity) {
+        removedEntityBuffer.add(entity);
     }
 
     public void setCollisionGroup(CollisionType a, CollisionType b) {
@@ -47,6 +56,7 @@ public class World {
         }
         entities.clear();
         tree.clear();
+        worldEffects.clear();
     }
 
     public void update(double elapsedTime, Context context) {
@@ -55,28 +65,23 @@ public class World {
         tree.calcCollision(collisionGroups, elapsedTime, context);
         tree.tryResize();
         updateEntities(elapsedTime);
+        removeEntitiesFromBuffer();
         context.update(elapsedTime);
     }
 
+    private void removeEntitiesFromBuffer() {
+        for (int i = 0; i < removedEntityBuffer.size(); i++) {
+            entities.remove(removedEntityBuffer.get(i));
+        }
+        removedEntityBuffer.clear();
+    }
+
     public void draw(Context context, Graphics2D g) {
-        Viewport viewport = context.getViewport();
+        ViewPort viewPort = context.getViewPort();
 
-        double halfWidth = context.getWidth() / 2;
-        double halfHeight = context.getHeight() / 2;
-        double scaledHalfWidth = halfWidth / viewport.getScale();
-        double scaledHalfHeight = halfHeight / viewport.getScale();
-        double minX = viewport.getX() - scaledHalfWidth;
-        double maxX = viewport.getX() + scaledHalfWidth;
-        double minY = viewport.getY() - scaledHalfHeight;
-        double maxY = viewport.getY() + scaledHalfHeight;
-
-        g.scale(viewport.getScale(), viewport.getScale());
-        double deltaX = (int)((viewport.getX()) / viewport.getScale() - halfWidth);
-        double deltaY = (int)((viewport.getY()) / viewport.getScale() - halfHeight);
-        g.translate(deltaX, deltaY);
-        tree.draw(minX, maxX, minY, maxY, g);
-        g.translate(-deltaX, -deltaY);
-        g.scale(1 / viewport.getScale(), 1 / viewport.getScale());
+        viewPort.applyTransformations(g);
+        tree.draw(viewPort.getMinX(), viewPort.getMaxX(), viewPort.getMinY(), viewPort.getMaxY(), g);
+        viewPort.reverseTransformations(g);
     }
 
     public void drawTree(Graphics2D g, Color color) {
@@ -90,24 +95,22 @@ public class World {
     }
 
     private void updateMotions(double elapsedTime) {
+        for (int i = 0; i < worldEffects.size(); i++) {
+            worldEffects.get(i).update(elapsedTime);
+        }
         for (Entity entity : entities) {
+            int collisionTypeBitMask = entity.getCollisionTypeBitMask();
+            for (int i = 0; i < worldEffects.size(); i++) {
+                WorldEffect worldEffect = worldEffects.get(i);
+                if (worldEffect.isCollisionTypeAffected(collisionTypeBitMask)) {
+                    worldEffect.applyMotion(entity);
+                }
+            }
             entity.updateMotion(elapsedTime);
         }
     }
 
-    private double getCollisionRate() {
-        collisionTimes[back] = gameTime;
-        double collisionRate;
-        if (numCollision >= collisionTimes.length - 1) {
-            int front = (back + 1) % collisionTimes.length;
-            double dt = collisionTimes[back] - collisionTimes[front];
-            back = front;
-            collisionRate = collisionTimes.length / dt;
-        } else {
-            double dt = collisionTimes[back] - collisionTimes[0];
-            back = (back + 1) % collisionTimes.length;
-            collisionRate = collisionTimes.length / dt;
-        }
-        return collisionRate;
+    public int getEntityCount() {
+        return tree.getEntityCount();
     }
 }

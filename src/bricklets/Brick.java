@@ -17,7 +17,7 @@ public class Brick extends BoxEntity {
 
     public Brick(double x, double y, double width, double height) {
         super(x, y, width, height);
-        color = Color.BLACK;
+        color = Color.DARK_GRAY;
     }
 
     public void doDamage(double amount) {
@@ -38,10 +38,14 @@ public class Brick extends BoxEntity {
 
     @Override
     public void draw(Graphics2D g) {
-        int grad = (int) ((1 - health / TOTAL_HEALTH) * 255);
+        double offset = 0.1;
+        int grad = (int) (((1 - health / TOTAL_HEALTH) + offset) * 255 / (offset + 1));
         g.setColor(new Color(grad, grad, grad));
         g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) (width), (int) (height));
-        g.setColor(Color.RED.darker().darker());
+//        drawHealth(g);
+    }
+
+    private void drawHealth(Graphics2D g) {
         String text = "\u2665 : " + health;
         FontMetrics metrics = g.getFontMetrics();
         int textWidth = metrics.stringWidth(text);

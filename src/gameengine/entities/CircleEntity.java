@@ -1,17 +1,16 @@
 package gameengine.entities;
 
 import gameengine.collisiondetection.shapes.CircleShape;
-import gameengine.physics.Material;
 
 import java.awt.*;
 
 public class CircleEntity extends Entity {
     protected double radius;
     protected Color color = Color.WHITE;
-    private double maxSpeed = 1;
+    private double maxSpeed = 2;
 
     public CircleEntity(double x, double y, double radius) {
-        super(x, y, radius * 2, radius * 2, new CircleShape(x, y, radius, 1));
+        super(x, y, radius * 2, radius * 2, new CircleShape(x, y, radius));
         this.radius = radius;
     }
 
@@ -25,13 +24,8 @@ public class CircleEntity extends Entity {
     }
 
     private void enforceMaxSpeed() {
-        maxSpeed *= 1.001;
+//        maxSpeed *= 1.001;
         double currentVel = Math.sqrt(dx * dx + dy * dy);
-//        if (currentVel > maxSpeed) {
-//            double ratio = maxSpeed / currentVel;
-//            dx *= ratio;
-//            dy *= ratio;
-//        }
         double ratio = 0.99;
         if (Math.abs(dx) > Math.abs(dy)) {
             dx *= ratio;
@@ -47,7 +41,6 @@ public class CircleEntity extends Entity {
     public void draw(Graphics2D g) {
         g.setColor(color);
         g.fillOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
-//        getShape().drawBoundingBoxes(g, Color.ORANGE);
     }
 
     public void setColor(Color color) {

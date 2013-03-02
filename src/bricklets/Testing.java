@@ -13,9 +13,6 @@ import gameengine.graphics.OvalGraphic;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
 import gameengine.input.InputCode;
-import gameengine.motion.motions.AttractMotion;
-import gameengine.motion.motions.Motion;
-import gameengine.motion.motions.SpringMotion;
 import gameengine.physics.Material;
 import gameengine.physics.Physics;
 
@@ -24,12 +21,15 @@ import java.util.Random;
 
 public class Testing extends Context implements ActionHandler {
     private Pointer pointer;
-    private AttractMotion attractMotion;
     private Random rand = new Random(0);
-    private boolean drawing = true;
     private boolean attracting = false;
     private boolean panning = false;
-    private Material ballMaterial = Material.createMaterial(0, 1);
+    private Material ballMaterial = Material.createMaterial(0, 1, 1);
+    private boolean shooting = false;
+    private BoxEntity topBounds;
+    private BoxEntity bottomBounds;
+    private BoxEntity leftBounds;
+    private BoxEntity rightBounds;
 
     public Testing(GameController controller) {
         super(controller, ContextType.GAME);
@@ -37,127 +37,99 @@ public class Testing extends Context implements ActionHandler {
     }
 
     public void init() {
-        entities.clear();
         // TODO each context should have its own world, also clearWorld() should not clear the collision pairs
-        controller.clearWorld(this);
-        controller.setCollisionPair(this, CollisionType.BALL, CollisionType.BALL);
-        controller.setCollisionPair(this, CollisionType.BALL, CollisionType.DEFAULT);
-        controller.setCollisionPair(this, CollisionType.WALL, CollisionType.DEFAULT);
+        world.clearCollisions();
+        world.setCollisionGroup(CollisionType.BALL, CollisionType.BALL);
+        world.setCollisionGroup(CollisionType.BALL, CollisionType.DEFAULT);
+        world.setCollisionGroup(CollisionType.WALL, CollisionType.DEFAULT);
+
+//        GravityWorldEffect gravity = new GravityWorldEffect(0.001);
+//        gravity.addCollisionType(CollisionType.BALL);
+//        world.addEnvironmentMotion(gravity);
+//
+//        VelocityEnforcerWorldEffect velocityEnforcer = new VelocityEnforcerWorldEffect(0.3, 0.9);
+//        velocityEnforcer.addCollisionType(CollisionType.BALL);
+//        world.addEnvironmentMotion(velocityEnforcer);
 
         pointer = new Pointer(new OvalGraphic(15, 15, Color.RED), width / 2, height / 2);
 //        pointer.getShape().setMass(1);
-        controller.addEntityToCollisionDetector(this, pointer);
-        entities.add(pointer);
-        attractMotion = new AttractMotion(pointer.getX(), pointer.getY(),
-                0.00001, 0.1, 1);
-
-        double xOffset = 500;
-        double yOffset = 500;
-        double ballRadius = 10;
-        for (int i = 0; i < 10; i++) {
-            double ballX = xOffset + i * ballRadius * 2;
-            CircleEntity circle = new CircleEntity(ballX, yOffset, ballRadius);
-            circle.getShape().setMaterial(ballMaterial);
-            circle.getShape().setCollisionType(CollisionType.BALL);
-            if (i == 5) {
-                circle.getShape().setMass(10);
-                circle.setColor(Color.DARK_GRAY);
-            }
-            SpringMotion spring = new SpringMotion(ballX, yOffset, 200, 0.0001, 0.5, 1);
-            circle.setMotion(spring);
-            controller.addEntityToCollisionDetector(this, circle);
-            entities.add(circle);
-        }
-
+        world.addEntity(pointer);
+//        double xOffset = 500;
+//        double yOffset = 500;
+//        double ballRadius = 10;
+//        for (int i = 0; i < 10; i++) {
+////            double ballX = xOffset + i * ballRadius * 2;
+////            CircleEntity circle = new CircleEntity(ballX, yOffset, ballRadius);
+////            circle.getShape().setMaterial(ballMaterial);
+////            circle.getShape().setCollisionType(CollisionType.BALL);
+//////            if (i == 5) {
+//////                circle.getShape().setMass(10);
+//////                circle.setColor(Color.DARK_GRAY);
+//////            }
+////            SpringMotion spring = new SpringMotion(ballX, yOffset, 200, 0.001, 0.2, 1);
+////            circle.setMotion(spring);
+////            controller.addEntityToCollisionDetector(this, circle);
+////            entities.add(circle);
+//        }
         initBounding();
         setupInput();
-        viewport.setX(width / 2);
-        viewport.setY(height / 2);
     }
 
     public void initBounding() {
         double borderThickness = 10;
-        BoxEntity topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
-        BoxEntity bottomBounds = new BoxEntity(width / 2, height, width, borderThickness);
-        BoxEntity leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
-        BoxEntity rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
-        topBounds.getShape().setMass(Double.POSITIVE_INFINITY);
-        bottomBounds.getShape().setMass(Double.POSITIVE_INFINITY);
-        leftBounds.getShape().setMass(Double.POSITIVE_INFINITY);
-        rightBounds.getShape().setMass(Double.POSITIVE_INFINITY);
-        topBounds.getShape().setCollisionType(CollisionType.WALL);
-        bottomBounds.getShape().setCollisionType(CollisionType.WALL);
-        leftBounds.getShape().setCollisionType(CollisionType.WALL);
-        rightBounds.getShape().setCollisionType(CollisionType.WALL);
-        controller.setCollisionPair(this, CollisionType.BALL, CollisionType.WALL);
+        topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
+        bottomBounds = new BoxEntity(width / 2, height, width, borderThickness);
+        leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
+        rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
+        topBounds.setMass(Double.POSITIVE_INFINITY);
+        bottomBounds.setMass(Double.POSITIVE_INFINITY);
+        leftBounds.setMass(Double.POSITIVE_INFINITY);
+        rightBounds.setMass(Double.POSITIVE_INFINITY);
+        topBounds.setCollisionType(CollisionType.WALL);
+        bottomBounds.setCollisionType(CollisionType.WALL);
+        leftBounds.setCollisionType(CollisionType.WALL);
+        rightBounds.setCollisionType(CollisionType.WALL);
+        world.setCollisionGroup(CollisionType.BALL, CollisionType.WALL);
 
-        Material material = Material.createMaterial(0, 1);
-        topBounds.getShape().setMaterial(material);
-        bottomBounds.getShape().setMaterial(material);
-        leftBounds.getShape().setMaterial(material);
-        rightBounds.getShape().setMaterial(material);
+        Material material = Material.createMaterial(0, 1, 1);
+        topBounds.setMaterial(material);
+        bottomBounds.setMaterial(material);
+        leftBounds.setMaterial(material);
+        rightBounds.setMaterial(material);
 
-        controller.addEntityToCollisionDetector(this, topBounds);
-        controller.addEntityToCollisionDetector(this, bottomBounds);
-        controller.addEntityToCollisionDetector(this, leftBounds);
-        controller.addEntityToCollisionDetector(this, rightBounds);
-
-        entities.add(topBounds);
-        entities.add(bottomBounds);
-        entities.add(leftBounds);
-        entities.add(rightBounds);
+        world.addEntity(topBounds);
+        world.addEntity(bottomBounds);
+        world.addEntity(leftBounds);
+        world.addEntity(rightBounds);
     }
 
     @Override
     public void update(double elapsedTime) {
         if (panning) {
-            viewport.setPosition(pointer.getX(), pointer.getY());
+            viewPort.setPosition(pointer.getX() - width / 2, pointer.getY() - height / 2);
         }
-        if (attracting) {
-            attractMotion.setDestination(pointer.getX(), pointer.getY());
-            double k = 0.00001;
-            double d = 0.001;
-            double targetD = 300;
-            for (Entity entity : entities) {
-                double attractStrength = k / entity.getShape().getMass();
-                double deltaX = pointer.getX() - entity.getX();
-                double deltaY = pointer.getY() - entity.getY();
-                double velX = (Math.abs(deltaX) - targetD) * attractStrength * Math.signum(deltaX)- d * entity.getDX();
-                double velY = (Math.abs(deltaY) - targetD) * attractStrength * Math.signum(deltaY)- d * entity.getDY();
-                entity.addVelocity(velX * elapsedTime, velY * elapsedTime);
-            }
-        }
+
+//        if (shooting) {
+//            currentTime += elapsedTime;
+//            double ballRadius = 3;
+//            double timeBetweenBalls = 2;
+//            if (lastTime + timeBetweenBalls <= currentTime) {
 //
-        double d = 0.99;
-        double g = 0.001 * elapsedTime;
-        for (int i = 0; i < entities.size(); i++) {
-            Entity entity = entities.get(i);
-            if (!(entity instanceof BoxEntity)) {
-                entity.addVelocity(0, g);
-            }
-            entity.setVelocity(entity.getDX() * d, entity.getDY() * d);
-        }
+//                for (int i = 0; i < 2; i++) {
+//                    addBall(pointer.getX(), pointer.getY(), ballRadius);
+//                }
+////                addBall(pointer.getX() + ballRadius * 2 + 2, pointer.getY(), ballRadius);
+////                addBall(pointer.getX() - ballRadius * 2- 2, pointer.getY(), ballRadius);
+//                lastTime = currentTime;// - (currentTime - lastTime + timeBetweenBalls);
+//            }
+//        }
     }
 
     @Override
     public void draw(Graphics2D g) {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
-
-        controller.drawWorld(this, g);
-
-        if (drawing) {
-            for (Entity entity : entities) {
-                Motion motion = entity.getMotion();
-                if (motion instanceof SpringMotion) {
-                    ((SpringMotion)motion).draw(g, Color.red, entity);
-                }
-            }
-//            controller.drawPartitions(g, Color.RED);
-//            for (Entity entity : entities) {
-//                entity.drawLineToPartition(g, new Color(93, 71, 57));
-//            }
-        }
+        world.draw(this, g);
         drawStats(g);
     }
 
@@ -165,18 +137,25 @@ public class Testing extends Context implements ActionHandler {
         g.setColor(Color.red);
         g.drawString("fps: " + controller.getFrameRate(), 25, 25);
         g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
-        g.drawString("entities: " + entities.size(), 25, 75);
-        g.drawString("scale: " + viewport.getScale(), 25, 100);
+        g.drawString("entities: " + world.getEntityCount(), 25, 75);
+        g.drawString("scale: " + viewPort.getScale(), 25, 100);
     }
 
     @Override
     public void handleCollision(Collision collision) {
         Physics.performCollision(collision);
+        Entity a = collision.getA();
+        Entity b = collision.getB();
+
+//        if (a == bottomBounds) {
+//            b.removeFromWorld();
+//        } else if (b == bottomBounds) {
+//            a.removeFromWorld();
+//        }
     }
 
     private void setupInput() {
-        controller.setContextBinding(contextType, InputCode.KEY_SPACE,
-                Action.TOGGLE_DRAWING);
+        controller.setContextBinding(contextType, InputCode.KEY_SPACE, Action.TOGGLE_DRAWING);
         controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_UP, Action.ZOOM_OUT);
@@ -187,17 +166,18 @@ public class Testing extends Context implements ActionHandler {
 
     @Override
     public void startAction(Action action, int inputCode) {
-        double scaleAmount = 0.01;
+        double scaleAmount = 0.1;
         switch (action) {
             case EXIT_GAME:
                 break;
             case MOUSE_CLICK:
+                shooting = true;
                 break;
             case ZOOM_IN:
-                viewport.scaleScale(1 - scaleAmount);
+                viewPort.scaleScale(1 - scaleAmount);
                 break;
             case ZOOM_OUT:
-                viewport.scaleScale(1 + scaleAmount);
+                viewPort.scaleScale(1 + scaleAmount);
                 break;
             case PAN:
                 panning = true;
@@ -209,13 +189,13 @@ public class Testing extends Context implements ActionHandler {
     public void stopAction(Action action, int inputCode) {
         switch (action) {
             case TOGGLE_DRAWING:
-                drawing = !drawing;
                 break;
             case EXIT_GAME:
                 controller.exitContext();
                 break;
             case MOUSE_CLICK:
-                int ballSize = 10;
+                shooting = false;
+                int ballSize = 2;
                 double jitter = 0;
 //                int xOffset = width / 6;
 //                int yOffset = 50;
@@ -233,11 +213,11 @@ public class Testing extends Context implements ActionHandler {
 //                        addBall((x * diameter) + xOffset, (y * diameter) + yOffset, ballSize);
 //                    }
 //                }
-                for (int i = 0; i < 1; i++) {
-//                    addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
-//                            height * 0.5 + (rand.nextDouble() - 0.5) * (height - 100), ballSize);
-                    addBall(pointer.getX() + (rand.nextDouble() - 0.5) * jitter,
-                            pointer.getY() + (rand.nextDouble() - 0.5) * jitter, ballSize);
+                for (int i = 0; i < 100; i++) {
+                    addBall(width * 0.5 + (rand.nextDouble() - 0.5) * (width - 50),
+                            height * 0.5 + (rand.nextDouble() - 0.5) * (height - 100), ballSize);
+//                    addBall(pointer.getX() + (rand.nextDouble() - 0.5) * jitter,
+//                            pointer.getY() + (rand.nextDouble() - 0.5) * jitter, ballSize);
                 }
                 break;
             case ATTRACT:
@@ -252,13 +232,10 @@ public class Testing extends Context implements ActionHandler {
     private void addBall(double x, double y, double radius) {
         double speed = 0.1;
         CircleEntity entity = new CircleEntity(x, y, radius);
-//        entity.setColor(new Color((float)Math.random(), (float)Math.random(), (float)Math.random()));
-//        entity.setVelocity(0, 1);
-        entity.getShape().setMass(1);
+//        entity.setMass(1);
         entity.setVelocity((Math.random() - 0.5) * speed, (Math.random() - 0.5) * speed);
-        entity.getShape().setMaterial(ballMaterial);
-        entity.getShape().setCollisionType(CollisionType.BALL);
-        controller.addEntityToCollisionDetector(this, entity);
-        entities.add(entity);
+        entity.setMaterial(ballMaterial);
+        entity.setCollisionType(CollisionType.BALL);
+        world.addEntity(entity);
     }
 }

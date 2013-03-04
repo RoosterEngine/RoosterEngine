@@ -2,7 +2,7 @@ package bricklets;
 
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.CollisionType;
+import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.entities.BoxEntity;
@@ -38,7 +38,7 @@ public class BrickBreaker extends Context implements ActionHandler {
     private double yThrustMultiplier = 0;
     private Random rand = new Random(1);
     private double initialPaddleY = height - 200;
-    private double ballRadius = 5;
+    private double ballRadius = 12;
     private double ballMass = 50;
     private int lives = 100;
     private double scale = 1;
@@ -58,20 +58,20 @@ public class BrickBreaker extends Context implements ActionHandler {
         lives = 100;
         reset();
 
-        world.setCollisionGroup(CollisionType.DEFAULT, CollisionType.DEFAULT);
-        world.setCollisionGroup(CollisionType.DEFAULT, CollisionType.BALL);
-        world.setCollisionGroup(CollisionType.DEFAULT, CollisionType.WALL);
-        world.setCollisionGroup(CollisionType.BALL, CollisionType.WALL);
-        world.setCollisionGroup(CollisionType.BALL, CollisionType.BALL);
+        world.setCollisionGroup(EntityType.DEFAULT, EntityType.DEFAULT);
+        world.setCollisionGroup(EntityType.DEFAULT, EntityType.BALL);
+        world.setCollisionGroup(EntityType.DEFAULT, EntityType.WALL);
+        world.setCollisionGroup(EntityType.BALL, EntityType.WALL);
+        world.setCollisionGroup(EntityType.BALL, EntityType.BALL);
 
-        VelocityEnforcerWorldEffect velocityEnforcer = new VelocityEnforcerWorldEffect(0.5, 0.8);
-        velocityEnforcer.addCollisionType(CollisionType.BALL);
+        VelocityEnforcerWorldEffect velocityEnforcer = new VelocityEnforcerWorldEffect(0.5, 0.6);
+        velocityEnforcer.addCollisionType(EntityType.BALL);
         world.addEnvironmentMotion(velocityEnforcer);
 
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
         paddle.setMass(1000);
         paddle.setMaterial(Material.createMaterial(0, 1, 1));
-        paddle.setCollisionType(CollisionType.DEFAULT);
+        paddle.setEntityType(EntityType.DEFAULT);
         world.addEntity(paddle);
 
         initBricks();
@@ -86,26 +86,12 @@ public class BrickBreaker extends Context implements ActionHandler {
 
     public void initBounding() {
         double borderThickness = 10;
+        Entity.setDefaultEntityType(EntityType.WALL);
+        Entity.setDefaultMaterial(Material.createMaterial(0, 1, Double.POSITIVE_INFINITY));
         topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
         bottomBounds = new BoxEntity(width / 2, height - 50, width, borderThickness);
         leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
         rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
-
-        topBounds.setMass(Double.POSITIVE_INFINITY);
-        bottomBounds.setMass(Double.POSITIVE_INFINITY);
-        leftBounds.setMass(Double.POSITIVE_INFINITY);
-        rightBounds.setMass(Double.POSITIVE_INFINITY);
-
-        topBounds.setCollisionType(CollisionType.WALL);
-        bottomBounds.setCollisionType(CollisionType.WALL);
-        leftBounds.setCollisionType(CollisionType.WALL);
-        rightBounds.setCollisionType(CollisionType.WALL);
-
-        Material material = Material.createMaterial(0, 1, 1);
-        topBounds.setMaterial(material);
-        bottomBounds.setMaterial(material);
-        leftBounds.setMaterial(material);
-        rightBounds.setMaterial(material);
 
         world.addEntity(topBounds);
         world.addEntity(bottomBounds);
@@ -117,19 +103,20 @@ public class BrickBreaker extends Context implements ActionHandler {
         brickCount = 0;
         int rows = 10;
         int columns = 70;
-        double padding = ballRadius * 2.5;
+        double padding = ballRadius * 1.5;
         double borderPadding = ballRadius * 5;
         double yOffset = borderPadding * 1.75;
         double brickWidth = (width - borderPadding * 2 - (columns + 1) * padding) / columns;
         double brickHeight = brickWidth;
+        Entity.setDefaultEntityType(EntityType.DEFAULT);
         for (int x = 0; x < columns; x++) {
             for (int y = 0; y < rows; y++) {
                 double xPos = padding * (1 + x) + brickWidth * x + brickWidth / 2 + borderPadding;
                 double yPos = padding * (1 + y) + brickHeight * y + brickHeight / 2 + yOffset;
                 Brick brick = new Brick(xPos, yPos, brickWidth, brickHeight);
+//                brick.setShape(new CircleShape(xPos, yPos, brickWidth));
                 brick.setMass(20);
-                brick.setCollisionType(CollisionType.DEFAULT);
-                brick.setMotion(new AttractMotion(xPos, yPos, 0.001, 0.3, brick.getMass()));
+                brick.setMotion(new AttractMotion(xPos, yPos, 0.0005, 0.3, brick.getMass()));
                 brickCount++;
                 world.addEntity(brick);
             }
@@ -140,15 +127,13 @@ public class BrickBreaker extends Context implements ActionHandler {
     public void update(double elapsedTime) {
         if (shooting) {
             currentTime += elapsedTime;
-            double timeBetweenBalls = 5;
+            double timeBetweenBalls = 50;
             if (lastTime + timeBetweenBalls <= currentTime) {
 
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < 1; i++) {
                     addBall(controlledEntity.getX(), controlledEntity.getY() - controlledEntity.getHeight(),
-                            ballRadius, 10);
+                            ballRadius, 50);
                 }
-//                addBall(pointer.getX() + ballRadius * 2 + 2, pointer.getY(), ballRadius);
-//                addBall(pointer.getX() - ballRadius * 2- 2, pointer.getY(), ballRadius);
                 lastTime = currentTime;// - (currentTime - lastTime + timeBetweenBalls);
             }
         }
@@ -291,12 +276,12 @@ public class BrickBreaker extends Context implements ActionHandler {
         double speed = 1.5;
         CircleEntity entity = new CircleEntity(x, y, radius);
 //        entity.setColor(new Color((float)Math.random(), (float)Math.random(), (float)Math.random()));
-        double spread = (Math.sin(currentTime / 1000) + 1.5) * 0.2;
-        entity.setVelocity((Math.random() - 0.5) * spread, -1);
+        double spread = (Math.sin(currentTime / 1000) + 1.5) * 2;
+        entity.setVelocity((Math.random() - 0.5) * spread, -10);
         entity.setMass(mass);
 //        entity.setVelocity((Math.random() - 0.5) * speed, (Math.random() - 0.5) * speed);
         entity.setMaterial(ballMaterial);
-        entity.setCollisionType(CollisionType.BALL);
+        entity.setEntityType(EntityType.BALL);
         world.addEntity(entity);
     }
 }

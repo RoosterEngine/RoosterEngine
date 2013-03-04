@@ -69,5 +69,4 @@ public class Main implements ButtonHandler {
         controller.setContextBinding(ContextType.MENU, InputCode.KEY_ENTER, Action.MENU_SELECT);
         controller.setContextBinding(ContextType.MENU, InputCode.MOUSE_LEFT_BUTTON, Action.MENU_MOUSE_SELECT);
     }
-
 }

@@ -56,6 +56,6 @@ public class AABBShape extends Shape {
     @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color);
-        g.drawRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
+        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
     }
 }

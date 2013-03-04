@@ -24,6 +24,7 @@ public class BoxEntity extends Entity {
     public void draw(Graphics2D g) {
         g.setColor(color);
         g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
+//        getShape().draw(g, color);
     }
 
 }

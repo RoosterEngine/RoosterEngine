@@ -1,6 +1,6 @@
 package gameengine.motion.environmentmotions;
 
-import gameengine.collisiondetection.CollisionType;
+import gameengine.collisiondetection.EntityType;
 import gameengine.entities.Entity;
 
 /**
@@ -12,14 +12,14 @@ import gameengine.entities.Entity;
 public abstract class WorldEffect {
     private int collisionTypes = 0;
 
-    public void addCollisionType(CollisionType type) {
+    public void addCollisionType(EntityType type) {
         int ordinal = type.ordinal();
 
         int mask = 1 << ordinal;
         collisionTypes |= mask;
     }
 
-    public void removeCollisionType(CollisionType type) {
+    public void removeCollisionType(EntityType type) {
         int ordinal = type.ordinal();
 
         int mask = ~(1 << ordinal);

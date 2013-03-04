@@ -2,7 +2,7 @@ package bricklets;
 
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.CollisionType;
+import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.entities.BoxEntity;
@@ -39,16 +39,16 @@ public class Testing extends Context implements ActionHandler {
     public void init() {
         // TODO each context should have its own world, also clearWorld() should not clear the collision pairs
         world.clearCollisions();
-        world.setCollisionGroup(CollisionType.BALL, CollisionType.BALL);
-        world.setCollisionGroup(CollisionType.BALL, CollisionType.DEFAULT);
-        world.setCollisionGroup(CollisionType.WALL, CollisionType.DEFAULT);
+        world.setCollisionGroup(EntityType.BALL, EntityType.BALL);
+        world.setCollisionGroup(EntityType.BALL, EntityType.DEFAULT);
+        world.setCollisionGroup(EntityType.WALL, EntityType.DEFAULT);
 
 //        GravityWorldEffect gravity = new GravityWorldEffect(0.001);
-//        gravity.addCollisionType(CollisionType.BALL);
+//        gravity.addCollisionType(EntityType.BALL);
 //        world.addEnvironmentMotion(gravity);
 //
 //        VelocityEnforcerWorldEffect velocityEnforcer = new VelocityEnforcerWorldEffect(0.3, 0.9);
-//        velocityEnforcer.addCollisionType(CollisionType.BALL);
+//        velocityEnforcer.addCollisionType(EntityType.BALL);
 //        world.addEnvironmentMotion(velocityEnforcer);
 
         pointer = new Pointer(new OvalGraphic(15, 15, Color.RED), width / 2, height / 2);
@@ -61,7 +61,7 @@ public class Testing extends Context implements ActionHandler {
 ////            double ballX = xOffset + i * ballRadius * 2;
 ////            CircleEntity circle = new CircleEntity(ballX, yOffset, ballRadius);
 ////            circle.getShape().setMaterial(ballMaterial);
-////            circle.getShape().setCollisionType(CollisionType.BALL);
+////            circle.getShape().setEntityType(EntityType.BALL);
 //////            if (i == 5) {
 //////                circle.getShape().setMass(10);
 //////                circle.setColor(Color.DARK_GRAY);
@@ -85,11 +85,11 @@ public class Testing extends Context implements ActionHandler {
         bottomBounds.setMass(Double.POSITIVE_INFINITY);
         leftBounds.setMass(Double.POSITIVE_INFINITY);
         rightBounds.setMass(Double.POSITIVE_INFINITY);
-        topBounds.setCollisionType(CollisionType.WALL);
-        bottomBounds.setCollisionType(CollisionType.WALL);
-        leftBounds.setCollisionType(CollisionType.WALL);
-        rightBounds.setCollisionType(CollisionType.WALL);
-        world.setCollisionGroup(CollisionType.BALL, CollisionType.WALL);
+        topBounds.setEntityType(EntityType.WALL);
+        bottomBounds.setEntityType(EntityType.WALL);
+        leftBounds.setEntityType(EntityType.WALL);
+        rightBounds.setEntityType(EntityType.WALL);
+        world.setCollisionGroup(EntityType.BALL, EntityType.WALL);
 
         Material material = Material.createMaterial(0, 1, 1);
         topBounds.setMaterial(material);
@@ -235,7 +235,7 @@ public class Testing extends Context implements ActionHandler {
 //        entity.setMass(1);
         entity.setVelocity((Math.random() - 0.5) * speed, (Math.random() - 0.5) * speed);
         entity.setMaterial(ballMaterial);
-        entity.setCollisionType(CollisionType.BALL);
+        entity.setEntityType(EntityType.BALL);
         world.addEntity(entity);
     }
 }

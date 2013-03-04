@@ -12,7 +12,7 @@ import java.util.HashSet;
 public class World {
     private HashSet<Entity> entities = new HashSet<>();
     private SpatialTree tree;
-    private int[] collisionGroups = new int[CollisionType.values().length];
+    private int[] collisionGroups = new int[EntityType.values().length];
     private UnsortedArrayList<Entity> removedEntityBuffer = new UnsortedArrayList<>();
     private UnsortedArrayList<WorldEffect> worldEffects = new UnsortedArrayList<>();
 
@@ -33,7 +33,7 @@ public class World {
         removedEntityBuffer.add(entity);
     }
 
-    public void setCollisionGroup(CollisionType a, CollisionType b) {
+    public void setCollisionGroup(EntityType a, EntityType b) {
         int x = a.ordinal();
         int y = b.ordinal();
 
@@ -43,7 +43,7 @@ public class World {
         collisionGroups[y] |= mask;
     }
 
-    public void removeCollisionGroup(CollisionType a, CollisionType b) {
+    public void removeCollisionGroup(EntityType a, EntityType b) {
         int aOrdinal = a.ordinal();
         int bOrdinal = b.ordinal();
         int mask = 1 << aOrdinal;

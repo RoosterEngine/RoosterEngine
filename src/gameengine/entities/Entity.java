@@ -1,6 +1,6 @@
 package gameengine.entities;
 
-import gameengine.collisiondetection.CollisionType;
+import gameengine.collisiondetection.EntityType;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.collisiondetection.tree.Tree;
 import gameengine.motion.motions.Motion;
@@ -10,10 +10,12 @@ import gameengine.physics.Material;
 import java.awt.*;
 
 public abstract class Entity {
+    private static EntityType defaultEntityType = EntityType.DEFAULT;
+    private static Material defaultMaterial = Material.getDefaultMaterial();
     protected Material material;
     protected double mass;
     protected double x, y, dx, dy, width, height, halfWidth, halfHeight;
-    private int collisionType = CollisionType.DEFAULT.ordinal();
+    private int collisionType = EntityType.DEFAULT.ordinal();
     private int collisionTypeBitMask = 1 << collisionType;
     private Motion motion;
     private Shape shape;
@@ -21,20 +23,22 @@ public abstract class Entity {
     private int indexInTree;
 
     public Entity(double x, double y, double width, double height, Shape shape) {
-        this(x, y, width, height, 1, Material.getDefaultMaterial(), shape);
+        this(x, y, width, height, defaultMaterial, shape);
     }
 
     public Entity(double x, double y, double width, double height, Material material, Shape shape) {
-        init(x, y, width, height, material, shape);
+        //TODO we should have an overloaded constructor that accepts the entityType as a parameter
+        init(x, y, width, height, material, shape, defaultEntityType);
         updateMass();
     }
 
     public Entity(double x, double y, double width, double height, double mass, Material material, Shape shape) {
-        init(x, y, width, height, material, shape);
+        //TODO we should have an overloaded constructor that accepts the entityType as a parameter
+        init(x, y, width, height, material, shape, defaultEntityType);
         this.mass = mass;
     }
 
-    private void init(double x, double y, double width, double height, Material material, Shape shape) {
+    private void init(double x, double y, double width, double height, Material material, Shape shape, EntityType entityType) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -46,6 +50,15 @@ public abstract class Entity {
         motion = new NormalMotion();
         shape.setParent(this);
         shape.setParentOffset(x - shape.getX(), y - shape.getY());
+        setEntityType(entityType);
+    }
+
+    public static void setDefaultEntityType(EntityType defaultType) {
+        defaultEntityType = defaultType;
+    }
+
+    public static void setDefaultMaterial(Material material) {
+        defaultMaterial = material;
     }
 
     public double getX() {
@@ -88,7 +101,7 @@ public abstract class Entity {
         shape.updateVelocity(this.dx, this.dy);
     }
 
-    public void setCollisionType(CollisionType type) {
+    public void setEntityType(EntityType type) {
         collisionType = type.ordinal();
         collisionTypeBitMask = 1 << collisionType;
     }

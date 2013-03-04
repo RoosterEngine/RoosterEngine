@@ -48,6 +48,6 @@ public class CircleShape extends Shape {
     @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color);
-        g.drawOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
+        g.fillOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
     }
 }

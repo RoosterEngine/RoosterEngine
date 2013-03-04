@@ -96,7 +96,7 @@ public class BasicMenu extends Context {
             button.initialize(width / 2, currentY, buttonWidth, buttonHeight);
             currentY += buttonHeight + padding;
         }
-        EffectFactory.setZipperEffect(buttons, width / 2, width, 0.2);
+        EffectFactory.setZipperEffect(buttons, width / 2, width, 0.1);
     }
 
     /**

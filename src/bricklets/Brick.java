@@ -40,9 +40,10 @@ public class Brick extends BoxEntity {
     public void draw(Graphics2D g) {
         double offset = 0.1;
         int grad = (int) (((1 - health / TOTAL_HEALTH) + offset) * 255 / (offset + 1));
-        g.setColor(new Color(grad, grad, grad));
-        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) (width), (int) (height));
+//        g.setColor(new Color(grad, grad, grad));
+//        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) (width), (int) (height));
 //        drawHealth(g);
+        getShape().draw(g, new Color(grad, grad, grad));
     }
 
     private void drawHealth(Graphics2D g) {

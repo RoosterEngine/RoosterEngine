@@ -4,6 +4,7 @@ import gameengine.collisiondetection.shapes.AABBShape;
 import gameengine.collisiondetection.shapes.CircleShape;
 import gameengine.graphics.Graphic;
 import gameengine.graphics.SolidColorGraphic;
+import gameengine.physics.Material;
 
 import java.awt.*;
 
@@ -23,7 +24,7 @@ public class BasicButton extends Entity {
     }
 
     public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic) {
-        super(0, 0, 0, 0, new CircleShape(0, 0, 0));
+        super(0, 0, 0, 0, 1, Material.getDefaultMaterial(), new CircleShape(0, 0, 0));
         this.text = text;
         this.upGraphic = upGraphic;
         this.pressedGraphic = downGraphic;

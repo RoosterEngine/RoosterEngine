@@ -12,7 +12,7 @@ public class BoxEntity extends Entity {
     protected Color color;
 
     public BoxEntity(double x, double y, double width, double height) {
-        super(x, y, width, height, new AABBShape(x, y, width, height));
+        super(x, y, new AABBShape(width, height));
         color = Color.WHITE;
     }
 
@@ -23,8 +23,7 @@ public class BoxEntity extends Entity {
     @Override
     public void draw(Graphics2D g) {
         g.setColor(color);
-        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
-//        getShape().draw(g, color);
+        g.fillRect((int) (x - getHalfWidth()), (int) (y - getHalfHeight()), (int) getWidth(), (int) getHeight());
     }
 
 }

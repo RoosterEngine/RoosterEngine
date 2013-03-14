@@ -40,10 +40,9 @@ public class Brick extends BoxEntity {
     public void draw(Graphics2D g) {
         double offset = 0.1;
         int grad = (int) (((1 - health / TOTAL_HEALTH) + offset) * 255 / (offset + 1));
-//        g.setColor(new Color(grad, grad, grad));
-//        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) (width), (int) (height));
-//        drawHealth(g);
-        getShape().draw(g, new Color(grad, grad, grad));
+        g.setColor(new Color(grad, grad, grad));
+        g.fillRect((int) (x - getHalfWidth()), (int) (y - getHalfHeight()), (int) (getWidth()), (int) (getHeight()));
+        drawBoundingBoxes(g, Color.RED);
     }
 
     private void drawHealth(Graphics2D g) {
@@ -52,10 +51,10 @@ public class Brick extends BoxEntity {
         int textWidth = metrics.stringWidth(text);
         int textHeight = metrics.getHeight();
         g.setColor(Color.WHITE);
-        double xPadding = (width - textWidth) * 0.5;
-        double yPadding = (height + textHeight / 2) * 0.5;
-        g.drawString(text, (int) (x - width / 2 + xPadding),
-                (int) (y - height / 2 + yPadding));
+        double xPadding = (getWidth() - textWidth) * 0.5;
+        double yPadding = (getHeight() + textHeight / 2) * 0.5;
+        g.drawString(text, (int) (x - getWidth() / 2 + xPadding),
+                (int) (y - getHeight() / 2 + yPadding));
     }
 
 }

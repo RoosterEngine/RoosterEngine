@@ -17,7 +17,6 @@ public class World {
     private UnsortedArrayList<WorldEffect> worldEffects = new UnsortedArrayList<>();
 
     public World(double centerX, double centerY, double halfLength) {
-        //t
         tree = new SpatialTree(this, centerX, centerY, halfLength);
     }
 
@@ -42,6 +41,19 @@ public class World {
         collisionGroups[x] |= mask;
         mask = 1 << x;
         collisionGroups[y] |= mask;
+    }
+
+    /**
+     * Sets items of {@link EntityType} 'a' to collide with items of the 'others' types.
+     * note: this will not make the items of the 'others' types collide with each other
+     *
+     * @param a      the {@link EntityType} that will be set to collide with the collision types in 'others'
+     * @param others the collision types that will be set to collide with the 'a' collision type
+     */
+    public void setCollisionGroups(EntityType a, EntityType... others) {
+        for (int i = 0; i < others.length; i++) {
+            setCollisionGroup(a, others[i]);
+        }
     }
 
     public void removeCollisionGroup(EntityType a, EntityType b) {

@@ -13,28 +13,27 @@ public abstract class Shape {
     public static final double NO_COLLISION = Double.MAX_VALUE;
     // TODO ***** static scratch pad, bad ****
     private static CollisionData collisionData = new CollisionData();
-    private double boundingHalfWidth, boundingHalfHeight, boundingCenterX, boundingCenterY;
-    private double boundingMinX, boundingMaxX, boundingMinY, boundingMaxY;
-    protected double x, y, dx, dy, parentOffsetX, parentOffsetY;
-    protected double halfWidth, halfHeight;
+    protected double parentOffsetX, parentOffsetY;
+    protected double halfWidth, halfHeight, width, height;
     protected Entity parent = null;
 
-    public Shape(double x, double y, double halfWidth, double halfHeight) {
-        this.x = x;
-        this.y = y;
+    public Shape(double halfWidth, double halfHeight) {
         this.halfWidth = halfWidth;
         this.halfHeight = halfHeight;
-        calculateBoundingBox(0);
+        width = halfWidth * 2;
+        height = halfHeight * 2;
         parentOffsetX = 0;
         parentOffsetY = 0;
     }
 
     public static void collideShapes(Shape a, Shape b, double maxTime, Collision result) {
-        double combinedHalfWidths = a.boundingHalfWidth + b.boundingHalfWidth;
-        double combinedHalfHeights = a.boundingHalfHeight + b.boundingHalfHeight;
+        Entity aParent = a.parent;
+        Entity bParent = b.parent;
+        double combinedHalfWidths = aParent.getBoundingHalfWidth() + bParent.getBoundingHalfWidth();
+        double combinedHalfHeights = aParent.getBoundingHalfHeight() + bParent.getBoundingHalfHeight();
 
-        if (Math.abs(a.boundingCenterX - b.boundingCenterX) > combinedHalfWidths
-                || Math.abs(a.boundingCenterY - b.boundingCenterY) > combinedHalfHeights) {
+        if (Math.abs(aParent.getBoundingCenterX() - bParent.getBoundingCenterX()) > combinedHalfWidths
+                || Math.abs(aParent.getBoundingCenterY() - bParent.getBoundingCenterY()) > combinedHalfHeights) {
             result.setNoCollision();
             return;
         }
@@ -68,11 +67,13 @@ public abstract class Shape {
 
     public static void collideAABBPoly(AABBShape a, PolygonShape b, double maxTime, Collision result) {
         collisionData.clear();
-        double relVelX = a.dx - b.dx;
-        double relVelY = a.dy - b.dy;
+        double relVelX = a.getDX() - b.getDX();
+        double relVelY = a.getDY() - b.getDY();
 
-        double minX = a.x - a.halfWidth - b.x, maxX = a.x + a.halfWidth - b.x;
-        double minY = a.y - a.halfHeight - b.y, maxY = a.y + a.halfHeight - b.y;
+        double aX = a.getX();
+        double bX = b.getX();
+        double minX = aX - a.halfWidth - bX, maxX = aX + a.halfWidth - bX;
+        double minY = a.getY() - a.halfHeight - b.getY(), maxY = a.getY() + a.halfHeight - b.getY();
         for (int i = 0; i < b.getNumPoints(); i++) {
             Vector2D normal = b.getNormals()[i];
             double bMin = b.getNormalMins()[i];
@@ -124,12 +125,14 @@ public abstract class Shape {
         double bMaxX = -Double.MAX_VALUE;
         double bMinY = Double.MAX_VALUE;
         double bMaxY = -Double.MAX_VALUE;
+        double offsetX = b.getX() - a.getX();
+        double offsetY = b.getY() - a.getY();
         for (int i = 0; i < b.getNumPoints(); i++) {
             Vector2D point = b.getPoints()[i];
-            double x = point.getX() + b.x - a.x;
+            double x = point.getX() + offsetX;
             bMinX = Math.min(bMinX, x);
             bMaxX = Math.max(bMaxX, x);
-            double y = point.getY() + b.y - a.y;
+            double y = point.getY() + offsetY;
             bMinY = Math.min(bMinY, y);
             bMaxY = Math.max(bMaxY, y);
         }
@@ -152,6 +155,178 @@ public abstract class Shape {
     }
 
     public static void collideCirclePoly(CircleShape a, PolygonShape b, double maxTime, Collision result) {
+        double entryTime = -Double.MAX_VALUE;
+        double leaveTime = Double.MAX_VALUE;
+        double collisionNormalX = 0, collisionNormalY = 0;
+        double overlapExitTime = Double.MAX_VALUE;
+        double overlapVel = 0;
+        double overlapNormalX = 0, overlapNormalY = 0;
+
+        final double relVelX = a.getDX() - b.getDX();
+        final double relVelY = a.getDY() - b.getDY();
+        final double aX = a.getX(), aY = a.getY(), bX = b.getX(), bY = b.getY();
+        final double aMax = a.getRadius(), aMin = -aMax;
+
+        Vector2D[] normals = b.getNormals();
+        double[] mins = b.getNormalMins();
+        double[] maxs = b.getNormalMaxs();
+
+        for (int i = 0; i < normals.length; i++) {
+            Vector2D normal = normals[i];
+            double aPos = Vector2D.unitScalarProject(aX, aY, normal);
+            double bPos = Vector2D.unitScalarProject(bX, bY, normal);
+            double deltaPos = bPos - aPos;
+            double bMin = mins[i] + deltaPos;
+            double bMax = maxs[i] + deltaPos;
+
+            double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
+            double normalEntryTime = getEntryTimeAlongAxis(aMin, aMax, bMin, bMax, projVel);
+            if (normalEntryTime == NO_COLLISION) {
+                result.setNoCollision();
+                return;
+            }
+            if (normalEntryTime > entryTime) {
+                entryTime = normalEntryTime;
+                collisionNormalX = normal.getX();
+                collisionNormalY = normal.getY();
+            }
+            leaveTime = Math.min(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, projVel), leaveTime);
+
+            // because we are working with convex polygons bMax will always be the farthest edge from the center
+            double dist = bMax - aMin;
+            if (dist > 0) { // true if overlapping along this normal
+                double exitTime = dist / Math.abs(projVel);
+                if (exitTime < overlapExitTime) {
+                    overlapExitTime = exitTime;
+                    overlapVel = projVel;
+                    overlapNormalX = normal.getX();
+                    overlapNormalY = normal.getY();
+                }
+            }
+        }
+
+        double diffX = bX - aX;
+        double diffY = bY - aY;
+
+        Vector2D[] verticies = b.getPoints();
+        for (int i = 0; i < verticies.length; i++) {
+            Vector2D vertex = verticies[i];
+            double bRelX = vertex.getX() + diffX;
+            double bRelY = vertex.getY() + diffY;
+            double dist = Math.sqrt(bRelX * bRelX + bRelY * bRelY);
+            double normalX = bRelX / dist;
+            double normalY = bRelY / dist;
+
+            double bMin = Double.MAX_VALUE;
+            double bMax = -Double.MAX_VALUE;
+            for (int j = 0; j < verticies.length; j++) {
+                Vector2D point = verticies[j];
+                double x = point.getX() + diffX;
+                double y = point.getY() + diffY;
+                double projection = Vector2D.unitScalarProject(x, y, normalX, normalY);
+                bMin = Math.min(projection, bMin);
+                bMax = Math.max(projection, bMax);
+            }
+
+            double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normalX, normalY);
+            double normalEntryTime = getEntryTimeAlongAxis(aMin, aMax, bMin, bMax, projVel);
+            if (normalEntryTime == NO_COLLISION) {
+                result.setNoCollision();
+                return;
+            }
+
+            if (normalEntryTime > entryTime) {
+                entryTime = normalEntryTime;
+                collisionNormalX = normalX;
+                collisionNormalY = normalY;
+            }
+
+            leaveTime = Math.min(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, projVel), leaveTime);
+        }
+
+        if (entryTime == -Double.MAX_VALUE) {
+            if (overlapVel < 0) {
+                result.set(0, overlapNormalX, overlapNormalY, a.parent, b.parent);
+                return;
+            } else {
+                result.setNoCollision();
+                return;
+            }
+        }
+
+        if (entryTime <= maxTime && entryTime < leaveTime) {
+            result.set(entryTime, collisionNormalX, collisionNormalY, a.parent, b.parent);
+        } else {
+            result.setNoCollision();
+        }
+    }
+
+    public static void collideCirclePolyOldNew(CircleShape a, PolygonShape b, double maxTime, Collision result) {
+        double entryTime = -Double.MAX_VALUE;
+        double leaveTime = Double.MAX_VALUE;
+        double collisionNormalX = 0, collisionNormalY = 0;
+        double overlapTime = Double.MAX_VALUE;
+        double overlapVel = 0;
+        double overlapNormalX = 0, overlapNormalY = 0;
+
+        collisionData.clear();
+//        checkCollisionWithLines(a, b, collisionData);
+        final double relVelX = a.getDX() - b.getDX();
+        final double relVelY = a.getDY() - b.getDY();
+        final double dx = a.getX() - b.getX();
+        final double dy = a.getY() - b.getY();
+        for (int i = 0; i < b.getNumPoints(); i++) {
+            Vector2D normal = b.getNormals()[i];
+            double aPos = Vector2D.unitScalarProject(dx, dy, normal);
+            double aMin = aPos - a.getRadius();
+            double aMax = aPos + a.getRadius();
+            double bMin = b.getNormalMins()[i];
+            double bMax = b.getNormalMaxs()[i];
+            double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
+            calcTOIAlongAxis(aMin, aMax, bMin, bMax, projVel, collisionData, normal.getX(), normal.getY());
+            if (collisionData.isCollisionNotPossible()) {
+                result.setNoCollision();
+                return;
+            }
+            double dist = bMax - aMin;
+            collisionData.updateTempOverlapData(dist, projVel, normal.getX(), normal.getY());
+        }
+//        checkCollisionWithPoints(a, b, collisionData);
+//        double dx = b.getX() - a.getX();
+//        double dy = b.getY() - a.getY();
+        for (Vector2D vertex : b.getPoints()) {
+            double deltaX = vertex.getX() - dx;
+            double deltaY = vertex.getY() - dy;
+            double dist = 1.0 / Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            deltaX *= dist;
+            deltaY *= dist;
+            double bMin = Double.MAX_VALUE;
+            double bMax = -Double.MAX_VALUE;
+            for (Vector2D point : b.getPoints()) {
+                double projDist = Vector2D.unitScalarProject(point.getX() - dx, point.getY() - dy, deltaX, deltaY);
+                bMin = Math.min(bMin, projDist);
+                bMax = Math.max(bMax, projDist);
+            }
+            double projVel = Vector2D.unitScalarProject(relVelX, relVelY, deltaX, deltaY);
+            calcTOIAlongAxis(-a.getRadius(), a.getRadius(), bMin, bMax, projVel, collisionData, deltaX, deltaY);
+            if (collisionData.isCollisionNotPossible()) {
+                result.setNoCollision();
+                return;
+            }
+        }
+        collisionData.updateOverlapData();
+        if (collisionData.isIntersectingAndTravellingTowardsEachOther()) {
+            result.set(0, collisionData.getOverlapNormal(), a.parent, b.parent);
+            return;
+        }
+        if (collisionData.willCollisionHappen(maxTime)) {
+            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a.parent, b.parent);
+        } else {
+            result.setNoCollision();
+        }
+    }
+
+    public static void collideCirclePolyOLD(CircleShape a, PolygonShape b, double maxTime, Collision result) {
         collisionData.clear();
         checkCollisionWithLines(a, b, collisionData);
         if (collisionData.isCollisionNotPossible()) {
@@ -176,11 +351,13 @@ public abstract class Shape {
     }
 
     private static void checkCollisionWithLines(CircleShape a, PolygonShape b, CollisionData collisionData) {
-        double relVelX = a.dx - b.dx;
-        double relVelY = a.dy - b.dy;
+        double relVelX = a.getDX() - b.getDX();
+        double relVelY = a.getDY() - b.getDY();
+        double dx = a.getX() - b.getX();
+        double dy = a.getY() - b.getY();
         for (int i = 0; i < b.getNumPoints(); i++) {
             Vector2D normal = b.getNormals()[i];
-            double aPos = Vector2D.unitScalarProject(a.x - b.x, a.y - b.y, normal);
+            double aPos = Vector2D.unitScalarProject(dx, dy, normal);
             double aMin = aPos - a.getRadius();
             double aMax = aPos + a.getRadius();
             double bMin = b.getNormalMins()[i];
@@ -196,10 +373,10 @@ public abstract class Shape {
     }
 
     private static void checkCollisionWithPoints(CircleShape a, PolygonShape b, CollisionData collisionData) {
-        double relVelX = a.dx - b.dx;
-        double relVelY = a.dy - b.dy;
-        double relX = b.x - a.x;
-        double relY = b.y - a.y;
+        double relVelX = a.getDX() - b.getDX();
+        double relVelY = a.getDY() - b.getDY();
+        double relX = b.getX() - a.getX();
+        double relY = b.getY() - a.getY();
         for (Vector2D vertex : b.getPoints()) {
             double dx = vertex.getX() + relX;
             double dy = vertex.getY() + relY;
@@ -222,14 +399,18 @@ public abstract class Shape {
     }
 
     public static void collideCircleCircle(CircleShape a, CircleShape b, double maxTime, Collision result) {
-        double combinedVelX = b.dx - a.dx;
-        double combinedVelY = b.dy - a.dy;
+        double combinedVelX = b.getDX() - a.getDX();
+        double combinedVelY = b.getDY() - a.getDY();
         if (combinedVelX == 0 && combinedVelY == 0) {
             result.setNoCollision();
             return;
         }
-        double distToLineSquared = Vector2D.distToLineSquared(
-                a.x, a.y, b.x, b.y, b.x + combinedVelX, b.y + combinedVelY);
+
+        double aX = a.getX();
+        double aY = a.getY();
+        double bX = b.getX();
+        double bY = b.getY();
+        double distToLineSquared = Vector2D.distToLineSquared(aX, aY, bX, bY, bX + combinedVelX, bY + combinedVelY);
         double radiiSum = a.getRadius() + b.getRadius();
         double radiiSumSquared = radiiSum * radiiSum;
         if (distToLineSquared > radiiSumSquared) {
@@ -238,8 +419,8 @@ public abstract class Shape {
         }
         // using the collision normal as a scratch pad
         Vector2D velocity = result.getCollisionNormal().set(combinedVelX, combinedVelY);
-        double deltaX = a.x - b.x;
-        double deltaY = a.y - b.y;
+        double deltaX = aX - bX;
+        double deltaY = aY - bY;
         double distBetween = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
         double projVelocity = velocity.scalarProject(deltaX, deltaY, distBetween);
         if (projVelocity <= 0) {
@@ -260,103 +441,312 @@ public abstract class Shape {
             return;
         }
         velocity.unit();
-        double centerAProjectedOnVelocity = Vector2D.unitScalarProject(a.x - b.x, a.y - b.y, velocity);
+        double centerAProjectedOnVelocity = Vector2D.unitScalarProject(aX - bX, aY - bY, velocity);
         double subLength = Math.sqrt(radiiSumSquared - distToLineSquared); // a = sqrt(c^2 - b^2) pythagoras
         velocity.scale(centerAProjectedOnVelocity - subLength);
-        velocity.add(b.x - a.x, b.y - a.y); // this is now the collision normal
+        velocity.add(bX - aX, bY - aY); // this is now the collision normal
         velocity.divide(radiiSum); // normalizes the vector
         result.set(travelTime, velocity, a.parent, b.parent);
     }
 
+    private static double getEntryTimeAlongAxis(double aMin, double aMax, double bMin, double bMax, double relVel) {
+        if (aMax <= bMin) {
+            if (relVel <= 0) {
+                return NO_COLLISION;
+            }
+            return (bMin - aMax) / relVel;
+        } else if (bMax <= aMin) {
+            if (relVel >= 0) {
+                return NO_COLLISION;
+            }
+            return (bMax - aMin) / relVel;
+        }
+        return -Double.MAX_VALUE;
+    }
+
     public static void collideAABBAABB(AABBShape a, AABBShape b, double maxTime, Collision result) {
-        collisionData.clear();
+        double relVelX = a.getDX() - b.getDX(), relVelY = a.getDY() - b.getDY();
 
-        double relVelX = a.dx - b.dx, relVelY = a.dy - b.dy;
-
-        double aMaxX = a.halfWidth;
-        double aMinX = -a.halfWidth;
-        double aMaxY = a.halfHeight;
-        double aMinY = -a.halfHeight;
-
-        double bMaxX = b.x + b.halfWidth - a.x;
-        double bMinX = b.x - b.halfWidth - a.x;
-        double bMaxY = b.y + b.halfHeight - a.y;
-        double bMinY = b.y - b.halfHeight - a.y;
-
-        calcTOIAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relVelX, collisionData, 1, 0);
-        if (collisionData.isCollisionNotPossible()) {
+        // calculating entry time along the x axis
+        double aMaxX = a.halfWidth, aMinX = -a.halfWidth;
+        double aX = a.getX(), bX = b.getX();
+        double bCenter = bX - aX;
+        double bMaxX = bCenter + b.halfWidth;
+        double bMinX = bCenter - b.halfWidth;
+        double entryTime = getEntryTimeAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relVelX);
+        assert entryTime == -Double.MAX_VALUE || entryTime >= 0;
+        if (entryTime == NO_COLLISION) {
             result.setNoCollision();
             return;
         }
 
-        calcTOIAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relVelY, collisionData, 0, 1);
-        if (collisionData.isCollisionNotPossible()) {
+        // calculating entry time along the y axis
+        double aMaxY = a.halfHeight, aMinY = -a.halfHeight;
+        double aY = a.getY(), bY = b.getY();
+        bCenter = bY - aY;
+        double bMaxY = bCenter + b.halfHeight;
+        double bMinY = bCenter - b.halfHeight;
+
+        double yEntryTime = getEntryTimeAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relVelY);
+        if (yEntryTime == NO_COLLISION) {
             result.setNoCollision();
             return;
         }
+        assert yEntryTime == -Double.MAX_VALUE || yEntryTime >= 0;
 
-        if (collisionData.hasEntryTimeNotBeenUpdated()) {
-            calcOverlapNormalBox(
-                    aMinX, aMaxX, aMinY, aMaxY, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
-            if (collisionData.getOverlapVelocity() < 0) {
-                result.set(0, collisionData.getOverlapNormal(), a.parent, b.parent);
+
+        double collisionNormalX, collisionNormalY;
+        if (yEntryTime > entryTime) {
+            entryTime = yEntryTime;
+            collisionNormalX = 0;
+            collisionNormalY = 1;
+        } else {
+            collisionNormalX = 1;
+            collisionNormalY = 0;
+        }
+
+        if (entryTime == -Double.MAX_VALUE) { // if true than the AABBs are overlapping
+            if (relVelX > 0 && aX < bX || relVelX < 0 && bX < aX) {
+                result.set(0, 1, 0, a.parent, b.parent);
                 return;
             }
+            if (relVelY > 0 && aY < bY || relVelY < 0 && bY < aY) {
+                result.set(0, 0, 1, a.parent, b.parent);
+                return;
+            }
+            result.setNoCollision();
+            return;
         }
+        assert entryTime >= 0 : entryTime;
 
-        if (collisionData.willCollisionHappen(maxTime)) {
-            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a.parent, b.parent);
+        // calculating leave time along the x axis
+        // cases where they are travelling away from each other have already been checked
+        double leaveTime = Math.min(getLeaveTimeAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relVelX),
+                getLeaveTimeAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relVelY));
+
+        if (entryTime <= maxTime && entryTime <= leaveTime) {
+            result.set(entryTime, collisionNormalX, collisionNormalY, a.parent, b.parent);
         } else {
             result.setNoCollision();
         }
     }
 
     public static void collideCircleAABB(CircleShape a, AABBShape b, double maxTime, Collision result) {
-        collisionData.clear();
-        double relVelX = a.dx - b.dx;
-        double relVelY = a.dy - b.dy;
-        double bMaxX = b.x + b.halfWidth;
-        double bMinX = b.x - b.halfWidth;
-        double bMaxY = b.y + b.halfHeight;
-        double bMinY = b.y - b.halfHeight;
-        calcCircleBoxTOIBeforeCheckingPoints(a, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
-        if (collisionData.isCollisionNotPossible()) {
+        double aX = a.getX();
+        double bX = b.getX();
+        double bCenterX = bX - aX;
+        final double bMaxX = bCenterX + b.halfWidth;
+        final double bMinX = bCenterX - b.halfWidth;
+        final double relVelX = a.getDX() - b.getDX();
+        final double aMax = a.getRadius();
+        final double aMin = -aMax;
+        double entryTime = getEntryTimeAlongAxis(aMin, aMax, bMinX, bMaxX, relVelX);
+        if (entryTime == NO_COLLISION) {
             result.setNoCollision();
             return;
         }
-        calculateCircleBoxPointsTOI(a, bMinX, bMaxX, bMinY, bMaxY, relVelX, relVelY, collisionData);
-        if (collisionData.isCollisionNotPossible()) {
-            result.setNoCollision();
-            return;
-        }
-        if (collisionData.hasEntryTimeNotBeenUpdated()) {
-            double radius = a.getRadius();
-            double minRadius = -radius;
-            calcOverlapNormalBox(minRadius, radius, minRadius, radius, bMinX - a.x, bMaxX - a.x, bMinY - a.y,
-                    bMaxY - a.y, relVelX, relVelY, collisionData);
-            if (collisionData.getOverlapVelocity() < 0) {
-                result.set(0, collisionData.getOverlapNormal(), a.parent, b.parent);
+
+        double aY = a.getY();
+        double bY = b.getY();
+        double bCenterY = bY - aY;
+        final double bMaxY = bCenterY + b.halfHeight;
+        final double bMinY = bCenterY - b.halfHeight;
+        final double relVelY = a.getDY() - b.getDY();
+        double yEntryTime = getEntryTimeAlongAxis(aMin, aMax, bMinY, bMaxY, relVelY);
+        double collisionNormalX;
+        double collisionNormalY;
+        if (yEntryTime > entryTime) {
+            if (yEntryTime == NO_COLLISION) {
+                result.setNoCollision();
                 return;
             }
+            entryTime = yEntryTime;
+            collisionNormalX = 0;
+            collisionNormalY = 1;
+        } else {
+            collisionNormalX = 1;
+            collisionNormalY = 0;
         }
-        if (collisionData.willCollisionHappen(maxTime)) {
-            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a.parent, b.parent);
+
+        double dist = Math.sqrt(bMinX * bMinX + bMinY * bMinY);
+        double normalX = bMinX / dist;
+        double normalY = bMinY / dist;
+
+        double projDist = Vector2D.unitScalarProject(bMinX, bMinY, normalX, normalY);
+        result.setTempMin(projDist);
+        result.setTempMax(projDist);
+
+        projDist = Vector2D.unitScalarProject(bMaxX, bMinY, normalX, normalY);
+        if (projDist < result.getTempMin()) {
+            result.setTempMin(projDist);
+        } else {
+            result.setTempMax(projDist);
+        }
+
+        calcMinMaxAlongAxis(bMaxX, bMaxY, normalX, normalY, result);
+
+        calcMinMaxAlongAxis(bMinX, bMaxY, normalX, normalY, result);
+
+        double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normalX, normalY);
+
+        double axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel);
+        if (axisEntryTime == NO_COLLISION) {
+            result.setNoCollision();
             return;
         }
-        result.setNoCollision();
+        if (axisEntryTime > entryTime) {
+            entryTime = axisEntryTime;
+            collisionNormalX = normalX;
+            collisionNormalY = normalY;
+        }
+        double leaveTime = getLeaveTimeAlongAxis(aMin, aMax, bMinX, bMaxX, relVelX);
+        leaveTime = Math.min(getLeaveTimeAlongAxis(aMin, aMax, bMinY, bMaxY, relVelY), leaveTime);
+        leaveTime = Math.min(getLeaveTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel),
+                leaveTime);
+
+        dist = Math.sqrt(bMaxX * bMaxX + bMinY * bMinY);
+        normalX = bMaxX / dist;
+        normalY = bMinY / dist;
+
+        projDist = Vector2D.unitScalarProject(bMinX, bMinY, normalX, normalY);
+        result.setTempMin(projDist);
+        result.setTempMax(projDist);
+
+        projDist = Vector2D.unitScalarProject(bMaxX, bMinY, normalX, normalY);
+        if (projDist < result.getTempMin()) {
+            result.setTempMin(projDist);
+        } else {
+            result.setTempMax(projDist);
+        }
+
+        calcMinMaxAlongAxis(bMaxX, bMaxY, normalX, normalY, result);
+
+        calcMinMaxAlongAxis(bMinX, bMaxY, normalX, normalY, result);
+
+        projVel = Vector2D.unitScalarProject(relVelX, relVelY, normalX, normalY);
+
+        axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel);
+        if (axisEntryTime == NO_COLLISION) {
+            result.setNoCollision();
+            return;
+        }
+        if (axisEntryTime > entryTime) {
+            entryTime = axisEntryTime;
+            collisionNormalX = normalX;
+            collisionNormalY = normalY;
+        }
+        leaveTime = Math.min(getLeaveTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel),
+                leaveTime);
+
+        dist = Math.sqrt(bMaxX * bMaxX + bMaxY * bMaxY);
+        normalX = bMaxX / dist;
+        normalY = bMaxY / dist;
+
+        projDist = Vector2D.unitScalarProject(bMinX, bMinY, normalX, normalY);
+        result.setTempMin(projDist);
+        result.setTempMax(projDist);
+
+        projDist = Vector2D.unitScalarProject(bMaxX, bMinY, normalX, normalY);
+        if (projDist < result.getTempMin()) {
+            result.setTempMin(projDist);
+        } else {
+            result.setTempMax(projDist);
+        }
+
+        calcMinMaxAlongAxis(bMaxX, bMaxY, normalX, normalY, result);
+
+        calcMinMaxAlongAxis(bMinX, bMaxY, normalX, normalY, result);
+
+        projVel = Vector2D.unitScalarProject(relVelX, relVelY, normalX, normalY);
+
+        axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel);
+        if (axisEntryTime == NO_COLLISION) {
+            result.setNoCollision();
+            return;
+        }
+        if (axisEntryTime > entryTime) {
+            entryTime = axisEntryTime;
+            collisionNormalX = normalX;
+            collisionNormalY = normalY;
+        }
+        leaveTime = Math.min(getLeaveTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel),
+                leaveTime);
+
+        dist = Math.sqrt(bMinX * bMinX + bMaxY * bMaxY);
+        normalX = bMinX / dist;
+        normalY = bMaxY / dist;
+
+        projDist = Vector2D.unitScalarProject(bMinX, bMinY, normalX, normalY);
+        result.setTempMin(projDist);
+        result.setTempMax(projDist);
+
+        projDist = Vector2D.unitScalarProject(bMaxX, bMinY, normalX, normalY);
+        if (projDist < result.getTempMin()) {
+            result.setTempMin(projDist);
+        } else {
+            result.setTempMax(projDist);
+        }
+
+        calcMinMaxAlongAxis(bMaxX, bMaxY, normalX, normalY, result);
+
+        calcMinMaxAlongAxis(bMinX, bMaxY, normalX, normalY, result);
+
+        projVel = Vector2D.unitScalarProject(relVelX, relVelY, normalX, normalY);
+
+        axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel);
+        if (axisEntryTime == NO_COLLISION) {
+            result.setNoCollision();
+            return;
+        }
+        if (axisEntryTime > entryTime) {
+            entryTime = axisEntryTime;
+            collisionNormalX = normalX;
+            collisionNormalY = normalY;
+        }
+        leaveTime = Math.min(getLeaveTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax(), projVel),
+                leaveTime);
+
+        if (entryTime == -Double.MAX_VALUE) { // overlapping if true
+            if (relVelX > 0 && aX < bX || relVelX < 0 && bX < aX) {
+                result.set(0, 1, 0, a.parent, b.parent);
+                return;
+            }
+            if (relVelY > 0 && aY < bY || relVelY < 0 && bY < aY) {
+                result.set(0, 0, 1, a.parent, b.parent);
+                return;
+            }
+            result.setNoCollision();
+            return;
+        }
+        if (entryTime <= maxTime && entryTime <= leaveTime && entryTime != -Double.MAX_VALUE) {
+            result.set(entryTime, collisionNormalX, collisionNormalY, a.parent, b.parent);
+        } else {
+            result.setNoCollision();
+        }
+    }
+
+    private static void calcMinMaxAlongAxis(double x, double y, double normalX, double normalY, Collision result) {
+        double projDist;
+        projDist = Vector2D.unitScalarProject(x, y, normalX, normalY);
+        if (projDist < result.getTempMin()) {
+            result.setTempMin(projDist);
+        } else if (projDist > result.getTempMax()) {
+            result.setTempMax(projDist);
+        }
     }
 
     private static void getEntryLeaveAndOverlapTime(PolygonShape a, PolygonShape b, CollisionData collisionData) {
         double tempVelocity = collisionData.getOverlapVelocity();
 //        collisionData.setTempOverlapVelocity(collisionData.getOverlapVelocity());
         collisionData.resetOverlapUpdated();
-        double relVelX = a.dx - b.dx;
-        double relVelY = a.dy - b.dy;
+        double relVelX = a.getDX() - b.getDX();
+        double relVelY = a.getDY() - b.getDY();
         for (int i = 0; i < a.getNumPoints(); i++) {
             Vector2D normal = a.getNormals()[i];
             collisionData.clearMinMax();
             for (Vector2D point : b.getPoints()) {
-                double dist = Vector2D.unitScalarProject(point.getX() + b.x - a.x, point.getY() + b.y - a.y, normal);
+                double dist = Vector2D.unitScalarProject(point.getX() + b.getX() - a.getX(),
+                        point.getY() + b.getY() - a.getY(), normal);
                 collisionData.updateMinMax(dist);
             }
             double aMin = a.getNormalMins()[i];
@@ -376,26 +766,6 @@ public abstract class Shape {
     private static void calcTOIAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel,
                                          CollisionData collisionData, Vector2D axis) {
         calcTOIAlongAxis(aMin, aMax, bMin, bMax, vel, collisionData, axis.getX(), axis.getY());
-    }
-
-    private static void calcTOIAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel,
-                                         CollisionData collisionData, double axisX, double axisY) {
-        double travelTime = -Double.MAX_VALUE;
-        if (aMax <= bMin) {
-            if (vel <= 0) {
-                collisionData.setNoCollision();
-                return;
-            }
-            travelTime = (bMin - aMax) / vel;
-        } else if (aMin >= bMax) {
-            if (vel >= 0) {
-                collisionData.setNoCollision();
-                return;
-            }
-            travelTime = (bMax - aMin) / vel;
-        }
-        collisionData.updateEntryTime(travelTime, axisX, axisY);
-        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, vel));
     }
 
     private static double getLeaveTimeAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel) {
@@ -422,14 +792,36 @@ public abstract class Shape {
         collisionData.updateOverlapData();
     }
 
+    private static void calcTOIAlongAxis(double aMin, double aMax, double bMin, double bMax, double vel,
+                                         CollisionData collisionData, double axisX, double axisY) {
+        double travelTime = -Double.MAX_VALUE;
+        if (aMax <= bMin) {
+            if (vel <= 0) {
+                collisionData.setNoCollision();
+                return;
+            }
+            travelTime = (bMin - aMax) / vel;
+        } else if (aMin >= bMax) {
+            if (vel >= 0) {
+                collisionData.setNoCollision();
+                return;
+            }
+            travelTime = (bMax - aMin) / vel;
+        }
+        collisionData.updateEntryTime(travelTime, axisX, axisY);
+        collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, vel));
+    }
+
     private static void calcCircleBoxTOIBeforeCheckingPoints(CircleShape a, double minX, double maxX, double minY,
                                                              double maxY, double velX, double velY,
                                                              CollisionData collisionData) {
-        calcTOIAlongAxis(-a.getRadius(), a.getRadius(), minX - a.x, maxX - a.x, velX, collisionData, 1, 0);
+        double x = a.getX();
+        calcTOIAlongAxis(-a.getRadius(), a.getRadius(), minX - x, maxX - x, velX, collisionData, 1, 0);
         if (collisionData.isCollisionNotPossible()) {
             return;
         }
-        calcTOIAlongAxis(-a.getRadius(), a.getRadius(), minY - a.y, maxY - a.y, velY, collisionData, 0, 1);
+        double y = a.getY();
+        calcTOIAlongAxis(-a.getRadius(), a.getRadius(), minY - y, maxY - y, velY, collisionData, 0, 1);
     }
 
     private static void calculateCircleBoxPointsTOI(CircleShape a, double bMinX, double bMaxX, double bMinY,
@@ -453,11 +845,11 @@ public abstract class Shape {
     private static void calculateCirclePointTOI(CircleShape a, double bMinX, double bMaxX, double bMinY, double bMaxY,
                                                 double x, double y, double relVelX, double relVelY,
                                                 CollisionData collisionData) {
-        double dx = x - a.x;
-        double dy = y - a.y;
-        double dist = 1.0 / Math.sqrt(dx * dx + dy * dy);
-        dx *= dist;
-        dy *= dist;
+        double dx = x - a.getX();
+        double dy = y - a.getY();
+        double dist = Math.sqrt(dx * dx + dy * dy);
+        dx /= dist;
+        dy /= dist;
         collisionData.clearMinMax();
         calculateCircleAABBMinAndMax(a, bMinX, bMaxX, bMinY, bMaxY, dx, dy, collisionData);
         double radius = a.getRadius();
@@ -469,63 +861,25 @@ public abstract class Shape {
     private static void calculateCircleAABBMinAndMax(CircleShape a, double bMinX, double bMaxX, double bMinY,
                                                      double bMaxY, double normalX, double normalY,
                                                      CollisionData collisionData) {
-        double projDist = Vector2D.unitScalarProject(bMinX - a.x, bMinY - a.y, normalX, normalY);
+
+        double x = a.getX();
+        double y = a.getY();
+        double projDist = Vector2D.unitScalarProject(bMinX - x, bMinY - y, normalX, normalY);
         collisionData.updateMinMax(projDist);
 
-        projDist = Vector2D.unitScalarProject(bMaxX - a.x, bMinY - a.y, normalX, normalY);
+        projDist = Vector2D.unitScalarProject(bMaxX - x, bMinY - y, normalX, normalY);
         collisionData.updateMinMax(projDist);
 
-        projDist = Vector2D.unitScalarProject(bMaxX - a.x, bMaxY - a.y, normalX, normalY);
+        projDist = Vector2D.unitScalarProject(bMaxX - x, bMaxY - y, normalX, normalY);
         collisionData.updateMinMax(projDist);
 
-        projDist = Vector2D.unitScalarProject(bMinX - a.x, bMaxY - a.y, normalX, normalY);
+        projDist = Vector2D.unitScalarProject(bMinX - x, bMaxY - y, normalX, normalY);
         collisionData.updateMinMax(projDist);
     }
 
     private static double getOverlapTime(double actualBPos, double actualAPos, double relativeVel) {
         double dist = actualBPos - actualAPos;
         return dist / relativeVel;
-    }
-
-    public void calculateBoundingBox(double time) {
-        boundingMinX = x - halfWidth;
-        boundingMaxX = x + halfWidth;
-        boundingMinY = y - halfHeight;
-        boundingMaxY = y + halfHeight;
-        double scale = 1;
-        double xTravelDist = dx * time * scale;
-        double yTravelDist = dy * time * scale;
-        if (xTravelDist > 0) {
-            boundingMaxX += xTravelDist;
-        } else {
-            boundingMinX += xTravelDist;
-        }
-
-        if (yTravelDist > 0) {
-            boundingMaxY += yTravelDist;
-        } else {
-            boundingMinY += yTravelDist;
-        }
-        boundingHalfWidth = (boundingMaxX - boundingMinX) * 0.5;
-        boundingHalfHeight = (boundingMaxY - boundingMinY) * 0.5;
-        boundingCenterX = boundingMinX + boundingHalfWidth;
-        boundingCenterY = boundingMinY + boundingHalfHeight;
-    }
-
-    public double getBoundingMinX() {
-        return boundingMinX;
-    }
-
-    public double getBoundingMaxX() {
-        return boundingMaxX;
-    }
-
-    public double getBoundingMinY() {
-        return boundingMinY;
-    }
-
-    public double getBoundingMaxY() {
-        return boundingMaxY;
     }
 
     public void setParent(Entity parent) {
@@ -542,59 +896,35 @@ public abstract class Shape {
     }
 
     public double getX() {
-        return x;
+        return parent.getX() + parentOffsetX;
     }
 
     public double getY() {
-        return y;
+        return parent.getY() + parentOffsetY;
     }
 
     public double getDX() {
-        return dx;
+        return parent.getDX();
     }
 
     public double getDY() {
-        return dy;
+        return parent.getDY();
     }
 
-    public void updateVelocity(double dx, double dy) {
-        this.dx = dx;
-        this.dy = dy;
+    public double getWidth() {
+        return width;
     }
 
-    public void updatePosition(double x, double y) {
-        this.x = x + parentOffsetX;
-        this.y = y + parentOffsetY;
+    public double getHeight() {
+        return height;
     }
 
-    public void drawBoundingBoxes(Graphics2D g, Color color) {
-        g.setColor(color);
-        double width = boundingHalfWidth * 2;
-        double height = boundingHalfHeight * 2;
-        g.drawRect((int) boundingMinX, (int) boundingMinY, (int) width, (int) height);
+    public double getHalfWidth() {
+        return halfWidth;
     }
 
-    @Override
-    public String toString() {
-        return "x: " + x + " y: " + y
-                + "\nminX: " + boundingMinX + " minY: " + boundingMinY
-                + "\nmaxX: " + boundingMaxX + " maxY: " + boundingMaxY;
-    }
-
-    public double getBoundingCenterX() {
-        return boundingCenterX;
-    }
-
-    public double getBoundingHalfWidth() {
-        return boundingHalfWidth;
-    }
-
-    public double getBoundingCenterY() {
-        return boundingCenterY;
-    }
-
-    public double getBoundingHalfHeight() {
-        return boundingHalfHeight;
+    public double getHalfHeight() {
+        return halfHeight;
     }
 
     public abstract double getArea();

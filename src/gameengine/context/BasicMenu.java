@@ -33,14 +33,14 @@ public class BasicMenu extends Context {
         super(controller, type);
         this.buttons = buttons;
 
-        for (BasicButton button : buttons) {
-            world.addEntity(button);
-        }
 
         world.addEntity(pointer);
 
         this.background = background;
         setupButtons(leftBorderRatio, rightBorderRatio, topBorderRatio, bottomBorderRatio, paddingRatio);
+        for (BasicButton button : buttons) {
+            world.addEntity(button);
+        }
         selectedIndex = 0;
         buttons[0].select();
         buttonHandler = handler;
@@ -96,7 +96,7 @@ public class BasicMenu extends Context {
             button.initialize(width / 2, currentY, buttonWidth, buttonHeight);
             currentY += buttonHeight + padding;
         }
-        EffectFactory.setZipperEffect(buttons, width / 2, width, 0.1);
+        EffectFactory.setZipperEffect(buttons, width / 2, width, 0.2);
     }
 
     /**

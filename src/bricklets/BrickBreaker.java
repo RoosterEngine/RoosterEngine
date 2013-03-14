@@ -41,7 +41,6 @@ public class BrickBreaker extends Context implements ActionHandler {
     private double ballRadius = 12;
     private double ballMass = 50;
     private int lives = 100;
-    private double scale = 1;
     private Color bgColor = Color.black;
     private double currentTime = 0, lastTime = 0;
     private boolean shooting = false;
@@ -57,12 +56,9 @@ public class BrickBreaker extends Context implements ActionHandler {
         world.clearCollisions();
         lives = 100;
         reset();
-
-        world.setCollisionGroup(EntityType.DEFAULT, EntityType.DEFAULT);
-        world.setCollisionGroup(EntityType.DEFAULT, EntityType.BALL);
-        world.setCollisionGroup(EntityType.DEFAULT, EntityType.WALL);
-        world.setCollisionGroup(EntityType.BALL, EntityType.WALL);
-        world.setCollisionGroup(EntityType.BALL, EntityType.BALL);
+        world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.PADDLE, EntityType.WALL, EntityType.BALL);
+        world.setCollisionGroups(EntityType.BALL, EntityType.PADDLE, EntityType.BALL, EntityType.WALL);
+        world.setCollisionGroups(EntityType.WALL, EntityType.PADDLE);
 
         VelocityEnforcerWorldEffect velocityEnforcer = new VelocityEnforcerWorldEffect(0.5, 0.6);
         velocityEnforcer.addCollisionType(EntityType.BALL);
@@ -71,7 +67,7 @@ public class BrickBreaker extends Context implements ActionHandler {
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
         paddle.setMass(1000);
         paddle.setMaterial(Material.createMaterial(0, 1, 1));
-        paddle.setEntityType(EntityType.DEFAULT);
+        paddle.setEntityType(EntityType.PADDLE);
         world.addEntity(paddle);
 
         initBricks();
@@ -235,10 +231,11 @@ public class BrickBreaker extends Context implements ActionHandler {
             case GAME_UNDO:
                 break;
             case ZOOM_IN:
-                scale *= 1 - scaleAmount;
+                viewPort.scaleScale(1 - scaleAmount);
                 break;
             case ZOOM_OUT:
-                scale *= 1 + scaleAmount;
+                viewPort.scaleScale(1 + scaleAmount);
+                break;
         }
     }
 

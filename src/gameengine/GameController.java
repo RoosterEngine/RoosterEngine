@@ -349,6 +349,7 @@ public class GameController implements MouseMovedHandler {
 
     @Override
     public void mouseMoved(double x, double y, double velocityX, double velocityY) {
+        // TODO mouse is static think about making it not so
         MouseMotion.mouseMoved(velocityX, velocityY);
     }
 

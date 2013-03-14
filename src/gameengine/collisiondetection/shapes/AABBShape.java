@@ -10,8 +10,8 @@ import java.awt.*;
 public class AABBShape extends Shape {
     private double width, height;
 
-    public AABBShape(double x, double y, double width, double height) {
-        super(x, y, width * 0.5, height * 0.5);
+    public AABBShape(double width, double height) {
+        super(width * 0.5, height * 0.5);
         init(width, height);
     }
 
@@ -56,6 +56,8 @@ public class AABBShape extends Shape {
     @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color);
-        g.fillRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
+        double x = getX();
+        double y = getY();
+        g.drawRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
     }
 }

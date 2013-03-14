@@ -24,7 +24,7 @@ public class BasicButton extends Entity {
     }
 
     public BasicButton(String text, Graphic upGraphic, Graphic downGraphic, Graphic selectedGraphic) {
-        super(0, 0, 0, 0, 1, Material.getDefaultMaterial(), new CircleShape(0, 0, 0));
+        super(0, 0, Material.getDefaultMaterial(), new CircleShape(0));
         this.text = text;
         this.upGraphic = upGraphic;
         this.pressedGraphic = downGraphic;
@@ -38,12 +38,12 @@ public class BasicButton extends Entity {
         this.y = y;
         initialX = x;
         initialY = y;
-        setWidth(width);
-        setHeight(height);
         upGraphic.resize((int) width, (int) height);
         pressedGraphic.resize((int) width, (int) height);
         selectedGraphic.resize((int) width, (int) height);
-        setShape(new AABBShape(x, y, width, height));
+        setShape(new AABBShape(width, height));
+//        updateMass();
+        mass = 1;
     }
 
     public void select() {
@@ -91,25 +91,9 @@ public class BasicButton extends Entity {
         dy = 0;
     }
 
-    @Override
-    public double getX() {
-        return x;
-    }
-
-    @Override
-    public double getY() {
-        return y;
-    }
-
-    public double getWidth() {
-        return width;
-    }
-
-    public double getHeight() {
-        return height;
-    }
-
     public boolean contains(double x, double y) {
+        double width = getWidth();
+        double height = getHeight();
         double leftEdge = this.x - width / 2;
         double topEdge = this.y - height / 2;
         return x >= leftEdge && x <= leftEdge + width && y >= topEdge && y <= topEdge + height;
@@ -117,6 +101,8 @@ public class BasicButton extends Entity {
 
     @Override
     public void draw(Graphics2D g) {
+        double width = getWidth();
+        double height = getHeight();
         currentGraphic.draw(g, (int) (x - width / 2), (int) (y - height / 2));
         FontMetrics metrics = g.getFontMetrics();
         int textWidth = metrics.stringWidth(text);

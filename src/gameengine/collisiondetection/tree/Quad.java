@@ -83,8 +83,7 @@ public class Quad extends Tree implements Parent {
         int index = 0;
         while (index < entityListPos) {
             Entity entity = entities[index];
-            Shape shape = entity.getShape();
-            shape.calculateBoundingBox(time);
+            entity.calculateBoundingBox(time);
 
             if (!isContainedInTree(entity)) {
                 assert isEntityCountCorrect();
@@ -93,15 +92,15 @@ public class Quad extends Tree implements Parent {
                 parent.relocate(entity);
 
                 assert isEntityCountCorrect();
-            } else if (shape.getBoundingMinX() > getCenterX()) {
+            } else if (entity.getBoundingMinX() > getCenterX()) {
                 assert isEntityCountCorrect();
                 index = ensureVerticallyContained(
-                        index, entity, shape.getBoundingMinY(), shape.getBoundingMaxY(), bottomRight, topRight);
+                        index, entity, entity.getBoundingMinY(), entity.getBoundingMaxY(), bottomRight, topRight);
                 assert isEntityCountCorrect();
-            } else if (shape.getBoundingMaxX() < getCenterX()) {
+            } else if (entity.getBoundingMaxX() < getCenterX()) {
                 assert isEntityCountCorrect();
                 index = ensureVerticallyContained(
-                        index, entity, shape.getBoundingMinY(), shape.getBoundingMaxY(), bottomLeft, topLeft);
+                        index, entity, entity.getBoundingMinY(), entity.getBoundingMaxY(), bottomLeft, topLeft);
                 assert isEntityCountCorrect();
             } else {
                 index++;
@@ -381,15 +380,14 @@ public class Quad extends Tree implements Parent {
 
     private void checkHalfTree(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
                                Entity entity, Tree top, Tree bottom) {
-        Shape shape = entity.getShape();
-        if (Math.abs(top.getCenterX() - shape.getBoundingCenterX())
-                < shape.getBoundingHalfWidth() + top.getHalfLength()) {
-            if (Math.abs(top.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + top.getHalfLength()) {
+        if (Math.abs(top.getCenterX() - entity.getBoundingCenterX())
+                < entity.getBoundingHalfWidth() + top.getHalfLength()) {
+            if (Math.abs(top.getCenterY() - entity.getBoundingCenterY())
+                    < entity.getBoundingHalfHeight() + top.getHalfLength()) {
                 top.checkCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
             }
-            if (Math.abs(bottom.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + bottom.getHalfLength()) {
+            if (Math.abs(bottom.getCenterY() - entity.getBoundingCenterY())
+                    < entity.getBoundingHalfHeight() + bottom.getHalfLength()) {
                 bottom.checkCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
             }
         }
@@ -409,15 +407,14 @@ public class Quad extends Tree implements Parent {
 
     private void initCheckHalfTree(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
                                    Entity entity, Tree top, Tree bottom) {
-        Shape shape = entity.getShape();
-        if (Math.abs(top.getCenterX() - shape.getBoundingCenterX())
-                < shape.getBoundingHalfWidth() + top.getHalfLength()) {
-            if (Math.abs(top.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + top.getHalfLength()) {
+        if (Math.abs(top.getCenterX() - entity.getBoundingCenterX())
+                < entity.getBoundingHalfWidth() + top.getHalfLength()) {
+            if (Math.abs(top.getCenterY() - entity.getBoundingCenterY())
+                    < entity.getBoundingHalfHeight() + top.getHalfLength()) {
                 top.initCheckCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
             }
-            if (Math.abs(bottom.getCenterY() - shape.getBoundingCenterY())
-                    < shape.getBoundingHalfHeight() + bottom.getHalfLength()) {
+            if (Math.abs(bottom.getCenterY() - entity.getBoundingCenterY())
+                    < entity.getBoundingHalfHeight() + bottom.getHalfLength()) {
                 bottom.initCheckCollisionWithEntity(collisionGroups, temp, result, timeToCheck, entity);
             }
         }
@@ -441,10 +438,9 @@ public class Quad extends Tree implements Parent {
     }
 
     private void insertVertically(Entity entity, Tree top, Tree bottom) {
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMaxY() < getCenterY()) {
+        if (entity.getBoundingMaxY() < getCenterY()) {
             top.addEntity(entity);
-        } else if (shape.getBoundingMinY() > getCenterY()) {
+        } else if (entity.getBoundingMinY() > getCenterY()) {
             bottom.addEntity(entity);
         } else {
             addToThis(entity);
@@ -455,10 +451,9 @@ public class Quad extends Tree implements Parent {
         assert checkEntities();
         assert entity != null;
 
-        Shape shape = entity.getShape();
-        if (shape.getBoundingMaxX() < getCenterX()) {
+        if (entity.getBoundingMaxX() < getCenterX()) {
             insertVertically(entity, topLeft, bottomLeft);
-        } else if (shape.getBoundingMinX() > getCenterX()) {
+        } else if (entity.getBoundingMinX() > getCenterX()) {
             insertVertically(entity, topRight, bottomRight);
         } else {
             addToThis(entity);

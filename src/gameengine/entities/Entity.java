@@ -14,7 +14,9 @@ public abstract class Entity {
     private static Material defaultMaterial = Material.getDefaultMaterial();
     protected Material material;
     protected double mass;
-    protected double x, y, dx, dy, width, height, halfWidth, halfHeight;
+    protected double x, y, dx, dy;
+    private double boundingHalfWidth, boundingHalfHeight, boundingCenterX, boundingCenterY;
+    private double boundingMinX, boundingMaxX, boundingMinY, boundingMaxY;
     private int collisionType = EntityType.DEFAULT.ordinal();
     private int collisionTypeBitMask = 1 << collisionType;
     private Motion motion;
@@ -22,31 +24,27 @@ public abstract class Entity {
     private Tree containingTree;
     private int indexInTree;
 
-    public Entity(double x, double y, double width, double height, Shape shape) {
-        this(x, y, width, height, defaultMaterial, shape);
+    public Entity(double x, double y, Shape shape) {
+        this(x, y, defaultMaterial, shape);
     }
 
-    public Entity(double x, double y, double width, double height, Material material, Shape shape) {
+    public Entity(double x, double y, Material material, Shape shape) {
         //TODO we should have an overloaded constructor that accepts the entityType as a parameter
-        init(x, y, width, height, material, shape, defaultEntityType);
+        init(x, y, material, shape, defaultEntityType);
         updateMass();
     }
 
-    public Entity(double x, double y, double width, double height, double mass, Material material, Shape shape) {
+    public Entity(double x, double y, double mass, Material material, Shape shape) {
         //TODO we should have an overloaded constructor that accepts the entityType as a parameter
-        init(x, y, width, height, material, shape, defaultEntityType);
+        init(x, y, material, shape, defaultEntityType);
         this.mass = mass;
     }
 
-    private void init(double x, double y, double width, double height, Material material, Shape shape, EntityType entityType) {
+    private void init(double x, double y, Material material, Shape shape, EntityType entityType) {
         this.x = x;
         this.y = y;
-        this.width = width;
-        this.height = height;
         this.material = material;
         this.shape = shape;
-        halfWidth = width / 2;
-        halfHeight = height / 2;
         motion = new NormalMotion();
         shape.setParent(this);
         shape.setParentOffset(x - shape.getX(), y - shape.getY());
@@ -78,27 +76,92 @@ public abstract class Entity {
     }
 
     public double getWidth() {
-        return width;
-    }
-
-    public void setWidth(double width) {
-        this.width = width;
-        halfWidth = width / 2;
+        return shape.getWidth();
     }
 
     public double getHeight() {
-        return height;
+        return shape.getHeight();
     }
 
-    public void setHeight(double height) {
-        this.height = height;
-        halfHeight = height / 2;
+    public double getHalfWidth() {
+        return shape.getHalfWidth();
+    }
+
+    public double getHalfHeight() {
+        return shape.getHalfHeight();
     }
 
     public void setVelocity(double dx, double dy) {
         this.dx = dx;
         this.dy = dy;
-        shape.updateVelocity(this.dx, this.dy);
+    }
+
+    public void calculateBoundingBox(double time) {
+        double x = getX();
+        double y = getY();
+        double halfWidth = getHalfWidth();
+        double halfHeight = getHalfHeight();
+        boundingMinX = x - halfWidth;
+        boundingMaxX = x + halfWidth;
+        boundingMinY = y - halfHeight;
+        boundingMaxY = y + halfHeight;
+        double scale = 1;
+        double xTravelDist = getDX() * time * scale;
+        double yTravelDist = getDY() * time * scale;
+        if (xTravelDist > 0) {
+            boundingMaxX += xTravelDist;
+        } else {
+            boundingMinX += xTravelDist;
+        }
+
+        if (yTravelDist > 0) {
+            boundingMaxY += yTravelDist;
+        } else {
+            boundingMinY += yTravelDist;
+        }
+        boundingHalfWidth = (boundingMaxX - boundingMinX) * 0.5;
+        boundingHalfHeight = (boundingMaxY - boundingMinY) * 0.5;
+        boundingCenterX = boundingMinX + boundingHalfWidth;
+        boundingCenterY = boundingMinY + boundingHalfHeight;
+    }
+
+    public double getBoundingMinX() {
+        return boundingMinX;
+    }
+
+    public double getBoundingMaxX() {
+        return boundingMaxX;
+    }
+
+    public double getBoundingMinY() {
+        return boundingMinY;
+    }
+
+    public double getBoundingMaxY() {
+        return boundingMaxY;
+    }
+
+    public double getBoundingCenterX() {
+        return boundingCenterX;
+    }
+
+    public double getBoundingHalfWidth() {
+        return boundingHalfWidth;
+    }
+
+    public double getBoundingCenterY() {
+        return boundingCenterY;
+    }
+
+    public double getBoundingHalfHeight() {
+        return boundingHalfHeight;
+    }
+
+    public void drawBoundingBoxes(Graphics2D g, Color color) {
+        g.setColor(color);
+        double width = boundingHalfWidth * 2;
+        double height = boundingHalfHeight * 2;
+        g.drawRect((int) boundingMinX, (int) boundingMinY, (int) width, (int) height);
     }
 
     public void setEntityType(EntityType type) {
@@ -178,7 +241,6 @@ public abstract class Entity {
         motion.update(this, elapsedTime);
         dx = motion.getVelocityX();
         dy = motion.getVelocityY();
-        shape.updateVelocity(dx, dy);
     }
 
     /**
@@ -189,8 +251,6 @@ public abstract class Entity {
     public void updatePosition(double elapsedTime) {
         x += dx * elapsedTime;
         y += dy * elapsedTime;
-        shape.updatePosition(x, y);
-//        shape.updateVelocity(dx, dy);
     }
 
     public void removeFromWorld() {
@@ -213,9 +273,9 @@ public abstract class Entity {
             endY = Math.random() * 1024;
         }
         g.drawLine((int) x, (int) y, (int) endX, (int) endY);
-        int shapeWidth = (int) (shape.getBoundingMaxX() - shape.getBoundingMinX());
-        int shapeHeight = (int) (shape.getBoundingMaxY() - shape.getBoundingMinY());
-        g.drawRect((int) shape.getBoundingMinX(), (int) shape.getBoundingMinY(), shapeWidth, shapeHeight);
+        int shapeWidth = (int) (getBoundingMaxX() - getBoundingMinX());
+        int shapeHeight = (int) (getBoundingMaxY() - getBoundingMinY());
+        g.drawRect((int) getBoundingMinX(), (int) getBoundingMinY(), shapeWidth, shapeHeight);
     }
 
     public void setPosition(double x, double y) {

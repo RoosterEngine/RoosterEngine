@@ -29,7 +29,6 @@ public class Benchmark extends Context implements ActionHandler {
     }
 
     public void init() {
-        // TODO each context should have its own world, also clearWorld() should not clear the collision pairs
         world.clear();
         world.setCollisionGroups(EntityType.BALL, EntityType.BALL, EntityType.WALL, EntityType.DEFAULT);
         world.setCollisionGroups(EntityType.WALL, EntityType.DEFAULT);

@@ -6,15 +6,20 @@ import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.entities.BoxEntity;
+import gameengine.entities.CircleEntity;
 import gameengine.entities.Entity;
 import gameengine.entities.Pointer;
 import gameengine.graphics.OvalGraphic;
 import gameengine.input.Action;
 import gameengine.input.InputCode;
+import gameengine.motion.motions.Motion;
+import gameengine.motion.motions.MouseMotion;
+import gameengine.motion.motions.NoMotion;
 import gameengine.physics.Material;
 import gameengine.physics.Physics;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * documentation
@@ -23,7 +28,11 @@ import java.awt.*;
  * Time: 1:26 PM
  */
 public class Test extends Context {
-
+    private ArrayList<Entity> entities = new ArrayList<>();
+    private int controlIndex = 0;
+    private Entity controlledEntity;
+    Motion noMotion = new NoMotion();
+    Motion mouseMotion = new MouseMotion();
 
     /**
      * Constructs a Context
@@ -38,20 +47,33 @@ public class Test extends Context {
     public void init() {
         world.clear();
         world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.WALL);
+        entities.clear();
 
         double centerX = width / 2;
         double centerY = height / 2;
+        double length = 100;
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, 1));
         Entity.setDefaultEntityType(EntityType.DEFAULT);
-        BoxEntity b1 = new BoxEntity(centerX, centerY - 50, 105, 110);
-        BoxEntity b2 = new BoxEntity(centerX, centerY + 50, 105, 110);
-        world.addEntity(b1);
-        world.addEntity(b2);
-        Pointer pointer = new Pointer(new OvalGraphic(15, 15, Color.RED), width / 2, height / 4);
-        pointer.setMass(1);
-        world.addEntity(pointer);
-        setupInput();
+        double currentX = length;
+        BoxEntity box = new BoxEntity(currentX, centerY, length, length);
+        currentX += length;
+        CircleEntity circle = new CircleEntity(currentX, centerY, length / 2);
+        currentX += length;
+        Paddle poly = new Paddle(currentX, centerY, length / 2, length / 2);
 
+        box.setMotion(noMotion);
+        circle.setMotion(noMotion);
+        poly.setMotion(noMotion);
+        entities.add(box);
+        entities.add(circle);
+        entities.add(poly);
+
+        world.addEntity(box);
+        world.addEntity(circle);
+        world.addEntity(poly);
+        controlledEntity = box;
+        controlledEntity.setMotion(mouseMotion);
+        setupInput();
     }
 
     public void initBounding() {
@@ -101,6 +123,9 @@ public class Test extends Context {
         controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_UP, Action.ZOOM_OUT);
         controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_DOWN, Action.ZOOM_IN);
+        controller.setContextBinding(contextType, InputCode.KEY_LEFT, Action.GAME_LEFT);
+        controller.setContextBinding(contextType, InputCode.KEY_RIGHT, Action.GAME_RIGHT);
+
     }
 
     @Override
@@ -127,6 +152,14 @@ public class Test extends Context {
                 controller.exitContext();
                 break;
             case MOUSE_CLICK:
+                break;
+            case GAME_LEFT:
+                controlledEntity.setMotion(noMotion);
+                controlIndex = (controlIndex + 1) % entities.size();
+                controlledEntity = entities.get(controlIndex);
+                controlledEntity.setMotion(mouseMotion);
+                break;
+            case GAME_RIGHT:
                 break;
         }
     }

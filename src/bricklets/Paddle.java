@@ -18,10 +18,10 @@ public class Paddle extends Entity {
 
 
     public Paddle(double x, double y, double width, double height) {
-        super(x, y, createPaddlePolygon(width, height));
+//        super(x, y, createPaddlePolygon(width, height));
 //        super(x, y, new CircleShape(Math.max(width, height)));
 //        super(x, y, new AABBShape(width, height));
-//        super(x, y, PolygonShape.getCircle(Math.max(width, height), 7));
+        super(x, y, PolygonShape.getCircle(Math.max(width, height), 4));
         color = Color.WHITE;
     }
 

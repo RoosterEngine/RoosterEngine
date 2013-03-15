@@ -7,5 +7,5 @@ package gameengine.collisiondetection;
  * Time: 5:04 PM
  */
 public enum EntityType {
-    DEFAULT, WALL, BALL, ENEMY
+    STANDARD, WALL, BALL, ENEMY
 }

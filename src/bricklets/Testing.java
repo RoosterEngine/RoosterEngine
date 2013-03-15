@@ -40,8 +40,8 @@ public class Testing extends Context implements ActionHandler {
         // TODO each context should have its own world, also clearWorld() should not clear the collision pairs
         world.clearCollisions();
         world.setCollisionGroup(EntityType.BALL, EntityType.BALL);
-        world.setCollisionGroup(EntityType.BALL, EntityType.DEFAULT);
-        world.setCollisionGroup(EntityType.WALL, EntityType.DEFAULT);
+        world.setCollisionGroup(EntityType.BALL, EntityType.STANDARD);
+        world.setCollisionGroup(EntityType.WALL, EntityType.STANDARD);
 
 //        GravityWorldEffect gravity = new GravityWorldEffect(0.001);
 //        gravity.addCollisionType(EntityType.BALL);

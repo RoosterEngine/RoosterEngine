@@ -36,7 +36,7 @@ public class Test extends Context {
     }
 
     public void init() {
-        world.clearCollisions();
+        world.clear();
         world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.WALL);
 
         double centerX = width / 2;

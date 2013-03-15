@@ -63,7 +63,7 @@ public class World {
         collisionGroups[bOrdinal] &= ~mask;
     }
 
-    public void clearCollisions() {
+    public void clear() {
         for (int i = 0; i < collisionGroups.length; i++) {
             collisionGroups[i] = 0;
         }

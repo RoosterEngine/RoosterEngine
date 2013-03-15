@@ -53,7 +53,7 @@ public class BrickBreaker extends Context implements ActionHandler {
 
     private void init() {
         rand.setSeed(1);
-        world.clearCollisions();
+        world.clear();
         lives = 100;
         reset();
         world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.PADDLE, EntityType.WALL, EntityType.BALL);

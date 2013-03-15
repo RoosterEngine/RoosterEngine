@@ -81,7 +81,7 @@ public class BrickBreaker extends Context implements ActionHandler {
     }
 
     public void initBounding() {
-        double borderThickness = 10;
+        double borderThickness = 0.0001;
         Entity.setDefaultEntityType(EntityType.WALL);
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, Double.POSITIVE_INFINITY));
         topBounds = new BoxEntity(width / 2, 0, width, borderThickness);

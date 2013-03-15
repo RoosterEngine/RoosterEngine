@@ -94,6 +94,10 @@ public abstract class Tree {
                 && isContained(entity.getBoundingCenterY(), getCenterY(), entity.getBoundingHalfHeight());
     }
 
+    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
+        return Math.abs(treePosition - shapePosition) <= getHalfLength() - shapeHalfLength;
+    }
+
     public void removeEntityFromList(int index) {
         assert entityListPos > 0;
         entityListPos--;
@@ -177,10 +181,6 @@ public abstract class Tree {
         minY = centerY - halfLength;
         maxX = centerX + halfLength;
         maxY = centerY + halfLength;
-    }
-
-    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
-        return Math.abs(treePosition - shapePosition) < getHalfLength() - shapeHalfLength;
     }
 
     //------------------------------ testing methods --------------------------------

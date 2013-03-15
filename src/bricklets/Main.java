@@ -14,19 +14,23 @@ import java.awt.*;
 public class Main implements ButtonHandler {
     private GameController controller;
     private BasicButton gameButton = new BasicButton("Start");
-    private BasicButton testingButton = new BasicButton("Testing");
+    private BasicButton benchmarkButton = new BasicButton("Benchmark");
+    private BasicButton testButton = new BasicButton("Test");
+
     private BasicButton exitButton = new BasicButton("Exit");
     private BasicButton optionsButton = new BasicButton("Options");
     private BasicButton controlsButton = new BasicButton("Controls");
     private BrickBreaker bricks;
     private BasicMenu menu;
-    private Testing testing;
+    private Benchmark benchmark;
+    private Test testing;
 
     public Main(GameController controller) {
         this.controller = controller;
-        BasicButton[] buttons = {gameButton, testingButton, exitButton};
-        testing = new Testing(controller);
+        BasicButton[] buttons = {gameButton, benchmarkButton, exitButton, testButton};
+        benchmark = new Benchmark(controller);
         bricks = new BrickBreaker(controller);
+        testing = new Test(controller);
         menu = new BasicMenu(controller, ContextType.MENU, buttons, this, new SolidColorGraphic(new Color(19, 9, 18), controller.getWidth(), controller.getHeight()));
     }
 
@@ -53,12 +57,16 @@ public class Main implements ButtonHandler {
 //            controller.enterContext(testColl);
             controller.enterContext(bricks);
             menu.reset();
-        } else if (button == testingButton) {
-            testing.init();
-            controller.enterContext(testing);
+        } else if (button == benchmarkButton) {
+            benchmark.init();
+            controller.enterContext(benchmark);
             menu.reset();
         } else if (button == exitButton) {
             controller.exitContext();
+        } else if (button == testButton) {
+            testing.init();
+            controller.enterContext(testing);
+            menu.reset();
         }
     }
 

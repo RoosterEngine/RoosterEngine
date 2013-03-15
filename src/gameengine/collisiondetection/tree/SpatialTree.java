@@ -31,8 +31,8 @@ public class SpatialTree implements Parent {
     }
 
     public void addEntity(Entity entity) {
-        Shape shape = entity.getShape();
-        shape.calculateBoundingBox(0);
+        // TODO enforce adding an entity only once
+        entity.calculateBoundingBox(0);
         if (isNotContainedInTree(entity)) {
             relocate(entity);
         } else {
@@ -92,10 +92,10 @@ public class SpatialTree implements Parent {
             timeLeft -= timeToUpdate;
             if (a.getContainingTree() != null) {
                 aTree.removeEntityFromList(a.getIndexInTree());
-                a.getShape().calculateBoundingBox(timeLeft);
+                a.calculateBoundingBox(timeLeft);
                 if (b.getContainingTree() != null) {
                     bTree.removeEntityFromList(b.getIndexInTree());
-                    b.getShape().calculateBoundingBox(timeLeft);
+                    b.calculateBoundingBox(timeLeft);
                     bTree.entityUpdated(collisionGroups, tempCollision, timeLeft, b, list);
                 } else {
                     bTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, b, currentTime, list);
@@ -104,7 +104,7 @@ public class SpatialTree implements Parent {
             } else if (b.getContainingTree() != null) {
                 bTree.removeEntityFromList(b.getIndexInTree());
                 aTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, currentTime, list);
-                b.getShape().calculateBoundingBox(timeLeft);
+                b.calculateBoundingBox(timeLeft);
                 bTree.entityUpdated(collisionGroups, tempCollision, timeLeft, b, list);
             } else {
                 aTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, currentTime, list);
@@ -226,9 +226,8 @@ public class SpatialTree implements Parent {
     }
 
     private boolean isNotContainedInTree(Entity entity) {
-        Shape shape = entity.getShape();
-        return !isContained(shape.getBoundingCenterX(), tree.getCenterX(), shape.getBoundingHalfWidth())
-                || !isContained(shape.getBoundingCenterY(), tree.getCenterY(), shape.getBoundingHalfHeight());
+        return !isContained(entity.getBoundingCenterX(), tree.getCenterX(), entity.getBoundingHalfWidth())
+                || !isContained(entity.getBoundingCenterY(), tree.getCenterY(), entity.getBoundingHalfHeight());
     }
 
     private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {

@@ -84,8 +84,7 @@ public class Leaf extends Tree {
         int index = 0;
         while (index < entityListPos) {
             Entity entity = entities[index];
-            Shape shape = entity.getShape();
-            shape.calculateBoundingBox(time);
+            entity.calculateBoundingBox(time);
 
             if (!isContainedInTree(entity)) {
                 assert isEntityCountCorrect();

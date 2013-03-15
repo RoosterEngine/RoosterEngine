@@ -90,9 +90,12 @@ public abstract class Tree {
     }
 
     public boolean isContainedInTree(Entity entity) {
-        Shape shape = entity.getShape();
-        return isContained(shape.getBoundingCenterX(), getCenterX(), shape.getBoundingHalfWidth())
-                && isContained(shape.getBoundingCenterY(), getCenterY(), shape.getBoundingHalfHeight());
+        return isContained(entity.getBoundingCenterX(), getCenterX(), entity.getBoundingHalfWidth())
+                && isContained(entity.getBoundingCenterY(), getCenterY(), entity.getBoundingHalfHeight());
+    }
+
+    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
+        return Math.abs(treePosition - shapePosition) <= getHalfLength() - shapeHalfLength;
     }
 
     public void removeEntityFromList(int index) {
@@ -178,10 +181,6 @@ public abstract class Tree {
         minY = centerY - halfLength;
         maxX = centerX + halfLength;
         maxY = centerY + halfLength;
-    }
-
-    private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
-        return Math.abs(treePosition - shapePosition) < getHalfLength() - shapeHalfLength;
     }
 
     //------------------------------ testing methods --------------------------------

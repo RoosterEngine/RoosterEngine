@@ -17,8 +17,7 @@ public class Pointer extends Entity {
     Graphic graphic;
 
     public Pointer(Graphic graphic, double startX, double startY) {
-        super(startX, startY, graphic.getWidth(), graphic.getHeight(),
-                new CircleShape(startX, startY, graphic.getWidth() / 2));
+        super(startX, startY, new CircleShape(graphic.getWidth() / 2));
         this.graphic = graphic;
         setMotion(new MouseMotion());
     }

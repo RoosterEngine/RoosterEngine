@@ -14,8 +14,8 @@ public class PolygonShape extends Shape {
     private double width, height, minX, maxX, minY, maxY;
     private int numPoints;
 
-    public PolygonShape(double x, double y, double[] xPoints, double[] yPoints) {
-        super(x, y, getHalfLength(xPoints), getHalfLength(yPoints));
+    public PolygonShape(double[] xPoints, double[] yPoints) {
+        super(getHalfLength(xPoints), getHalfLength(yPoints));
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
         normals = new Vector2D[numPoints];
@@ -28,8 +28,23 @@ public class PolygonShape extends Shape {
         setupNormalsAndShadows();
     }
 
-    public static PolygonShape getRandConvexPolygon(double x, double y, double radiusMin, double radiusMax,
-                                                    int numPointsMin, int numPointsMax) {
+    public static PolygonShape getCircle(double radius, int points) {
+        double angle = 2 * Math.PI / points;
+        double[] xPoints = new double[points];
+        double[] yPoints = new double[points];
+        double currentAngle = 0;
+        for (int i = 0; i < points; i++) {
+            currentAngle += angle;
+            double x = Math.sin(currentAngle) * radius;
+            double y = Math.cos(currentAngle) * radius;
+            xPoints[i] = x;
+            yPoints[i] = y;
+        }
+        return new PolygonShape(xPoints, yPoints);
+    }
+
+    public static PolygonShape getRandConvexPolygon(double radiusMin, double radiusMax, int numPointsMin,
+                                                    int numPointsMax) {
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
         int pointsDiff = numPointsMax - numPointsMin;
         int numPoints = (int) (rand.nextDouble() * pointsDiff) + numPointsMin;
@@ -45,7 +60,7 @@ public class PolygonShape extends Shape {
             xPoints[p] = pX;
             yPoints[p] = pY;
         }
-        return new PolygonShape(x, y, xPoints, yPoints);
+        return new PolygonShape(xPoints, yPoints);
     }
 
     private static double getHalfLength(double[] points) {
@@ -131,6 +146,8 @@ public class PolygonShape extends Shape {
 
     @Override
     public void draw(Graphics2D g, Color color) {
+        double x = getX();
+        double y = getY();
         for (int i = 0; i < numPoints; i++) {
             xInts[i] = (int) (points[i].getX() + x);
             yInts[i] = (int) (points[i].getY() + y);
@@ -150,8 +167,10 @@ public class PolygonShape extends Shape {
     private void drawNormals(Graphics2D g, Color color) {
         double scale = 100;
         g.setColor(color);
+        double x = getX();
+        double y = getY();
         for (Vector2D normal : normals) {
-            g.drawLine((int) (x), (int) (y), (int) (x + normal.getX() * scale), (int) (y + normal.getY() * scale));
+            g.drawLine((int) x, (int) y, (int) (x + normal.getX() * scale), (int) (y + normal.getY() * scale));
         }
     }
 

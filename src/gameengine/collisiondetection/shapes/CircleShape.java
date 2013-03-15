@@ -11,8 +11,8 @@ import java.awt.*;
 public class CircleShape extends Shape {
     private double radius;
 
-    public CircleShape(double x, double y, double radius) {
-        super(x, y, radius, radius);
+    public CircleShape(double radius) {
+        super(radius, radius);
         this.radius = radius;
     }
 
@@ -48,6 +48,8 @@ public class CircleShape extends Shape {
     @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color);
-        g.fillOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
+        double x = getX();
+        double y = getY();
+        g.drawOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
     }
 }

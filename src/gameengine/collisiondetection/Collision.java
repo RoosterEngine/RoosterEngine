@@ -1,5 +1,6 @@
 package gameengine.collisiondetection;
 
+import gameengine.collisiondetection.shapes.CollisionData;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 import gameengine.math.Vector2D;
@@ -11,16 +12,24 @@ import gameengine.math.Vector2D;
  */
 public class Collision {
     private Vector2D collisionNormal = new Vector2D();
-    private Entity a, b;
-    private double timeToCollision;
+    private CollisionData collisionData = new CollisionData();
+    private Entity a = null, b = null;
+    private double timeToCollision = Shape.NO_COLLISION;
+    private double tempMin, tempMax;
 
     public Collision() {
-        setNoCollision();
     }
 
     public Collision(double timeToCollision, Vector2D collisionNormal, Entity a, Entity b) {
         this.timeToCollision = timeToCollision;
         this.collisionNormal = collisionNormal;
+        this.a = a;
+        this.b = b;
+    }
+
+    public void set(double timeToCollision, double normalX, double normalY, Entity a, Entity b) {
+        this.timeToCollision = timeToCollision;
+        collisionNormal.set(normalX, normalY);
         this.a = a;
         this.b = b;
     }
@@ -79,5 +88,25 @@ public class Collision {
             assert b == null;
         }
         return true;
+    }
+
+    public CollisionData getCollisionData() {
+        return collisionData;
+    }
+
+    public double getTempMin() {
+        return tempMin;
+    }
+
+    public void setTempMin(double min) {
+        this.tempMin = min;
+    }
+
+    public double getTempMax() {
+        return tempMax;
+    }
+
+    public void setTempMax(double max) {
+        this.tempMax = max;
     }
 }

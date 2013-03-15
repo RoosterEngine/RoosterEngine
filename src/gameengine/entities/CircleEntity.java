@@ -10,7 +10,7 @@ public class CircleEntity extends Entity {
     private double maxSpeed = 2;
 
     public CircleEntity(double x, double y, double radius) {
-        super(x, y, radius * 2, radius * 2, new CircleShape(x, y, radius));
+        super(x, y, new CircleShape(radius));
         this.radius = radius;
     }
 

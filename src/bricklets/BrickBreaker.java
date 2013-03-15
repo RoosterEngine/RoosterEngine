@@ -75,7 +75,7 @@ public class BrickBreaker extends Context implements ActionHandler {
 
         controlledEntity = paddle;
         controlledEntity.setMotion(new MotionCompositor(new MouseMotion(),
-                new VerticalAttractMotion(paddle.getY(), 0.01, 0.3, controlledEntity.getMass())));
+                new VerticalAttractMotion(paddle.getY(), 0.005, 0.3, controlledEntity.getMass())));
 
         setupInput();
     }

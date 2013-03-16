@@ -36,7 +36,7 @@ public class BrickBreaker extends Context implements ActionHandler {
     private double yThrustMultiplier = 0;
     private Random rand = new Random(1);
     private double initialPaddleY = height - 200;
-    private double ballRadius = 12;
+    private double ballRadius = 10;
     private double ballMass = 50;
     private int lives = 100;
     private Color bgColor = Color.black;
@@ -54,7 +54,7 @@ public class BrickBreaker extends Context implements ActionHandler {
         world.clear();
         lives = 100;
         reset();
-        world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.PADDLE, EntityType.WALL, EntityType.BALL);
+        world.setCollisionGroups(EntityType.STANDARD, EntityType.STANDARD, EntityType.PADDLE, EntityType.WALL, EntityType.BALL);
         world.setCollisionGroups(EntityType.BALL, EntityType.PADDLE, EntityType.BALL, EntityType.WALL);
         world.setCollisionGroups(EntityType.WALL, EntityType.PADDLE);
 
@@ -62,10 +62,10 @@ public class BrickBreaker extends Context implements ActionHandler {
         velocityEnforcer.addCollisionType(EntityType.BALL);
         world.addEnvironmentMotion(velocityEnforcer);
 
+        double paddleDensity = 0.001;
+        Entity.setDefaultMaterial(Material.createMaterial(0, 1, paddleDensity));
+        Entity.setDefaultEntityType(EntityType.STANDARD);
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
-        paddle.setMass(1000);
-        paddle.setMaterial(Material.createMaterial(0, 1, 1));
-        paddle.setEntityType(EntityType.PADDLE);
         world.addEntity(paddle);
 
         initBricks();
@@ -73,7 +73,7 @@ public class BrickBreaker extends Context implements ActionHandler {
 
         controlledEntity = paddle;
         controlledEntity.setMotion(new MotionCompositor(new MouseMotion(),
-                new VerticalAttractMotion(paddle.getY(), 0.01, 0.3, controlledEntity.getMass())));
+                new VerticalAttractMotion(paddle.getY(), 0.005, 0.3, controlledEntity.getMass())));
 
         setupInput();
     }
@@ -102,7 +102,7 @@ public class BrickBreaker extends Context implements ActionHandler {
         double yOffset = borderPadding * 1.75;
         double brickWidth = (width - borderPadding * 2 - (columns + 1) * padding) / columns;
         double brickHeight = brickWidth;
-        Entity.setDefaultEntityType(EntityType.DEFAULT);
+        Entity.setDefaultEntityType(EntityType.STANDARD);
         for (int x = 0; x < columns; x++) {
             for (int y = 0; y < rows; y++) {
                 double xPos = padding * (1 + x) + brickWidth * x + brickWidth / 2 + borderPadding;

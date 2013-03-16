@@ -10,14 +10,14 @@ import gameengine.physics.Material;
 import java.awt.*;
 
 public abstract class Entity {
-    private static EntityType defaultEntityType = EntityType.DEFAULT;
+    private static EntityType defaultEntityType = EntityType.STANDARD;
     private static Material defaultMaterial = Material.getDefaultMaterial();
     protected Material material;
     protected double mass;
     protected double x, y, dx, dy;
     private double boundingHalfWidth, boundingHalfHeight, boundingCenterX, boundingCenterY;
     private double boundingMinX, boundingMaxX, boundingMinY, boundingMaxY;
-    private int collisionType = EntityType.DEFAULT.ordinal();
+    private int collisionType = EntityType.STANDARD.ordinal();
     private int collisionTypeBitMask = 1 << collisionType;
     private Motion motion;
     private Shape shape;

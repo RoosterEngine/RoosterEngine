@@ -33,7 +33,7 @@ public class Test extends Context {
     /**
      * Constructs a Context
      *
-     * @param controller  The {@link gameengine.GameController} controlling the game
+     * @param controller The {@link gameengine.GameController} controlling the game
      */
     public Test(GameController controller) {
         super(controller, ContextType.GAME);
@@ -42,14 +42,14 @@ public class Test extends Context {
 
     public void init() {
         world.clear();
-//        world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.WALL);
+//        world.setCollisionGroups(EntityType.STANDARD, EntityType.STANDARD, EntityType.WALL);
         entities.clear();
 
         double centerX = width / 2;
         double centerY = height / 2;
         double length = 100;
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, 1));
-        Entity.setDefaultEntityType(EntityType.DEFAULT);
+        Entity.setDefaultEntityType(EntityType.STANDARD);
         double currentX = length;
         BoxEntity box = new BoxEntity(currentX, centerY, length, length);
         currentX += length * 1.5;

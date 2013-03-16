@@ -28,11 +28,11 @@ public class Benchmark extends Context implements ActionHandler {
 
     public void init() {
         world.clear();
-        world.setCollisionGroups(EntityType.BALL, EntityType.BALL, EntityType.WALL, EntityType.DEFAULT);
-        world.setCollisionGroups(EntityType.WALL, EntityType.DEFAULT);
+        world.setCollisionGroups(EntityType.BALL, EntityType.BALL, EntityType.WALL, EntityType.STANDARD);
+        world.setCollisionGroups(EntityType.WALL, EntityType.STANDARD);
 
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, 1));
-        Entity.setDefaultEntityType(EntityType.DEFAULT);
+        Entity.setDefaultEntityType(EntityType.STANDARD);
         Pointer pointer = new Pointer(new OvalGraphic(15, 15, Color.RED), width / 2, height / 2);
         pointer.setMass(1);
         world.addEntity(pointer);

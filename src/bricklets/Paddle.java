@@ -3,7 +3,6 @@ package bricklets;
 import gameengine.collisiondetection.shapes.PolygonShape;
 
 import java.awt.*;
-import java.util.HashSet;
 
 /**
  * The paddle that is used by players to bounce balls
@@ -15,12 +14,11 @@ import java.util.HashSet;
 public class Paddle extends TestingEntity {
 
     public Paddle(double x, double y, double width, double height) {
-//        super(x, y, createPaddlePolygon(width, height));
+        super(x, y, createPaddlePolygon(width, height));
 //        super(x, y, new CircleShape(Math.max(width, height)));
 //        super(x, y, new AABBShape(width, height));
-        super(x, y, PolygonShape.getCircle(Math.max(width, height), (int) (Math.random() * 10 + 3)));
+//        super(x, y, PolygonShape.getCircle(Math.max(width, height), 4));
         color = Color.WHITE;
-        HashSet set = new HashSet();
     }
 
     private static PolygonShape createPaddlePolygon(double width, double height) {

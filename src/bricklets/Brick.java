@@ -1,7 +1,5 @@
 package bricklets;
 
-import gameengine.entities.BoxEntity;
-
 import java.awt.*;
 
 /**

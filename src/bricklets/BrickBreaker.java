@@ -5,8 +5,6 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
-import gameengine.entities.BoxEntity;
-import gameengine.entities.CircleEntity;
 import gameengine.entities.Entity;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;

@@ -45,6 +45,26 @@ public class AABBShape extends Shape {
         Shape.collideAABBPoly(this, polygonShape, maxTime, result);
     }
 
+    @Override
+    public boolean isOverlappingShape(Shape shape) {
+        return shape.isOverlappingAABB(this);
+    }
+
+    @Override
+    public boolean isOverlappingPolygon(PolygonShape shape) {
+        return Shape.isOverlappingPolyAABB(shape, this);
+    }
+
+    @Override
+    public boolean isOverlappingCircle(CircleShape shape) {
+        return Shape.isOverlappingCircleAABB(shape, this);
+    }
+
+    @Override
+    public boolean isOverlappingAABB(AABBShape shape) {
+        return Shape.isOverlappingAABBAABB(shape, this);
+    }
+
     public double getWidth() {
         return width;
     }

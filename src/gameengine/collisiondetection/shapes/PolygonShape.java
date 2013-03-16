@@ -91,6 +91,26 @@ public class PolygonShape extends Shape {
         Shape.collidePolyPoly(this, polygonShape, maxTime, result);
     }
 
+    @Override
+    public boolean isOverlappingShape(Shape shape) {
+        return shape.isOverlappingPolygon(this);
+    }
+
+    @Override
+    public boolean isOverlappingPolygon(PolygonShape shape) {
+        return Shape.isOverlappingPolyPoly(this, shape);
+    }
+
+    @Override
+    public boolean isOverlappingCircle(CircleShape shape) {
+        return Shape.isOverlappingPolyCircle(this, shape);
+    }
+
+    @Override
+    public boolean isOverlappingAABB(AABBShape shape) {
+        return Shape.isOverlappingPolyAABB(this, shape);
+    }
+
     /**
      * the first normal in the array is for the line points[points.length - 1] and points[0],
      * the second normal is for line points[0] and points[1].

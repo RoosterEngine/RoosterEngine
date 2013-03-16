@@ -1,12 +1,11 @@
-package gameengine.entities;
+package bricklets;
 
 import gameengine.collisiondetection.shapes.CircleShape;
 
 import java.awt.*;
 
-public class CircleEntity extends Entity {
+public class CircleEntity extends TestingEntity {
     protected double radius;
-    protected Color color = Color.WHITE;
     private double maxSpeed = 2;
 
     public CircleEntity(double x, double y, double radius) {

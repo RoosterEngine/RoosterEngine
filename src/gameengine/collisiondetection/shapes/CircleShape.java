@@ -46,6 +46,26 @@ public class CircleShape extends Shape {
     }
 
     @Override
+    public boolean isOverlappingShape(Shape shape) {
+        return shape.isOverlappingCircle(this);
+    }
+
+    @Override
+    public boolean isOverlappingPolygon(PolygonShape shape) {
+        return Shape.isOverlappingPolyCircle(shape, this);
+    }
+
+    @Override
+    public boolean isOverlappingCircle(CircleShape shape) {
+        return Shape.isOverlappingCircleCircle(this, shape);
+    }
+
+    @Override
+    public boolean isOverlappingAABB(AABBShape shape) {
+        return Shape.isOverlappingCircleAABB(this, shape);
+    }
+
+    @Override
     public void draw(Graphics2D g, Color color) {
         g.setColor(color);
         double x = getX();

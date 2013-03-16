@@ -661,6 +661,317 @@ public abstract class Shape {
         collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, vel));
     }
 
+    public static boolean isOverlappingPolyPoly(PolygonShape a, PolygonShape b) {
+        final double aX = a.parent.getX(), aY = a.parent.getY();
+        final double bX = b.parent.getX(), bY = b.parent.getY();
+        final double deltaX = aX - bX;
+        final double deltaY = aY - bY;
+        Vector2D[] aPoints = a.getPoints();
+        Vector2D[] bNormals = b.getNormals();
+        double[] bMins = b.getNormalMins();
+        double[] bMaxs = b.getNormalMaxs();
+        for (int i = 0; i < bNormals.length; i++) {
+            Vector2D normal = bNormals[i];
+            double min = Double.MAX_VALUE;
+            double max = -Double.MIN_VALUE;
+            for (int j = 0; j < aPoints.length; j++) {
+                Vector2D aPoint = aPoints[j];
+                double pX = aPoint.getX() - deltaX;
+                double pY = aPoint.getY() - deltaY;
+                double dist = Vector2D.unitScalarProject(pX, pY, normal);
+                if (dist < min) {
+                    min = dist;
+                }
+                if (dist > max) {
+                    max = dist;
+                }
+            }
+
+            double bMin = bMins[i];
+            double bMax = bMaxs[i];
+            if (max < bMin || min > bMax) {
+                return false;
+            }
+        }
+        Vector2D[] bPoints = b.getPoints();
+        Vector2D[] aNormals = a.getNormals();
+        double[] aMins = a.getNormalMins();
+        double[] aMaxs = a.getNormalMaxs();
+        for (int i = 0; i < aNormals.length; i++) {
+            Vector2D normal = aNormals[i];
+            double min = Double.MAX_VALUE;
+            double max = -Double.MIN_VALUE;
+            for (int j = 0; j < bPoints.length; j++) {
+                Vector2D bPoint = bPoints[j];
+                double pX = bPoint.getX() + deltaX;
+                double pY = bPoint.getY() + deltaY;
+                double dist = Vector2D.unitScalarProject(pX, pY, normal);
+                if (dist < min) {
+                    min = dist;
+                }
+                if (dist > max) {
+                    max = dist;
+                }
+            }
+
+            double aMin = aMins[i];
+            double aMax = aMaxs[i];
+            if (max < aMin || min > aMax) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isOverlappingPolyCircle(PolygonShape a, CircleShape b) {
+        final double aX = a.parent.getX(), aY = a.parent.getY();
+        final double bX = b.parent.getX(), bY = b.parent.getY();
+        double bRadius = b.getRadius();
+
+        final double deltaX = bX - aX;
+        final double deltaY = bY - aY;
+        Vector2D[] aNormals = a.getNormals();
+        double[] aMins = a.getNormalMins();
+        double[] aMaxs = a.getNormalMaxs();
+        for (int i = 0; i < aNormals.length; i++) {
+            Vector2D normal = aNormals[i];
+            double bPos = Vector2D.unitScalarProject(deltaX, deltaY, normal);
+            double bMin = bPos - bRadius;
+            double bMax = bPos + bRadius;
+
+            double aMin = aMins[i];
+            double aMax = aMaxs[i];
+            if (bMax < aMin || bMin > aMax) {
+                return false;
+            }
+        }
+
+        double minDX = 0, minDY = 0;
+        double minDistSquard = Double.MAX_VALUE;
+        Vector2D[] aPoints = a.getPoints();
+        for (int i = 0; i < aPoints.length; i++) {
+            Vector2D point = aPoints[i];
+            double pX = point.getX() + aX;
+            double pY = point.getY() + aY;
+            double dX = bX - pX;
+            double dY = bY - pY;
+            double distSquared = dX * dX + dY * dY;
+            if (distSquared < minDistSquard) {
+                minDistSquard = distSquared;
+                minDX = dX;
+                minDY = dY;
+            }
+        }
+        double dist = Math.sqrt(minDistSquard);
+        double normalX = minDX / dist;
+        double normalY = minDY / dist;
+        double aMin = Double.MAX_VALUE;
+        double aMax = -Double.MAX_VALUE;
+        for (int i = 0; i < aPoints.length; i++) {
+            Vector2D point = aPoints[i];
+            double pX = point.getX();
+            double pY = point.getY();
+            double shadow = Vector2D.unitScalarProject(pX, pY, normalX, normalY);
+            if (shadow < aMin) {
+                aMin = shadow;
+            }
+            if (shadow > aMax) {
+                aMax = shadow;
+            }
+        }
+        double bPos = Vector2D.unitScalarProject(deltaX, deltaY, normalX, normalY);
+        if (bPos + bRadius < aMin || bPos - bRadius > aMax) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isOverlappingPolyAABB(PolygonShape a, AABBShape b) {
+        final double aX = a.parent.getX(), aY = a.parent.getY();
+        final double bX = b.parent.getX(), bY = b.parent.getY();
+        double bHalfWidth = b.getHalfWidth();
+        double bHalfHeight = b.getHalfHeight();
+        final double deltaX = bX - aX;
+        final double deltaY = bY - aY;
+        final double bMinX = deltaX - bHalfWidth;
+        final double bMaxX = deltaX + bHalfWidth;
+        final double bMinY = deltaY - bHalfHeight;
+        final double bMaxY = deltaY + bHalfHeight;
+        Vector2D[] aNormals = a.getNormals();
+        double[] aMins = a.getNormalMins();
+        double[] aMaxs = a.getNormalMaxs();
+        for (int i = 0; i < aNormals.length; i++) {
+            Vector2D normal = aNormals[i];
+
+            double bPointShadow = Vector2D.unitScalarProject(bMinX, bMinY, normal);
+            double bMin = bPointShadow;
+            double bMax = bPointShadow;
+
+            bPointShadow = Vector2D.unitScalarProject(bMaxX, bMinY, normal);
+            if (bPointShadow < bMin) {
+                bMin = bPointShadow;
+            } else {
+                bMax = bPointShadow;
+            }
+
+            bPointShadow = Vector2D.unitScalarProject(bMaxX, bMaxY, normal);
+            if (bPointShadow < bMin) {
+                bMin = bPointShadow;
+            } else if (bPointShadow > bMax) {
+                bMax = bPointShadow;
+            }
+
+            bPointShadow = Vector2D.unitScalarProject(bMinX, bMaxY, normal);
+            if (bPointShadow < bMin) {
+                bMin = bPointShadow;
+            } else if (bPointShadow > bMax) {
+                bMax = bPointShadow;
+            }
+
+            double aMin = aMins[i];
+            double aMax = aMaxs[i];
+            if (bMax < aMin || bMin > aMax) {
+                return false;
+            }
+        }
+
+        double normalX = 1;
+        double normalY = 0;
+        double aMin = Double.MAX_VALUE;
+        double aMax = -Double.MAX_VALUE;
+        Vector2D[] aPoints = a.getPoints();
+        for (int i = 0; i < aPoints.length; i++) {
+            Vector2D point = aPoints[i];
+            double pX = point.getX();
+            double pY = point.getY();
+            double shadow = Vector2D.unitScalarProject(pX, pY, normalX, normalY);
+            if (shadow < aMin) {
+                aMin = shadow;
+            }
+            if (shadow > aMax) {
+                aMax = shadow;
+            }
+        }
+        if (bMaxX < aMin || bMinX > aMax) {
+            return false;
+        }
+
+        normalX = 0;
+        normalY = 1;
+        aMin = Double.MAX_VALUE;
+        aMax = -Double.MAX_VALUE;
+        for (int i = 0; i < aPoints.length; i++) {
+            Vector2D point = aPoints[i];
+            double pX = point.getX();
+            double pY = point.getY();
+            double shadow = Vector2D.unitScalarProject(pX, pY, normalX, normalY);
+            if (shadow < aMin) {
+                aMin = shadow;
+            }
+            if (shadow > aMax) {
+                aMax = shadow;
+            }
+        }
+        if (bMaxY < aMin || bMinY > aMax) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isOverlappingCircleCircle(CircleShape a, CircleShape b) {
+        double deltaX = a.getX() - b.getX();
+        double deltaY = a.getY() - b.getY();
+        double distSquared = deltaX * deltaX + deltaY * deltaY;
+        double radiiSum = a.getRadius() + b.getRadius();
+        double radiiSumSquared = radiiSum * radiiSum;
+        return distSquared < radiiSumSquared;
+    }
+
+    public static boolean isOverlappingCircleAABB(CircleShape a, AABBShape b) {
+        final double aX = a.parent.getX(), aY = a.parent.getY();
+        final double bX = b.parent.getX(), bY = b.parent.getY();
+        double bHalfWidth = b.getHalfWidth();
+        double bHalfHeight = b.getHalfHeight();
+        final double deltaX = bX - aX;
+        final double deltaY = bY - aY;
+        final double bMinX = deltaX - bHalfWidth;
+        final double bMaxX = deltaX + bHalfWidth;
+        final double bMinY = deltaY - bHalfHeight;
+        final double bMaxY = deltaY + bHalfHeight;
+        final double aMax = a.getRadius();
+        final double aMin = -aMax;
+
+        if (bMaxX < aMin || bMinX > aMax || bMaxY < aMin || bMinY > aMax) {
+            return false;
+        }
+        double bMin, bMax;
+        double normalX, normalY;
+        if (aX < bX) {
+            double bMinXSquared = bMinX * bMinX;
+            if (aY < bY) {
+                double dist = Math.sqrt(bMinXSquared + bMinY * bMinY);
+                normalX = bMinX / dist;
+                normalY = bMinY / dist;
+            } else {
+                double dist = Math.sqrt(bMinXSquared + bMaxY * bMaxY);
+                normalX = bMinX / dist;
+                normalY = bMaxY / dist;
+            }
+        } else {
+            double bMaxXSquared = bMaxX * bMaxX;
+            if (aY < bY) {
+                double dist = Math.sqrt(bMaxXSquared + bMinY * bMinY);
+                normalX = bMaxX / dist;
+                normalY = bMinY / dist;
+            } else {
+                double dist = Math.sqrt(bMaxXSquared + bMaxY * bMaxY);
+                normalX = bMaxX / dist;
+                normalY = bMaxY / dist;
+            }
+        }
+
+        double bPointShadow = Vector2D.unitScalarProject(bMinX, bMinY, normalX, normalY);
+        bMin = bPointShadow;
+        bMax = bPointShadow;
+
+        bPointShadow = Vector2D.unitScalarProject(bMaxX, bMinY, normalX, normalY);
+        if (bPointShadow < bMin) {
+            bMin = bPointShadow;
+        } else {
+            bMax = bPointShadow;
+        }
+
+        bPointShadow = Vector2D.unitScalarProject(bMaxX, bMaxY, normalX, normalY);
+        if (bPointShadow < bMin) {
+            bMin = bPointShadow;
+        } else if (bPointShadow > bMax) {
+            bMax = bPointShadow;
+        }
+
+        bPointShadow = Vector2D.unitScalarProject(bMinX, bMaxY, normalX, normalY);
+        if (bPointShadow < bMin) {
+            bMin = bPointShadow;
+        } else if (bPointShadow > bMax) {
+            bMax = bPointShadow;
+        }
+
+        if (bMax < aMin || bMin > aMax) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean isOverlappingAABBAABB(AABBShape a, AABBShape b) {
+        double deltaX = a.getX() - b.getX();
+        double deltaY = a.getY() - b.getY();
+        double combinedHalfWidth = a.getHalfWidth() + b.getHalfWidth();
+        double combinedHalfHeight = a.getHalfHeight() + b.getHalfHeight();
+        if (Math.abs(deltaX) > combinedHalfWidth || Math.abs(deltaY) > combinedHalfHeight) {
+            return false;
+        }
+        return true;
+    }
+
     public void setParent(Entity parent) {
         this.parent = parent;
     }
@@ -715,6 +1026,14 @@ public abstract class Shape {
     public abstract void collideWithAABB(AABBShape aabbShape, double maxTime, Collision result);
 
     public abstract void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision result);
+
+    public abstract boolean isOverlappingShape(Shape shape);
+
+    public abstract boolean isOverlappingPolygon(PolygonShape shape);
+
+    public abstract boolean isOverlappingCircle(CircleShape shape);
+
+    public abstract boolean isOverlappingAABB(AABBShape shape);
 
     public abstract void draw(Graphics2D g, Color color);
 }

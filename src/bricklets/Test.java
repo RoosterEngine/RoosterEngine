@@ -5,11 +5,7 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
-import gameengine.entities.BoxEntity;
-import gameengine.entities.CircleEntity;
 import gameengine.entities.Entity;
-import gameengine.entities.Pointer;
-import gameengine.graphics.OvalGraphic;
 import gameengine.input.Action;
 import gameengine.input.InputCode;
 import gameengine.motion.motions.Motion;
@@ -28,7 +24,7 @@ import java.util.ArrayList;
  * Time: 1:26 PM
  */
 public class Test extends Context {
-    private ArrayList<Entity> entities = new ArrayList<>();
+    private ArrayList<TestingEntity> entities = new ArrayList<>();
     private int controlIndex = 0;
     private Entity controlledEntity;
     Motion noMotion = new NoMotion();
@@ -46,7 +42,7 @@ public class Test extends Context {
 
     public void init() {
         world.clear();
-        world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.WALL);
+//        world.setCollisionGroups(EntityType.DEFAULT, EntityType.DEFAULT, EntityType.WALL);
         entities.clear();
 
         double centerX = width / 2;
@@ -56,9 +52,9 @@ public class Test extends Context {
         Entity.setDefaultEntityType(EntityType.DEFAULT);
         double currentX = length;
         BoxEntity box = new BoxEntity(currentX, centerY, length, length);
-        currentX += length;
+        currentX += length * 1.5;
         CircleEntity circle = new CircleEntity(currentX, centerY, length / 2);
-        currentX += length;
+        currentX += length * 1.5;
         Paddle poly = new Paddle(currentX, centerY, length / 2, length / 2);
 
         box.setMotion(noMotion);
@@ -67,11 +63,28 @@ public class Test extends Context {
         entities.add(box);
         entities.add(circle);
         entities.add(poly);
-
         world.addEntity(box);
         world.addEntity(circle);
         world.addEntity(poly);
-        controlledEntity = box;
+
+        currentX += length * 1.5;
+        box = new BoxEntity(currentX, centerY, length, length / 2);
+        currentX += length * 1.5;
+        circle = new CircleEntity(currentX, centerY, length / 2);
+        currentX += length * 1.5;
+        poly = new Paddle(currentX, centerY, length / 2, length / 2);
+
+        box.setMotion(noMotion);
+        circle.setMotion(noMotion);
+        poly.setMotion(noMotion);
+        entities.add(box);
+        entities.add(circle);
+        entities.add(poly);
+        world.addEntity(box);
+        world.addEntity(circle);
+        world.addEntity(poly);
+
+        controlledEntity = entities.get(0);
         controlledEntity.setMotion(mouseMotion);
         setupInput();
     }
@@ -94,7 +107,19 @@ public class Test extends Context {
 
     @Override
     public void update(double elapsedTime) {
-        //To change body of implemented methods use File | Settings | File Templates.
+        for (int i = 0; i < entities.size(); i++) {
+            entities.get(i).setColor(Color.WHITE);
+        }
+        for (int i = 0; i < entities.size(); i++) {
+            TestingEntity a = entities.get(i);
+            for (int j = i + 1; j < entities.size(); j++) {
+                TestingEntity b = entities.get(j);
+                if (a.getShape().isOverlappingShape(b.getShape())) {
+                    a.setColor(Color.RED);
+                    b.setColor(Color.RED);
+                }
+            }
+        }
     }
 
     @Override

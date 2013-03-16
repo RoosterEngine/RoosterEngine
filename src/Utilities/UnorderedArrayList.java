@@ -6,22 +6,22 @@ package Utilities;
  * Date: 28/02/13
  * Time: 5:28 PM
  */
-public class UnsortedArrayList<T> implements List<T> {
+public class UnorderedArrayList<T> implements List<T> {
     private static final int DEFAULT_INIT_CAPACITY = 16;
     private static final double DEFAULT_GROW_RATE = 1.5;
     private double growRate;
     private Object[] list;
     private int position;
 
-    public UnsortedArrayList() {
+    public UnorderedArrayList() {
         this(DEFAULT_INIT_CAPACITY, DEFAULT_GROW_RATE);
     }
 
-    public UnsortedArrayList(int initialCapacity) {
+    public UnorderedArrayList(int initialCapacity) {
         this(initialCapacity, DEFAULT_GROW_RATE);
     }
 
-    public UnsortedArrayList(int initCapacity, double growRate) {
+    public UnorderedArrayList(int initCapacity, double growRate) {
         this.growRate = growRate;
         list = new Object[initCapacity];
         position = 0;

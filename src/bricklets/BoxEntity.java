@@ -2,14 +2,13 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package gameengine.entities;
+package bricklets;
 
 import gameengine.collisiondetection.shapes.AABBShape;
 
 import java.awt.*;
 
-public class BoxEntity extends Entity {
-    protected Color color;
+public class BoxEntity extends TestingEntity {
 
     public BoxEntity(double x, double y, double width, double height) {
         super(x, y, new AABBShape(width, height));

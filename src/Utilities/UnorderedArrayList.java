@@ -11,7 +11,7 @@ public class UnorderedArrayList<T> implements List<T> {
     private static final double DEFAULT_GROW_RATE = 1.5;
     private double growRate;
     private Object[] list;
-    private int position;
+    private int size;
 
     public UnorderedArrayList() {
         this(DEFAULT_INIT_CAPACITY, DEFAULT_GROW_RATE);
@@ -24,33 +24,33 @@ public class UnorderedArrayList<T> implements List<T> {
     public UnorderedArrayList(int initCapacity, double growRate) {
         this.growRate = growRate;
         list = new Object[initCapacity];
-        position = 0;
+        size = 0;
     }
 
     @Override
     public void add(T element) {
-        if (position == list.length) {
+        if (size == list.length) {
             grow();
         }
 
-        list[position] = element;
-        position++;
+        list[size] = element;
+        size++;
     }
 
     @Override
     public T get(int index) {
-        assert index < position;
+        assert index < size;
 
         return (T) list[index];
     }
 
     @Override
     public boolean remove(T element) {
-        for (int i = 0; i < position; i++) {
+        for (int i = 0; i < size; i++) {
             if (list[i] == element) {
-                position--;
-                list[i] = list[position];
-                list[position] = null;
+                size--;
+                list[i] = list[size];
+                list[size] = null;
                 return true;
             }
         }
@@ -59,17 +59,17 @@ public class UnorderedArrayList<T> implements List<T> {
 
     @Override
     public T remove(int index) {
-        assert index < position;
+        assert index < size;
 
         T removed = (T) list[index];
-        position--;
-        list[index] = list[position];
+        size--;
+        list[index] = list[size];
         return removed;
     }
 
     @Override
     public boolean contains(T element) {
-        for (int i = 0; i < position; i++) {
+        for (int i = 0; i < size; i++) {
             if (list[i] == element) {
                 return true;
             }
@@ -79,15 +79,15 @@ public class UnorderedArrayList<T> implements List<T> {
 
     @Override
     public void clear() {
-        for (int i = 0; i < position; i++) {
+        for (int i = 0; i < size; i++) {
             list[i] = null;
         }
-        position = 0;
+        size = 0;
     }
 
     @Override
     public int size() {
-        return position;
+        return size;
     }
 
     private void grow() {

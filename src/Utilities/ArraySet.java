@@ -7,7 +7,7 @@ package Utilities;
  * Date: 16/03/13
  * Time: 5:57 PM
  */
-public class ArraySet<T> {
+public class ArraySet<T> implements Iterator<T> {
     private UnorderedArrayList<T> list;
     private int index = -1;
 
@@ -27,34 +27,29 @@ public class ArraySet<T> {
         list.add(element);
     }
 
-    /**
-     * Resets the iterator even if the element is not in the list
-     * @param element The element to remove
-     * @return true if the element was found and removed, false otherwise
-     */
+    @Override
     public boolean removeAndResetIterator(T element) {
         index = -1;
         return list.remove(element);
     }
 
+    @Override
     public void resetIterator() {
         index = -1;
     }
 
+    @Override
     public boolean hasNext() {
         return index < list.size();
     }
 
+    @Override
     public T getNext() {
         index++;
         return list.get(index);
     }
 
-    /**
-     * Removes the element that was just returned from the getNext() method.
-     * If getNext() has not been called since the iterator was initialized or reset,
-     * an ArrayOutOfBounds exception will be thrown.
-     */
+    @Override
     public void remove() {
         list.remove(index);
         index--;

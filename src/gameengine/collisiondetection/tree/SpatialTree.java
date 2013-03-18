@@ -1,10 +1,12 @@
 package gameengine.collisiondetection.tree;
 
+import Utilities.UnorderedArrayList;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
+import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
 
@@ -54,6 +56,10 @@ public class SpatialTree implements Parent {
         tree.ensureEntitiesAreContained(time);
 
         assert tree.isEntityCountCorrect();
+    }
+
+    public void updateMotions(double elapsedTime, UnorderedArrayList<WorldEffect> worldEffects) {
+        tree.updateMotions(elapsedTime, worldEffects);
     }
 
     public void calcCollision(int[] collisionGroups, double elapsedTime, Context context) {
@@ -116,7 +122,7 @@ public class SpatialTree implements Parent {
             collision = list.getNextCollision();
             timeToUpdate = collision.getCollisionTime() - currentTime;
         }
-        tree.updateAllEntityPositions(elapsedTime);
+        tree = tree.updateAllEntitiesAndResize(elapsedTime, list);
         assert list.checkNodeCollision();
         assert list.doAllNodesHaveNoCollision(elapsedTime);
         assert tree.isEntityCountCorrect();

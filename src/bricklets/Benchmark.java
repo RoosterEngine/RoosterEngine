@@ -20,6 +20,9 @@ import java.util.Random;
 public class Benchmark extends Context implements ActionHandler {
     private Random rand = new Random(0);
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
+    private double currentTime = 0;
+    private double lastTime = 0;
+    private int balls = 0;
 
     public Benchmark(GameController controller) {
         super(controller, ContextType.GAME);
@@ -28,14 +31,14 @@ public class Benchmark extends Context implements ActionHandler {
 
     public void init() {
         world.clear();
-        world.setCollisionGroups(EntityType.BALL, EntityType.BALL, EntityType.WALL, EntityType.STANDARD);
-        world.setCollisionGroups(EntityType.WALL, EntityType.STANDARD);
+        world.setCollisionGroups(EntityType.BALL, EntityType.BALL, EntityType.WALL);
+        balls = 0;
 
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, 1));
         Entity.setDefaultEntityType(EntityType.STANDARD);
         Pointer pointer = new Pointer(new OvalGraphic(15, 15, Color.RED), width / 2, height / 2);
         pointer.setMass(1);
-        world.addEntity(pointer);
+//        world.addEntity(pointer);
         initBounding();
         setupInput();
     }
@@ -58,6 +61,21 @@ public class Benchmark extends Context implements ActionHandler {
 
     @Override
     public void update(double elapsedTime) {
+        currentTime += elapsedTime;
+        double timeBetweenBalls = 50;
+        if (lastTime + timeBetweenBalls <= currentTime && balls < 8200) {
+            int ballSize = 2;
+            double halfWidth = width * 0.5;
+            double halfHeight = height * 0.5;
+            double xLength = width - 50;
+            double yLength = height - 100;
+            for (int i = 0; i < 25; i++) {
+                addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength,
+                        halfHeight + (rand.nextDouble() - 0.5) * yLength, ballSize);
+                balls++;
+            }
+            lastTime = currentTime;// - (currentTime - lastTime + timeBetweenBalls);
+        }
     }
 
     @Override
@@ -116,7 +134,7 @@ public class Benchmark extends Context implements ActionHandler {
                 double halfHeight = height * 0.5;
                 double xLength = width - 50;
                 double yLength = height - 100;
-                for (int i = 0; i < 100; i++) {
+                for (int i = 0; i < 200; i++) {
                     addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength,
                             halfHeight + (rand.nextDouble() - 0.5) * yLength, ballSize);
                 }

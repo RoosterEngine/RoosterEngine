@@ -1,9 +1,11 @@
 package gameengine.collisiondetection.tree;
 
+import Utilities.UnorderedArrayList;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
+import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -137,12 +139,21 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
-    public void updateAllEntityPositions(double currentTime) {
+    public Tree updateAllEntitiesAndResize(double currentTime, CollisionList list) {
+        if (entityCount == 0) {
+            assert world != null;
+            Leaf leaf = Leaf.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength(), list);
+            clear(list);
+            recycle();
+            return leaf;
+        }
         updateEntityPositions(currentTime);
-        topLeft.updateAllEntityPositions(currentTime);
-        topRight.updateAllEntityPositions(currentTime);
-        bottomLeft.updateAllEntityPositions(currentTime);
-        bottomRight.updateAllEntityPositions(currentTime);
+        updateEntities(currentTime);
+        topLeft = topLeft.updateAllEntitiesAndResize(currentTime, list);
+        topRight = topRight.updateAllEntitiesAndResize(currentTime, list);
+        bottomLeft = bottomLeft.updateAllEntitiesAndResize(currentTime, list);
+        bottomRight = bottomRight.updateAllEntitiesAndResize(currentTime, list);
+        return this;
     }
 
     @Override
@@ -155,6 +166,15 @@ public class Quad extends Tree implements Parent {
             entities[i].updatePosition(elapsedTime);
         }
         timeInTree = currentTime;
+    }
+
+    @Override
+    public void updateMotions(double elapsedTime, UnorderedArrayList<WorldEffect> worldEffects) {
+        super.updateMotions(elapsedTime, worldEffects);
+        topLeft.updateMotions(elapsedTime, worldEffects);
+        topRight.updateMotions(elapsedTime, worldEffects);
+        bottomLeft.updateMotions(elapsedTime, worldEffects);
+        bottomRight.updateMotions(elapsedTime, worldEffects);
     }
 
     @Override

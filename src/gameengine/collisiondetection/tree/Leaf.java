@@ -124,8 +124,29 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void updateAllEntityPositions(double currentTime) {
+    public Tree updateAllEntitiesAndResize(double currentTime, CollisionList list) {
+        assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
         updateEntityPositions(currentTime);
+        updateEntities(currentTime);
+
+        if (entityCount >= GROW_THRESH) {
+            assert checkEntities();
+            assert world != null;
+            Quad quad = Quad.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength(), list);
+
+            assert checkEntities();
+
+            for (int i = 0; i < entityCount; i++) {
+                quad.addEntity(entities[i]);
+            }
+            clear(list);
+            recycle();
+
+            assert checkEntities();
+            assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
+            return quad;
+        }
+        return this;
     }
 
     @Override

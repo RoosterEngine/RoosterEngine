@@ -1,9 +1,11 @@
 package gameengine.collisiondetection.tree;
 
+import Utilities.UnorderedArrayList;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
+import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
 
@@ -112,7 +114,6 @@ public abstract class Tree {
         removeEntityFromList(entity.getIndexInTree());
         entity.setContainingTree(null, -1);
         parent.decrementEntityCount();
-        world.entityHasBeenRemoved(entity);
     }
 
     public void entityUpdated(int[] collisionGroups, Collision tempCollision, double timeToCheck, Entity entity,
@@ -183,6 +184,26 @@ public abstract class Tree {
         maxY = centerY + halfLength;
     }
 
+    public void updateEntities(double elapsedTime) {
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i].update(elapsedTime);
+        }
+    }
+
+    public void updateMotions(double elapsedTime, UnorderedArrayList<WorldEffect> worldEffects) {
+        for (int i = 0; i < entityListPos; i++) {
+            Entity entity = entities[i];
+            int collisionTypeBitMask = entity.getCollisionTypeBitMask();
+            for (int j = 0; j < worldEffects.size(); j++) {
+                WorldEffect worldEffect = worldEffects.get(j);
+                if (worldEffect.isCollisionTypeAffected(collisionTypeBitMask)) {
+                    worldEffect.applyMotion(entity);
+                }
+            }
+            entity.updateMotion(elapsedTime);
+        }
+    }
+
     //------------------------------ testing methods --------------------------------
 
     public boolean areEntityIndexesNull() {
@@ -244,24 +265,14 @@ public abstract class Tree {
 
     /**
      * Used to add {@link Entity} to the {@link Tree}.
-     * <p>
-     * This method returns a {@link Tree} because when this tree is a
-     * {@link Leaf} and the number of entities in the tree is above the
-     * GROW_THRESH, the leaf will return a {@link Quad} to replace the
-     * leaf. A call to this method inside the tree should look like:
-     * </p>
-     * <code>
-     * tree = tree.addEntity(entity);
-     * </code>
      *
      * @param entity the {@link Entity} to add
-     * @return the {@link Tree} that will replace this tree
      */
     public abstract void addEntity(Entity entity);
 
     public abstract void ensureEntitiesAreContained(double time);
 
-    public abstract void updateAllEntityPositions(double currentTime);
+    public abstract Tree updateAllEntitiesAndResize(double currentTime, CollisionList list);
 
     public abstract void updateEntityPositions(double elapsedTime);
 

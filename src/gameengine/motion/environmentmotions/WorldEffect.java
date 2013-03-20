@@ -34,5 +34,5 @@ public abstract class WorldEffect {
 
     public abstract void update(double elapsedTime);
 
-    public abstract void applyMotion(Entity entity);
+    public abstract void applyEffect(Entity entity);
 }

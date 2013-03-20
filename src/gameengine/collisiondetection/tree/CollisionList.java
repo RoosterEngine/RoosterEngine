@@ -4,8 +4,9 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.shapes.Shape;
 
 /**
- * A linked list that stores all of the active trees sorted by the time of the next collision in the tree
- * <p/>
+ * A linked list that stores all of the active trees sorted by the time of the
+ * next collision in the tree
+ *
  * User: davidrusu
  * Date: 19/02/13
  * Time: 2:56 PM
@@ -18,13 +19,12 @@ public class CollisionList {
     }
 
     /**
-     * Called if a tree updated its {@link CollisionNode} with a new collision time.
+     * Called if a {@link Tree} updated its {@link CollisionNode} with a new collision time.
      * The method inserts the tree's node to it's proper location in the list
      *
-     * @param tree the tree whose {@link CollisionNode} has been updated
+     * @param node the {@link CollisionNode} that has been updated
      */
-    public void collisionUpdated(Tree tree) {
-        CollisionNode node = tree.getNode();
+    public void collisionUpdated(CollisionNode node) {
         double collisionTime = node.getCollisionTime();
 
         if (collisionTime < node.getPrev().getCollisionTime()) {
@@ -33,7 +33,7 @@ public class CollisionList {
                 before = before.getPrev();
             } while (collisionTime < before.getCollisionTime());
 
-            remove(tree);
+            remove(node);
             insertNodeAfter(node, before);
         } else if (node.getNext() != null && collisionTime > node.getNext().getCollisionTime()) {
             CollisionNode after = node.getNext();
@@ -42,7 +42,7 @@ public class CollisionList {
                 before = after;
                 after = after.getNext();
             } while (after != null && collisionTime > after.getCollisionTime());
-            remove(tree);
+            remove(node);
             insertNodeAfter(node, before);
         }
 
@@ -50,26 +50,25 @@ public class CollisionList {
     }
 
     /**
-     * Adds the {@link Tree} to this list
+     * Adds the {@link CollisionNode} to this list
      *
-     * @param tree the {@link Tree} to add
+     * @param node the {@link CollisionNode} to add
      */
-    public void add(Tree tree) {
-        assert tree.getNode().getPrev() == null;
-        assert tree.getNode().getNext() == null;
-        assert tree.getNode().getCollisionTime() == Shape.NO_COLLISION;
+    public void add(CollisionNode node) {
+        assert node.getPrev() == null;
+        assert node.getNext() == null;
+        assert node.getCollisionTime() == Shape.NO_COLLISION;
 
-        insertNodeAfter(tree.getNode(), sentinel);
-        collisionUpdated(tree);
+        insertNodeAfter(node, sentinel);
+        collisionUpdated(node);
     }
 
     /**
-     * Removes the {@link Tree} from the list
+     * Removes the {@link CollisionNode} from the list
      *
-     * @param tree the {@link Tree} to remove
+     * @param node the {@link CollisionNode} to remove
      */
-    public void remove(Tree tree) {
-        CollisionNode node = tree.getNode();
+    public void remove(CollisionNode node) {
         CollisionNode next = node.getNext();
         if (next != null) {
             next.setPrev(node.getPrev());
@@ -88,9 +87,9 @@ public class CollisionList {
     }
 
     /**
-     * Returns the next {@link CollisionNode} in the list
+     * Returns the next {@link Collision} in the list
      *
-     * @return
+     * @return the next {@link Collision} in the list
      */
     public Collision getNextCollision() {
         return sentinel.getNext().getCollision();
@@ -113,7 +112,8 @@ public class CollisionList {
         CollisionNode prev = sentinel, current = sentinel.getNext();
         while (current != null) {
             assert current.getPrev() == prev : "nodes prev is not what it should be";
-            assert prev.getCollisionTime() <= current.getCollisionTime() : "prev: " + prev.getCollisionTime() + " next: " + current.getCollisionTime();
+            assert prev.getCollisionTime() <= current.getCollisionTime() :
+                    "prev: " + prev.getCollisionTime() + " next: " + current.getCollisionTime();
             prev = current;
             current = current.getNext();
         }
@@ -133,7 +133,8 @@ public class CollisionList {
         CollisionNode current = sentinel.getNext();
         while (current != null) {
             Collision collision = current.getCollision();
-            assert collision.getCollisionTime() == Shape.NO_COLLISION : "nodes are not all set to NoCollision: " + collision.getCollisionTime() + " " + elapsedTime;
+            assert collision.getCollisionTime() == Shape.NO_COLLISION :
+                    "nodes are not all set to NoCollision: " + collision.getCollisionTime() + " " + elapsedTime;
             assert collision.getA() == null : "nodes are not all set to NoCollision";
             assert collision.getB() == null : "nodes are not all set to NoCollision";
             current = current.getNext();

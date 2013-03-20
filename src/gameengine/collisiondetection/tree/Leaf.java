@@ -227,7 +227,7 @@ public class Leaf extends Tree {
         checkCollisionWithEntity(collisionGroups, temp, node.getCollision(), timeToCheck, entity);
         addEntityToList(entity);
         entityCount++;
-        list.collisionUpdated(this);
+        list.collisionUpdated(node);
     }
 
     @Override
@@ -240,8 +240,8 @@ public class Leaf extends Tree {
     @Override
     public void drawTree(Graphics2D g, Color color) {
         g.setColor(Color.RED);
-        int width = (int) (getHalfLength() * 2);
-        g.drawRect((int) getMinX(), (int) getMinY(), width, width);
+        int length = (int) (getHalfLength() * 2);
+        g.drawRect((int) getMinX(), (int) getMinY(), length, length);
     }
 
     @Override
@@ -268,8 +268,6 @@ public class Leaf extends Tree {
                 collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, a, entities[j]);
             }
         }
-
-        list.collisionUpdated(this);
-
+        list.collisionUpdated(node);
     }
 }

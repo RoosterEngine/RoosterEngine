@@ -15,10 +15,10 @@ public abstract class Entity {
     protected Material material;
     protected double mass;
     protected double x, y, dx, dy;
-    private double boundingHalfWidth, boundingHalfHeight, boundingCenterX, boundingCenterY;
-    private double boundingMinX, boundingMaxX, boundingMinY, boundingMaxY;
-    private int collisionType = EntityType.STANDARD.ordinal();
-    private int collisionTypeBitMask = 1 << collisionType;
+    private double BBHalfWidth, BBHalfHeight, BBCenterX, BBCenterY;
+    private double BBMinX, BBMaxX, BBMinY, BBMaxY;
+    private int entityType = EntityType.STANDARD.ordinal();
+    private int entityTypeBitMask = 1 << entityType;
     private Motion motion;
     private Shape shape;
     private Tree containingTree;
@@ -101,80 +101,80 @@ public abstract class Entity {
         double y = getY();
         double halfWidth = getHalfWidth();
         double halfHeight = getHalfHeight();
-        boundingMinX = x - halfWidth;
-        boundingMaxX = x + halfWidth;
-        boundingMinY = y - halfHeight;
-        boundingMaxY = y + halfHeight;
+        BBMinX = x - halfWidth;
+        BBMaxX = x + halfWidth;
+        BBMinY = y - halfHeight;
+        BBMaxY = y + halfHeight;
         double scale = 1;
         double xTravelDist = getDX() * time * scale;
         double yTravelDist = getDY() * time * scale;
         if (xTravelDist > 0) {
-            boundingMaxX += xTravelDist;
+            BBMaxX += xTravelDist;
         } else {
-            boundingMinX += xTravelDist;
+            BBMinX += xTravelDist;
         }
 
         if (yTravelDist > 0) {
-            boundingMaxY += yTravelDist;
+            BBMaxY += yTravelDist;
         } else {
-            boundingMinY += yTravelDist;
+            BBMinY += yTravelDist;
         }
-        boundingHalfWidth = (boundingMaxX - boundingMinX) * 0.5;
-        boundingHalfHeight = (boundingMaxY - boundingMinY) * 0.5;
-        boundingCenterX = boundingMinX + boundingHalfWidth;
-        boundingCenterY = boundingMinY + boundingHalfHeight;
+        BBHalfWidth = (BBMaxX - BBMinX) * 0.5;
+        BBHalfHeight = (BBMaxY - BBMinY) * 0.5;
+        BBCenterX = BBMinX + BBHalfWidth;
+        BBCenterY = BBMinY + BBHalfHeight;
     }
 
-    public double getBoundingMinX() {
-        return boundingMinX;
+    public double getBBMinX() {
+        return BBMinX;
     }
 
-    public double getBoundingMaxX() {
-        return boundingMaxX;
+    public double getBBMaxX() {
+        return BBMaxX;
     }
 
-    public double getBoundingMinY() {
-        return boundingMinY;
+    public double getBBMinY() {
+        return BBMinY;
     }
 
-    public double getBoundingMaxY() {
-        return boundingMaxY;
+    public double getBBMaxY() {
+        return BBMaxY;
     }
 
-    public double getBoundingCenterX() {
-        return boundingCenterX;
+    public double getBBCenterX() {
+        return BBCenterX;
     }
 
-    public double getBoundingHalfWidth() {
-        return boundingHalfWidth;
+    public double getBBHalfWidth() {
+        return BBHalfWidth;
     }
 
-    public double getBoundingCenterY() {
-        return boundingCenterY;
+    public double getBBCenterY() {
+        return BBCenterY;
     }
 
-    public double getBoundingHalfHeight() {
-        return boundingHalfHeight;
+    public double getBBHalfHeight() {
+        return BBHalfHeight;
     }
 
     public void drawBoundingBoxes(Graphics2D g, Color color) {
         g.setColor(color);
-        double width = boundingHalfWidth * 2;
-        double height = boundingHalfHeight * 2;
-        g.drawRect((int) boundingMinX, (int) boundingMinY, (int) width, (int) height);
+        double width = BBHalfWidth * 2;
+        double height = BBHalfHeight * 2;
+        g.drawRect((int) BBMinX, (int) BBMinY, (int) width, (int) height);
     }
 
     public void setEntityType(EntityType type) {
-        collisionType = type.ordinal();
-        collisionTypeBitMask = 1 << collisionType;
+        entityType = type.ordinal();
+        entityTypeBitMask = 1 << entityType;
     }
 
-    public int getCollisionType() {
-        return collisionType;
+    public int getEntityType() {
+        return entityType;
     }
 
-    public int getCollisionTypeBitMask() {
-        return collisionTypeBitMask;
+    public int getEntityTypeBitMask() {
+        return entityTypeBitMask;
     }
 
     public void addVelocity(double dx, double dy) {
@@ -273,9 +273,9 @@ public abstract class Entity {
             endY = Math.random() * 1024;
         }
         g.drawLine((int) x, (int) y, (int) endX, (int) endY);
-        int shapeWidth = (int) (getBoundingMaxX() - getBoundingMinX());
-        int shapeHeight = (int) (getBoundingMaxY() - getBoundingMinY());
-        g.drawRect((int) getBoundingMinX(), (int) getBoundingMinY(), shapeWidth, shapeHeight);
+        int shapeWidth = (int) (getBBMaxX() - getBBMinX());
+        int shapeHeight = (int) (getBBMaxY() - getBBMinY());
+        g.drawRect((int) getBBMinX(), (int) getBBMinY(), shapeWidth, shapeHeight);
     }
 
     public void setPosition(double x, double y) {

@@ -35,7 +35,7 @@ public class GravityWorldEffect extends WorldEffect {
     }
 
     @Override
-    public void applyMotion(Entity entity) {
+    public void applyEffect(Entity entity) {
         entity.addVelocity(updateGX, updateGY);
     }
 }

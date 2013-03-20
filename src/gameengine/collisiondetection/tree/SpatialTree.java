@@ -232,8 +232,8 @@ public class SpatialTree implements Parent {
     }
 
     private boolean isNotContainedInTree(Entity entity) {
-        return !isContained(entity.getBoundingCenterX(), tree.getCenterX(), entity.getBoundingHalfWidth())
-                || !isContained(entity.getBoundingCenterY(), tree.getCenterY(), entity.getBoundingHalfHeight());
+        return !isContained(entity.getBBCenterX(), tree.getCenterX(), entity.getBBHalfWidth())
+                || !isContained(entity.getBBCenterY(), tree.getCenterY(), entity.getBBHalfHeight());
     }
 
     private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {

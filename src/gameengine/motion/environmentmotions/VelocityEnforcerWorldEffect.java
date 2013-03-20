@@ -42,7 +42,7 @@ public class VelocityEnforcerWorldEffect extends WorldEffect {
     }
 
     @Override
-    public void applyMotion(Entity entity) {
+    public void applyEffect(Entity entity) {
         double dx = entity.getDX();
         double dy = entity.getDY();
         double currentVel = Math.sqrt(dx * dx + dy * dy);

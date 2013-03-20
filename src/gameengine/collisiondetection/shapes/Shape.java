@@ -27,11 +27,11 @@ public abstract class Shape {
     public static void collideShapes(Shape a, Shape b, double maxTime, Collision result) {
         Entity aParent = a.parent;
         Entity bParent = b.parent;
-        double combinedHalfWidths = aParent.getBoundingHalfWidth() + bParent.getBoundingHalfWidth();
-        double combinedHalfHeights = aParent.getBoundingHalfHeight() + bParent.getBoundingHalfHeight();
+        double combinedHalfWidths = aParent.getBBHalfWidth() + bParent.getBBHalfWidth();
+        double combinedHalfHeights = aParent.getBBHalfHeight() + bParent.getBBHalfHeight();
 
-        if (Math.abs(aParent.getBoundingCenterX() - bParent.getBoundingCenterX()) > combinedHalfWidths
-                || Math.abs(aParent.getBoundingCenterY() - bParent.getBoundingCenterY()) > combinedHalfHeights) {
+        if (Math.abs(aParent.getBBCenterX() - bParent.getBBCenterX()) > combinedHalfWidths
+                || Math.abs(aParent.getBBCenterY() - bParent.getBBCenterY()) > combinedHalfHeights) {
             result.setNoCollision();
             return;
         }

@@ -86,14 +86,14 @@ public abstract class Tree {
         entityCount = 0;
         entityListPos = 0;
         timeInTree = 0;
-        list.remove(this);
+        list.remove(node);
         world = null;
         node.clear();
     }
 
     public boolean isContainedInTree(Entity entity) {
-        return isContained(entity.getBoundingCenterX(), getCenterX(), entity.getBoundingHalfWidth())
-                && isContained(entity.getBoundingCenterY(), getCenterY(), entity.getBoundingHalfHeight());
+        return isContained(entity.getBBCenterX(), getCenterX(), entity.getBBHalfWidth())
+                && isContained(entity.getBBCenterY(), getCenterY(), entity.getBBHalfHeight());
     }
 
     private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
@@ -126,7 +126,7 @@ public abstract class Tree {
 
     protected void collideShapes(int[] collisionGroups, Collision temp, Collision result,
                                  double timeToCheck, Entity a, Entity b) {
-        if ((collisionGroups[a.getCollisionType()] & b.getCollisionTypeBitMask()) != 0) {
+        if ((collisionGroups[a.getEntityType()] & b.getEntityTypeBitMask()) != 0) {
             temp.setNoCollision();
             Shape.collideShapes(a.getShape(), b.getShape(), timeToCheck, temp);
             if (temp.getCollisionTime() < result.getCollisionTime() - timeInTree) {
@@ -163,14 +163,14 @@ public abstract class Tree {
     protected void init(World world, CollisionList list) {
         assert world != null;
         this.world = world;
-        list.add(this);
+        list.add(node);
     }
 
     protected void init(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
         assert world != null;
         this.world = world;
         this.parent = parent;
-        list.add(this);
+        list.add(node);
         resize(centerX, centerY, halfLength);
     }
 
@@ -193,11 +193,11 @@ public abstract class Tree {
     public void updateMotions(double elapsedTime, UnorderedArrayList<WorldEffect> worldEffects) {
         for (int i = 0; i < entityListPos; i++) {
             Entity entity = entities[i];
-            int collisionTypeBitMask = entity.getCollisionTypeBitMask();
+            int collisionTypeBitMask = entity.getEntityTypeBitMask();
             for (int j = 0; j < worldEffects.size(); j++) {
                 WorldEffect worldEffect = worldEffects.get(j);
                 if (worldEffect.isCollisionTypeAffected(collisionTypeBitMask)) {
-                    worldEffect.applyMotion(entity);
+                    worldEffect.applyEffect(entity);
                 }
             }
             entity.updateMotion(elapsedTime);

@@ -62,7 +62,7 @@ public class World {
         }
         tree.updateMotions(elapsedTime, worldEffects);
         tree.ensureEntitiesAreContained(elapsedTime);
-        tree.calcCollision(collisionGroups, elapsedTime, context);
+        tree.calcCollision(elapsedTime, context);
         context.update(elapsedTime);
     }
 
@@ -77,6 +77,10 @@ public class World {
 
     public void drawTree(Graphics2D g, Color color) {
         tree.drawTree(g, color);
+    }
+
+    public int[] getCollisionGroups() {
+        return collisionGroups;
     }
 
     public int getEntityCount() {

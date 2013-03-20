@@ -38,7 +38,8 @@ public class Leaf extends Tree {
         super();
     }
 
-    public static Leaf createInstance(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+    public static Leaf createInstance(World world, Parent parent, double centerX, double centerY, double halfLength,
+                                      CollisionList list) {
         if (numRecycledLeafs == 0) {
             return new Leaf(world, parent, centerX, centerY, halfLength, list);
         }
@@ -106,7 +107,7 @@ public class Leaf extends Tree {
         if (entityCount >= GROW_THRESH) {
             assert checkEntities();
             assert world != null;
-            Quad quad = Quad.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength(), list);
+            Quad quad = Quad.createInstance(world, parent, centerX, centerY, halfLength, list);
 
             assert checkEntities();
 
@@ -132,7 +133,7 @@ public class Leaf extends Tree {
         if (entityCount >= GROW_THRESH) {
             assert checkEntities();
             assert world != null;
-            Quad quad = Quad.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength(), list);
+            Quad quad = Quad.createInstance(world, parent, centerX, centerY, halfLength, list);
 
             assert checkEntities();
 
@@ -162,52 +163,52 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void initCalcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
+    public void initCalcCollision(Collision temp, double timeToCheck, CollisionList list) {
         timeInTree = 0;
-        calcCollision(collisionGroups, temp, timeToCheck, list);
+        calcCollision(temp, timeToCheck, list);
     }
 
     @Override
-    public void initCheckCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
-                                             double timeToCheck, Entity entity) {
+    public void initCheckCollisionWithEntity(Collision temp, Collision result, double timeToCheck, Entity entity) {
         timeInTree = 0;
+        int[] collisionGroups = world.getCollisionGroups();
         for (int i = 0; i < entityListPos; i++) {
             collideShapes(collisionGroups, temp, result, timeToCheck, entity, entities[i]);
         }
     }
 
     @Override
-    public void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result, double timeToCheck,
-                                         Entity entity) {
+    public void checkCollisionWithEntity(Collision temp, Collision result, double timeToCheck, Entity entity) {
         updateEntityPositions(entity.getContainingTree().timeInTree);
+        int[] collisionGroups = world.getCollisionGroups();
         for (int i = 0; i < entityListPos; i++) {
             collideShapes(collisionGroups, temp, result, timeToCheck, entity, entities[i]);
         }
     }
 
     @Override
-    public void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
-                                 CollisionList list) {
-        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method is called";
+    public void relocateAndCheck(Collision temp, double timeToCheck, Entity entity, CollisionList list) {
+        assert !isEntityInTree(entity) :
+                "Entity should not be in the this tree when this method is called";
         entityCount--;
         Collision collision = node.getCollision();
         if (entity == collision.getA() || entity == collision.getB()) {
             collision.setNoCollision();
             updateEntityPositions(entity.getContainingTree().timeInTree);
-            calcCollision(collisionGroups, temp, timeToCheck, list);
+            calcCollision(temp, timeToCheck, list);
         }
 
         if (isContainedInTree(entity)) {
-            addAndCheck(collisionGroups, temp, timeToCheck, entity, list);
-            parent.childEntityUpdated(collisionGroups, temp, timeToCheck, entity, list);
+            addAndCheck(temp, timeToCheck, entity, list);
+            parent.childEntityUpdated(temp, timeToCheck, entity, list);
         } else {
-            parent.relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
+            parent.relocateAndCheck(temp, timeToCheck, entity, list);
         }
     }
 
     @Override
-    public void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
-                                             double currentTime, CollisionList list) {
+    public void entityRemovedDuringCollision(Collision temp, double timeToCheck, Entity entity, double currentTime,
+                                             CollisionList list) {
         assert entity.getContainingTree() == null;
         assert checkEntities();
         assert !isEntityInTree(entity);
@@ -216,15 +217,14 @@ public class Leaf extends Tree {
         if (collision.getA() == entity || collision.getB() == entity) {
             updateEntityPositions(currentTime);
             collision.setNoCollision();
-            calcCollision(collisionGroups, temp, timeToCheck, list);
+            calcCollision(temp, timeToCheck, list);
         }
-        parent.entityRemovedDuringCollision(collisionGroups, temp, timeToCheck, entity, currentTime, list);
+        parent.entityRemovedDuringCollision(temp, timeToCheck, entity, currentTime, list);
     }
 
     @Override
-    public void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck,
-                            Entity entity, CollisionList list) {
-        checkCollisionWithEntity(collisionGroups, temp, node.getCollision(), timeToCheck, entity);
+    public void addAndCheck(Collision temp, double timeToCheck, Entity entity, CollisionList list) {
+        checkCollisionWithEntity(temp, node.getCollision(), timeToCheck, entity);
         addEntityToList(entity);
         entityCount++;
         list.collisionUpdated(node);
@@ -259,13 +259,14 @@ public class Leaf extends Tree {
         return count;
     }
 
-    private void calcCollision(int[] collisionGroups, Collision temp, double timeToCheck, CollisionList list) {
+    private void calcCollision(Collision temp, double timeToCheck, CollisionList list) {
         assert node.getCollisionTime() == Shape.NO_COLLISION;
-
+        int[] collisionGroups = world.getCollisionGroups();
+        Collision collision = node.getCollision();
         for (int i = 0; i < entityListPos; i++) {
             Entity a = entities[i];
             for (int j = i + 1; j < entityListPos; j++) {
-                collideShapes(collisionGroups, temp, node.getCollision(), timeToCheck, a, entities[j]);
+                collideShapes(collisionGroups, temp, collision, timeToCheck, a, entities[j]);
             }
         }
         list.collisionUpdated(node);

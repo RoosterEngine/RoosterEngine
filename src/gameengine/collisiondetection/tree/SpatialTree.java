@@ -62,14 +62,14 @@ public class SpatialTree implements Parent {
         tree.updateMotions(elapsedTime, worldEffects);
     }
 
-    public void calcCollision(int[] collisionGroups, double elapsedTime, Context context) {
+    public void calcCollision(double elapsedTime, Context context) {
         assert list.doAllNodesHaveNoCollision(-1);
         assert list.areNodesSorted();
         assert tree.isEntityCountCorrect();
 
         double currentTime = 0;
         double timeLeft = elapsedTime;
-        tree.initCalcCollision(collisionGroups, tempCollision, timeLeft, list);
+        tree.initCalcCollision(tempCollision, timeLeft, list);
 
         assert tree.isEntityCountCorrect();
         assert list.areNodesSorted();
@@ -102,19 +102,19 @@ public class SpatialTree implements Parent {
                 if (b.getContainingTree() != null) {
                     bTree.removeEntityFromList(b.getIndexInTree());
                     b.calculateBoundingBox(timeLeft);
-                    bTree.entityUpdated(collisionGroups, tempCollision, timeLeft, b, list);
+                    bTree.entityUpdated(tempCollision, timeLeft, b, list);
                 } else {
-                    bTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, b, currentTime, list);
+                    bTree.entityRemovedDuringCollision(tempCollision, timeLeft, b, currentTime, list);
                 }
-                aTree.entityUpdated(collisionGroups, tempCollision, timeLeft, a, list);
+                aTree.entityUpdated(tempCollision, timeLeft, a, list);
             } else if (b.getContainingTree() != null) {
                 bTree.removeEntityFromList(b.getIndexInTree());
-                aTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, currentTime, list);
+                aTree.entityRemovedDuringCollision(tempCollision, timeLeft, a, currentTime, list);
                 b.calculateBoundingBox(timeLeft);
-                bTree.entityUpdated(collisionGroups, tempCollision, timeLeft, b, list);
+                bTree.entityUpdated(tempCollision, timeLeft, b, list);
             } else {
-                aTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, a, currentTime, list);
-                bTree.entityRemovedDuringCollision(collisionGroups, tempCollision, timeLeft, b, currentTime, list);
+                aTree.entityRemovedDuringCollision(tempCollision, timeLeft, a, currentTime, list);
+                bTree.entityRemovedDuringCollision(tempCollision, timeLeft, b, currentTime, list);
             }
 
             assert tree.isEntityCountCorrect();
@@ -144,8 +144,8 @@ public class SpatialTree implements Parent {
     }
 
     @Override
-    public void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
-                                             double currentTime, CollisionList list) {
+    public void entityRemovedDuringCollision(Collision temp, double timeToCheck, Entity entity, double currentTime,
+                                             CollisionList list) {
     }
 
     public void tryResize() {
@@ -157,18 +157,16 @@ public class SpatialTree implements Parent {
     }
 
     @Override
-    public void childEntityUpdated(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
-                                   CollisionList list) {
+    public void childEntityUpdated(Collision temp, double timeToCheck, Entity entity, CollisionList list) {
     }
 
     @Override
-    public void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
-                                 CollisionList list) {
+    public void relocateAndCheck(Collision temp, double timeToCheck, Entity entity, CollisionList list) {
         relocate(entity);
         // TODO adding the entity in the relocate method and then removing it here
         assert tree == entity.getContainingTree();
         entity.getContainingTree().removeEntityFromList(entity.getIndexInTree());
-        entity.getContainingTree().relocateAndCheck(collisionGroups, temp, timeToCheck, entity, list);
+        entity.getContainingTree().relocateAndCheck(temp, timeToCheck, entity, list);
     }
 
     @Override

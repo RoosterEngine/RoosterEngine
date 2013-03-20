@@ -20,7 +20,7 @@ public abstract class Tree {
     public static final int GROW_THRESH = 18;
     private static final double EXPAND_RATE = 1.5;
     protected World world = null;
-    private double centerX, centerY, halfLength, minX, minY, maxX, maxY;
+    protected double centerX, centerY, halfLength, minX, minY, maxX, maxY;
     protected double timeInTree = 0;
     protected Entity[] entities = new Entity[GROW_THRESH + 2];
     protected int entityListPos, entityCount;
@@ -116,12 +116,12 @@ public abstract class Tree {
         parent.decrementEntityCount();
     }
 
-    public void entityUpdated(int[] collisionGroups, Collision tempCollision, double timeToCheck, Entity entity,
+    public void entityUpdated(Collision tempCollision, double timeToCheck, Entity entity,
                               CollisionList list) {
         assert list.areNodesSorted();
         assert !isEntityInTree(entity);
 
-        relocateAndCheck(collisionGroups, tempCollision, timeToCheck, entity, list);
+        relocateAndCheck(tempCollision, timeToCheck, entity, list);
     }
 
     protected void collideShapes(int[] collisionGroups, Collision temp, Collision result,
@@ -278,22 +278,22 @@ public abstract class Tree {
 
     public abstract Tree tryResize(CollisionList list);
 
-    public abstract void initCalcCollision(int[] collisionGroups, Collision temp, double timeToCheck,
-                                           CollisionList list);
+    public abstract void initCalcCollision(Collision temp, double timeToCheck, CollisionList list);
 
-    public abstract void relocateAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+    public abstract void relocateAndCheck(Collision temp, double timeToCheck, Entity entity,
                                           CollisionList list);
 
-    public abstract void entityRemovedDuringCollision(int[] collisionGroups, Collision temp, double timeToCheck,
-                                                      Entity entity, double currentTime, CollisionList list);
+    public abstract void entityRemovedDuringCollision(Collision temp, double timeToCheck,
+                                                      Entity entity, double currentTime,
+                                                      CollisionList list);
 
-    public abstract void addAndCheck(int[] collisionGroups, Collision temp, double timeToCheck, Entity entity,
+    public abstract void addAndCheck(Collision temp, double timeToCheck, Entity entity,
                                      CollisionList list);
 
-    public abstract void initCheckCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
+    public abstract void initCheckCollisionWithEntity(Collision temp, Collision result,
                                                       double timeToCheck, Entity entity);
 
-    public abstract void checkCollisionWithEntity(int[] collisionGroups, Collision temp, Collision result,
+    public abstract void checkCollisionWithEntity(Collision temp, Collision result,
                                                   double timeToCheck, Entity entity);
 
     public abstract void recycle();

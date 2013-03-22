@@ -92,7 +92,6 @@ public class Benchmark extends Context implements ActionHandler {
         g.drawString("fps: " + controller.getFrameRate(), 25, 25);
         g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
         g.drawString("balls: " + balls + " / " + maxBalls, 25, 75);
-        g.drawString("trees: " + Tree.treeCount, 25, 100);
     }
 
     @Override

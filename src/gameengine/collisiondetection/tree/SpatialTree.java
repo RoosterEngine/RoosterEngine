@@ -121,7 +121,7 @@ public class SpatialTree implements Parent {
             collision = list.getNextCollision();
             timeToUpdate = collision.getCollisionTime() - currentTime;
         }
-        tree = tree.updateAllEntitiesAndResize(elapsedTime);
+        tree = tree.updateAllEntityPositionsAndResize(elapsedTime);
         assert list.checkNodeCollision();
         assert list.doAllNodesHaveNoCollision(elapsedTime);
         assert tree.isEntityCountCorrect();

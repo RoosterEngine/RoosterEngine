@@ -257,10 +257,6 @@ public abstract class Entity {
         containingTree.removeEntityFromWorld(this);
     }
 
-    public abstract void update(double elapsedTime);
-
-    public abstract void draw(Graphics2D g);
-
     public void drawLineToPartition(Graphics2D g, Color color) {
         g.setColor(color);
         double endX;
@@ -297,4 +293,8 @@ public abstract class Entity {
     public void setMotion(Motion motion) {
         this.motion = motion;
     }
+
+    public abstract void update(double elapsedTime);
+
+    public abstract void draw(Graphics2D g);
 }

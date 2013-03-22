@@ -162,7 +162,7 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
-    public Tree updateAllEntitiesAndResize(double currentTime) {
+    public Tree updateAllEntityPositionsAndResize(double currentTime) {
         if (entityCount == 0) {
             assert world != null;
             Leaf leaf = Leaf.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength());
@@ -171,11 +171,10 @@ public class Quad extends Tree implements Parent {
             return leaf;
         }
         updateEntityPositions(currentTime);
-        updateEntities(currentTime);
-        topLeft = topLeft.updateAllEntitiesAndResize(currentTime);
-        topRight = topRight.updateAllEntitiesAndResize(currentTime);
-        bottomLeft = bottomLeft.updateAllEntitiesAndResize(currentTime);
-        bottomRight = bottomRight.updateAllEntitiesAndResize(currentTime);
+        topLeft = topLeft.updateAllEntityPositionsAndResize(currentTime);
+        topRight = topRight.updateAllEntityPositionsAndResize(currentTime);
+        bottomLeft = bottomLeft.updateAllEntityPositionsAndResize(currentTime);
+        bottomRight = bottomRight.updateAllEntityPositionsAndResize(currentTime);
         return this;
     }
 

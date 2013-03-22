@@ -31,7 +31,6 @@ public class Brick extends BoxEntity {
 
     @Override
     public void update(double elapsedTime) {
-        super.update(elapsedTime);
     }
 
     @Override

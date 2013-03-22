@@ -179,12 +179,6 @@ public abstract class Tree {
         maxY = centerY + halfLength;
     }
 
-    public void updateEntities(double elapsedTime) {
-        for (int i = 0; i < entityListPos; i++) {
-            entities[i].update(elapsedTime);
-        }
-    }
-
     public void updateMotions(double elapsedTime, UnorderedArrayList<WorldEffect> worldEffects) {
         for (int i = 0; i < entityListPos; i++) {
             Entity entity = entities[i];
@@ -267,7 +261,7 @@ public abstract class Tree {
 
     public abstract void ensureEntitiesAreContained(double time);
 
-    public abstract Tree updateAllEntitiesAndResize(double currentTime);
+    public abstract Tree updateAllEntityPositionsAndResize(double currentTime);
 
     public abstract void updateEntityPositions(double elapsedTime);
 

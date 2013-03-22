@@ -124,10 +124,9 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public Tree updateAllEntitiesAndResize(double currentTime) {
+    public Tree updateAllEntityPositionsAndResize(double currentTime) {
         assert entityCount == entityListPos : "count: " + entityCount + " pos: " + entityListPos;
         updateEntityPositions(currentTime);
-        updateEntities(currentTime);
 
         if (entityCount >= GROW_THRESH) {
             assert checkEntities();

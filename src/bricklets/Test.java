@@ -134,7 +134,6 @@ public class Test extends Context {
     private void drawStats(Graphics2D g) {
         g.setColor(Color.red);
         g.drawString("fps: " + controller.getFrameRate(), 25, 25);
-        g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
         g.drawString("entities: " + world.getEntityCount(), 25, 75);
     }
 

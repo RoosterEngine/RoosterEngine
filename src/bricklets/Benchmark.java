@@ -90,7 +90,6 @@ public class Benchmark extends Context implements ActionHandler {
     private void drawStats(Graphics2D g) {
         g.setColor(Color.red);
         g.drawString("fps: " + controller.getFrameRate(), 25, 25);
-        g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
         g.drawString("balls: " + balls + " / " + maxBalls, 25, 75);
     }
 

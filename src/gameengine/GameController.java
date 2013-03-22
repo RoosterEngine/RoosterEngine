@@ -29,38 +29,32 @@ public class GameController implements MouseMovedHandler {
     }
 
     /**
-     * @param UPS       update the game state this many times per second. UPS needs to
-     *                  be greater or equal to targetFPS
      * @param targetFPS render this many times per second
      */
-    public GameController(int UPS, int targetFPS) {
-        this(UPS, targetFPS, (int) (0.6 * targetFPS));
+    public GameController(int targetFPS) {
+        this(targetFPS, (int) (0.6 * targetFPS));
     }
 
     /**
-     * @param UPS       update the game state this many times per second. UPS needs to
-     *                  be greater or equal to targetFPS
      * @param targetFPS render this many times per second
      * @param minFPS    minimum allowable frame rate before the UPS slows down.
      */
-    public GameController(int UPS, int targetFPS, int minFPS) {
+    public GameController(int targetFPS, int minFPS) {
         User profile = new User("Default");
         profile.setInputBinding(InputCode.KEY_A, Action.EXIT_GAME);
-        init(UPS, targetFPS, minFPS, profile);
+        init(targetFPS, minFPS, profile);
     }
 
     /**
-     * @param UPS       update the game state this many times per second. UPS needs to
-     *                  be greater or equal to targetFPS
      * @param targetFPS render this many times per second
      * @param minFPS    minimum allowable frame rate before the UPS slows down.
      * @param user      the user profile from which to load user preferences from
      */
-    public GameController(int UPS, int targetFPS, int minFPS, User user) {
-        init(UPS, targetFPS, minFPS, user);
+    public GameController(int targetFPS, int minFPS, User user) {
+        init(targetFPS, minFPS, user);
     }
 
-    private void init(int UPS, int targetFPS, int minFPS, User user) {
+    private void init(int targetFPS, int minFPS, User user) {
         this.user = user;
         inputManager = new InputManager(this);
         screenManager = new ScreenManager();
@@ -73,7 +67,7 @@ public class GameController implements MouseMovedHandler {
             contextTypeMap.put(type, new ArrayList<InputMapping>());
         }
 
-        gameTimer = new GameTimer(this, UPS, targetFPS, minFPS);
+        gameTimer = new GameTimer(this, targetFPS, minFPS);
         gameThread = new Thread(gameTimer, "Game");
     }
 
@@ -305,10 +299,6 @@ public class GameController implements MouseMovedHandler {
 
     public double getFrameRate() {
         return gameTimer.getFrameRate();
-    }
-
-    public double getUpdateRate() {
-        return gameTimer.getUpdateRate();
     }
 
     public int getWidth() {

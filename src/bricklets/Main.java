@@ -41,7 +41,7 @@ public class Main implements ButtonHandler {
 //        input.nextLine();
 //        input.close();
 
-        GameController controller = new GameController(60, 60, 60);
+        GameController controller = new GameController(200);
         setupInputToActionMappings(controller);
         Main main = new Main(controller);
         main.startGame();

@@ -17,7 +17,7 @@ import java.awt.*;
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 18;
+    public static final int GROW_THRESH = 20;
     private static final double EXPAND_RATE = 1.5;
     protected World world = null;
     protected double centerX, centerY, halfLength, minX, minY, maxX, maxY;
@@ -30,16 +30,30 @@ public abstract class Tree {
     public Tree() {
     }
 
-    public Tree(World world, CollisionList list) {
+    public Tree(World world) {
         assert world != null;
         this.world = world;
-        init(world, list);
+        init(world);
     }
 
-    public Tree(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
+    public Tree(World world, Parent parent, double centerX, double centerY, double halfLength) {
         assert world != null;
         this.world = world;
-        init(world, parent, centerX, centerY, halfLength, list);
+        init(world, parent, centerX, centerY, halfLength);
+    }
+
+    protected void init(World world) {
+        assert world != null;
+        this.world = world;
+        world.getCollisionList().add(node);
+    }
+
+    protected void init(World world, Parent parent, double centerX, double centerY, double halfLength) {
+        assert world != null;
+        this.world = world;
+        this.parent = parent;
+        world.getCollisionList().add(node);
+        resize(centerX, centerY, halfLength);
     }
 
     public double getCenterX() {
@@ -70,15 +84,11 @@ public abstract class Tree {
         return maxY;
     }
 
-    public CollisionNode getNode() {
-        return node;
+    public int getEntityCount() {
+        return entityCount;
     }
 
-    public Parent getParent() {
-        return parent;
-    }
-
-    public void clear(CollisionList list) {
+    public void clear() {
         for (int i = 0; i < entityListPos; i++) {
             entities[i] = null;
         }
@@ -86,7 +96,7 @@ public abstract class Tree {
         entityCount = 0;
         entityListPos = 0;
         timeInTree = 0;
-        list.remove(node);
+        world.getCollisionList().remove(node);
         world = null;
         node.clear();
     }
@@ -116,18 +126,17 @@ public abstract class Tree {
         parent.decrementEntityCount();
     }
 
-    public void entityUpdated(Collision tempCollision, double timeToCheck, Entity entity,
-                              CollisionList list) {
-        assert list.areNodesSorted();
+    public void entityUpdated(double timeToCheck, Entity entity) {
+        assert world.getCollisionList().areNodesSorted();
         assert !isEntityInTree(entity);
 
-        relocateAndCheck(tempCollision, timeToCheck, entity, list);
+        relocateAndCheck(timeToCheck, entity);
     }
 
-    protected void collideShapes(int[] collisionGroups, Collision temp, Collision result,
-                                 double timeToCheck, Entity a, Entity b) {
-        if ((collisionGroups[a.getEntityType()] & b.getEntityTypeBitMask()) != 0) {
-            temp.setNoCollision();
+    protected void collideShapes(Collision result, double timeToCheck, Entity a, Entity b) {
+        if ((world.getCollisionGroups()[a.getEntityType()] & b.getEntityTypeBitMask()) != 0) {
+            Collision temp = world.getTempCollision();
+            temp.setNoCollision(); // TODO might not need to do this because collideShapes overwrites temp anyway
             Shape.collideShapes(a.getShape(), b.getShape(), timeToCheck, temp);
             if (temp.getCollisionTime() < result.getCollisionTime() - timeInTree) {
                 assert temp.getCollisionTime() <= timeToCheck : "too long" + temp.getCollisionTime() + ", " + timeToCheck;
@@ -158,20 +167,6 @@ public abstract class Tree {
         entities[entityListPos] = entity;
         entity.setContainingTree(this, entityListPos);
         entityListPos++;
-    }
-
-    protected void init(World world, CollisionList list) {
-        assert world != null;
-        this.world = world;
-        list.add(node);
-    }
-
-    protected void init(World world, Parent parent, double centerX, double centerY, double halfLength, CollisionList list) {
-        assert world != null;
-        this.world = world;
-        this.parent = parent;
-        list.add(node);
-        resize(centerX, centerY, halfLength);
     }
 
     protected void resize(double centerX, double centerY, double halfLength) {
@@ -272,37 +267,27 @@ public abstract class Tree {
 
     public abstract void ensureEntitiesAreContained(double time);
 
-    public abstract Tree updateAllEntitiesAndResize(double currentTime, CollisionList list);
+    public abstract Tree updateAllEntitiesAndResize(double currentTime);
 
     public abstract void updateEntityPositions(double elapsedTime);
 
-    public abstract Tree tryResize(CollisionList list);
+    public abstract Tree tryResize();
 
-    public abstract void initCalcCollision(Collision temp, double timeToCheck, CollisionList list);
+    public abstract void initCalcCollision(double timeToCheck);
 
-    public abstract void relocateAndCheck(Collision temp, double timeToCheck, Entity entity,
-                                          CollisionList list);
+    public abstract void relocateAndCheck(double timeToCheck, Entity entity);
 
-    public abstract void entityRemovedDuringCollision(Collision temp, double timeToCheck,
-                                                      Entity entity, double currentTime,
-                                                      CollisionList list);
+    public abstract void entityRemovedDuringCollision(double timeToCheck, Entity entity, double currentTime);
 
-    public abstract void addAndCheck(Collision temp, double timeToCheck, Entity entity,
-                                     CollisionList list);
+    public abstract void addAndCheck(double timeToCheck, Entity entity);
 
-    public abstract void initCheckCollisionWithEntity(Collision temp, Collision result,
-                                                      double timeToCheck, Entity entity);
+    public abstract void initCheckCollisionWithEntity(Collision result, double timeToCheck, Entity entity);
 
-    public abstract void checkCollisionWithEntity(Collision temp, Collision result,
-                                                  double timeToCheck, Entity entity);
+    public abstract void checkCollisionWithEntity(Collision result, double timeToCheck, Entity entity);
 
     public abstract void recycle();
 
     public abstract void draw(double minX, double maxX, double minY, double maxY, Graphics2D g);
 
     public abstract void drawTree(Graphics2D g, Color color);
-
-    public int getEntityCount() {
-        return entityCount;
-    }
 }

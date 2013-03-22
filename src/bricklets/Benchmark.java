@@ -3,6 +3,7 @@ package bricklets;
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
+import gameengine.collisiondetection.tree.Tree;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.entities.Entity;
@@ -22,7 +23,7 @@ public class Benchmark extends Context implements ActionHandler {
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
     private double currentTime = 0;
     private double lastTime = 0;
-    private int balls = 0;
+    private int balls = 0, maxBalls = 8000;
 
     public Benchmark(GameController controller) {
         super(controller, ContextType.GAME);
@@ -62,14 +63,14 @@ public class Benchmark extends Context implements ActionHandler {
     @Override
     public void update(double elapsedTime) {
         currentTime += elapsedTime;
-        double timeBetweenBalls = 50;
-        if (lastTime + timeBetweenBalls <= currentTime && balls < 8200) {
+        double timeBetweenBalls = 25;
+        if (lastTime + timeBetweenBalls <= currentTime && balls < maxBalls) {
             int ballSize = 2;
             double halfWidth = width * 0.5;
             double halfHeight = height * 0.5;
             double xLength = width - 50;
             double yLength = height - 100;
-            for (int i = 0; i < 25; i++) {
+            for (int i = 0; i < 100; i++) {
                 addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength,
                         halfHeight + (rand.nextDouble() - 0.5) * yLength, ballSize);
                 balls++;
@@ -90,7 +91,8 @@ public class Benchmark extends Context implements ActionHandler {
         g.setColor(Color.red);
         g.drawString("fps: " + controller.getFrameRate(), 25, 25);
         g.drawString("ups: " + controller.getUpdateRate(), 25, 50);
-        g.drawString("entities: " + world.getEntityCount(), 25, 75);
+        g.drawString("balls: " + balls + " / " + maxBalls, 25, 75);
+        g.drawString("trees: " + Tree.treeCount, 25, 100);
     }
 
     @Override
@@ -137,6 +139,7 @@ public class Benchmark extends Context implements ActionHandler {
                 for (int i = 0; i < 200; i++) {
                     addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength,
                             halfHeight + (rand.nextDouble() - 0.5) * yLength, ballSize);
+                    balls++;
                 }
                 break;
         }

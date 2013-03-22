@@ -10,6 +10,7 @@ public class CircleEntity extends TestingEntity {
 
     public CircleEntity(double x, double y, double radius) {
         super(x, y, new CircleShape(radius));
+//        super(x, y, PolygonShape.getCircle(radius, 10));
         this.radius = radius;
     }
 

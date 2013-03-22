@@ -134,6 +134,7 @@ public class GameController implements MouseMovedHandler {
         // mouse move event is injected for cases when the mouse would be moving
         // when a context was exited.
         mouseMoved(0, 0, 0, 0);
+        System.gc(); // perform gc when context is switched to reduce gc stutters
     }
 
     /**

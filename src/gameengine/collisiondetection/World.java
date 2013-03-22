@@ -1,6 +1,7 @@
 package gameengine.collisiondetection;
 
 import Utilities.UnorderedArrayList;
+import gameengine.collisiondetection.tree.CollisionList;
 import gameengine.collisiondetection.tree.SpatialTree;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
@@ -11,6 +12,8 @@ import java.awt.*;
 public class World {
     private SpatialTree tree;
     private int[] collisionGroups = new int[EntityType.values().length];
+    private Collision tempCollision = new Collision();
+    private CollisionList collisionList = new CollisionList();
     private UnorderedArrayList<WorldEffect> worldEffects = new UnorderedArrayList<>();
 
     public World(double centerX, double centerY, double halfLength) {
@@ -81,6 +84,14 @@ public class World {
 
     public int[] getCollisionGroups() {
         return collisionGroups;
+    }
+
+    public Collision getTempCollision() {
+        return tempCollision;
+    }
+
+    public CollisionList getCollisionList() {
+        return collisionList;
     }
 
     public int getEntityCount() {

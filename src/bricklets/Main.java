@@ -10,6 +10,7 @@ import gameengine.input.Action;
 import gameengine.input.InputCode;
 
 import java.awt.*;
+import java.util.Scanner;
 
 public class Main implements ButtonHandler {
     private GameController controller;
@@ -27,7 +28,7 @@ public class Main implements ButtonHandler {
 
     public Main(GameController controller) {
         this.controller = controller;
-        BasicButton[] buttons = {gameButton, benchmarkButton, exitButton, testButton};
+        BasicButton[] buttons = {gameButton, benchmarkButton, testButton, exitButton};
         benchmark = new Benchmark(controller);
         bricks = new BrickBreaker(controller);
         testing = new Test(controller);
@@ -38,6 +39,7 @@ public class Main implements ButtonHandler {
 //        Scanner input = new Scanner(System.in);
 //        System.out.println("press Enter to start");
 //        input.nextLine();
+//        input.close();
 
         GameController controller = new GameController(60, 60, 60);
         setupInputToActionMappings(controller);

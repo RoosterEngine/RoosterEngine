@@ -17,7 +17,7 @@ import java.awt.*;
  * Time: 9:27 PM
  */
 public abstract class Tree {
-    public static final int GROW_THRESH = 20;
+    public static final int GROW_THRESH = 2;
     private static final double EXPAND_RATE = 1.5;
     protected World world = null;
     protected double centerX, centerY, halfLength, minX, minY, maxX, maxY;

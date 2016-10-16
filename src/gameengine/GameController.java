@@ -58,7 +58,8 @@ public class GameController implements MouseMovedHandler {
         this.user = user;
         inputManager = new InputManager(this);
         screenManager = new ScreenManager();
-        screenManager.setFullScreen();
+        //screenManager.setFullScreen();
+        screenManager.setWindowed();
         contextStack = new ArrayDeque<>();
 
         contextTypeMap = new EnumMap<>(ContextType.class);
@@ -72,7 +73,7 @@ public class GameController implements MouseMovedHandler {
     }
 
     public void startGame() {
-        addInputListeners(screenManager.getFullScreenWindow());
+        addInputListeners(screenManager.getWindow());
         gameThread.start();
     }
 
@@ -170,7 +171,7 @@ public class GameController implements MouseMovedHandler {
     }
 
     private void setMouseCursor(boolean visible) {
-        Window window = screenManager.getFullScreenWindow();
+        Window window = screenManager.getWindow();
         if (visible) {
             resetMouseCursor(window);
         } else {
@@ -302,11 +303,11 @@ public class GameController implements MouseMovedHandler {
     }
 
     public int getWidth() {
-        return screenManager.getFullScreenWindow().getWidth();
+        return screenManager.getWindow().getWidth();
     }
 
     public int getHeight() {
-        return screenManager.getFullScreenWindow().getHeight();
+        return screenManager.getWindow().getHeight();
     }
 
     public void update(double elapsedTime) {
@@ -326,7 +327,7 @@ public class GameController implements MouseMovedHandler {
 
     public void resetCursor() {
         if (!activeContext.isShowingMouseCursor()) {
-            resetMouseCursor(screenManager.getFullScreenWindow());
+            resetMouseCursor(screenManager.getWindow());
         }
     }
 

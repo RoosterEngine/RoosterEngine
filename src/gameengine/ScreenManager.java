@@ -1,5 +1,6 @@
 package gameengine;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -11,13 +12,14 @@ public class ScreenManager {
 
     private GraphicsDevice device;
     private BufferStrategy bufferStrategy;
+    private Frame frame;
 
     public ScreenManager() {
         device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
     }
 
-    public Window getFullScreenWindow() {
-        return device.getFullScreenWindow();
+    public Window getWindow() {
+        return frame;
     }
 
     public DisplayMode[] getCompatibleDisplayModes() {
@@ -42,11 +44,21 @@ public class ScreenManager {
     }
 
     public void setFullScreen() {
-        Frame frame = new Frame();
+        frame = new Frame();
         frame.setUndecorated(true);
         frame.setIgnoreRepaint(true);
         frame.setResizable(false);
         device.setFullScreenWindow(frame);
+        frame.createBufferStrategy(2);
+        bufferStrategy = frame.getBufferStrategy();
+    }
+
+    public void setWindowed() {
+        frame = new JFrame("RoosterEngine");
+        frame.setSize(new Dimension(1024, 1024));
+        frame.setUndecorated(false);
+        frame.setIgnoreRepaint(true);
+        frame.setVisible(true);
         frame.createBufferStrategy(2);
         bufferStrategy = frame.getBufferStrategy();
     }

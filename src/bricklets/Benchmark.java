@@ -23,7 +23,7 @@ public class Benchmark extends Context implements ActionHandler {
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
     private double currentTime = 0;
     private double lastTime = 0;
-    private int balls = 0, maxBalls = 8000;
+    private int balls = 0, maxBalls = 3000;
 
     public Benchmark(GameController controller) {
         super(controller, ContextType.GAME);
@@ -84,6 +84,7 @@ public class Benchmark extends Context implements ActionHandler {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
         world.draw(this, g);
+        world.drawTree(g, Color.red);
         drawStats(g);
     }
 

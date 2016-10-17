@@ -91,7 +91,7 @@ public class Benchmark extends Context implements ActionHandler {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, width, height);
         world.draw(this, g);
-        world.drawTree(g, Color.red);
+        //world.drawTree(g, Color.red);
         drawStats(g);
     }
 

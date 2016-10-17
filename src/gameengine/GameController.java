@@ -81,7 +81,7 @@ public class GameController implements MouseMovedHandler {
         gameThread = new Thread(gameTimer, "Game");
 
         if (isServer) {
-            gameServer = new GameServer(8887, this);
+            gameServer = new GameServer(8887);
         }
     }
 

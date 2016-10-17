@@ -1,65 +1,27 @@
 package bricklets;
 
-import gameengine.GameController;
-import gameengine.context.Context;
 import gameengine.entities.Entity;
-import jdk.nashorn.internal.parser.JSONParser;
 import org.java_websocket.WebSocket;
 import org.java_websocket.WebSocketImpl;
-import org.java_websocket.framing.Framedata;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.awt.*;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Random;
 
 public class GameServer extends WebSocketServer {
-    private GameController controller;
-    public GameServer(int port, GameController controller) {
-        this(new InetSocketAddress(port), controller);
+    public GameServer(int port) {
+        this(new InetSocketAddress(port));
     }
 
-    public GameServer(InetSocketAddress address, GameController controller) {
+    public GameServer(InetSocketAddress address) {
         super(address);
-        this.controller = controller;
-        GameServer that = this;
-
-        Thread inputThread = new Thread(() -> {
-            WebSocketImpl.DEBUG = false;
-            int port = 8887;
-
-            try {
-                that.start();
-                System.out.println("Game server started on port: " + that.getPort());
-
-                BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
-                while (true) {
-                    String in = sysin.readLine();
-                    //s.sendToAll(in);
-                    if (in.equals("exit")) {
-                        that.stop();
-                        break;
-                    } else if (in.equals("restart")) {
-                        that.stop();
-                        that.start();
-                        break;
-                    }
-                }
-            } catch (InterruptedException | IOException e) {
-                e.printStackTrace();
-            }
-        });
-        inputThread.start();
+        WebSocketImpl.DEBUG = false;
+        this.start();
+        System.out.println("Game server started on port: " + getPort());
     }
 
     @Override

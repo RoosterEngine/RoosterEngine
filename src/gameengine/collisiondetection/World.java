@@ -8,6 +8,7 @@ import gameengine.entities.Entity;
 import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 public class World {
     private SpatialTree tree;
@@ -98,5 +99,9 @@ public class World {
 
     public int getEntityCount() {
         return tree.getEntityCount();
+    }
+
+    public ArrayList<Entity> getEntities() {
+        return tree.getEntities(0, 0, 0, 0);
     }
 }

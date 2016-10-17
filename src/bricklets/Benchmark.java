@@ -23,7 +23,7 @@ public class Benchmark extends Context implements ActionHandler {
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
     private double currentTime = 0;
     private double lastTime = 0;
-    private int balls = 0, maxBalls = 3000;
+    private int balls = 0, maxBalls = 1000;
 
     public Benchmark(GameController controller) {
         super(controller, ContextType.GAME);
@@ -77,6 +77,13 @@ public class Benchmark extends Context implements ActionHandler {
             }
             lastTime = currentTime;// - (currentTime - lastTime + timeBetweenBalls);
         }
+    }
+
+    public static void main(String[] args) {
+        GameController controller = new GameController(120, 100, true);
+        Context bench = new Benchmark(controller);
+        controller.enterContext(bench);
+        controller.startGame();
     }
 
     @Override

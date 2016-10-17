@@ -6,6 +6,8 @@ import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * The Leaf node of the spatial tree data structure
@@ -237,6 +239,15 @@ public class Leaf extends Tree {
         g.setColor(Color.RED);
         int length = (int) (getHalfLength() * 2);
         g.drawRect((int) getMinX(), (int) getMinY(), length, length);
+    }
+
+    @Override
+    public ArrayList<Entity> getEntities(double minX, double maxX, double minY, double maxY) {
+        ArrayList es = new ArrayList();
+        for (int i = 0; i < entityListPos; i++) {
+            es.add(entities[i]);
+        }
+        return es;
     }
 
     @Override

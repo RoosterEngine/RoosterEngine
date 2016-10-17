@@ -9,6 +9,8 @@ import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * A node in the spatial tree that has four children
@@ -350,6 +352,20 @@ public class Quad extends Tree implements Parent {
         g.drawLine((int) getMinX(), (int) getCenterY(), (int) getMaxX(), (int) getCenterY());
         g.drawLine((int) getCenterX(), (int) getMinY(), (int) getCenterX(), (int) getMaxY());
 //        drawNumEntities(g, Color.BLACK);
+    }
+
+    @Override
+    public ArrayList<Entity> getEntities(double minX, double maxX, double minY, double maxY) {
+        //TODO: actually take into account bounds instead of getting all entities
+        ArrayList<Entity> es = new ArrayList<>();
+        for (int i = 0; i < entityListPos; i++) {
+            es.add(entities[i]);
+        }
+        es.addAll(topLeft.getEntities(minX, maxX, minY, maxY));
+        es.addAll(topRight.getEntities(minX, maxX, minY, maxY));
+        es.addAll(bottomLeft.getEntities(minX, maxX, minY, maxY));
+        es.addAll(bottomRight.getEntities(minX, maxX, minY, maxY));
+        return es;
     }
 
     @Override

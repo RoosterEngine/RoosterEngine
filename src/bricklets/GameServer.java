@@ -40,7 +40,7 @@ public class GameServer extends WebSocketServer {
 
             try {
                 that.start();
-                System.out.println("ChatServer started on port: " + that.getPort());
+                System.out.println("Game server started on port: " + that.getPort());
 
                 BufferedReader sysin = new BufferedReader(new InputStreamReader(System.in));
                 while (true) {

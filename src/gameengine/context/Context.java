@@ -2,7 +2,7 @@ package gameengine.context;
 
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.ViewPort;
+import gameengine.collisiondetection.Viewport;
 import gameengine.collisiondetection.World;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
@@ -19,205 +19,205 @@ import java.util.HashMap;
  * User: davidrusu
  */
 public abstract class Context implements ActionHandler, InputHandler {
-    //TODO switch to EnumMap
-    private HashMap<Action, ActionHandler> actionMap;
-    private HashMap<Integer, Action> inputMap = new HashMap<>();
-    private InputHandler inputHandler = this;
-    private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
-    private boolean paused = false;
-    protected World world;
-    protected GameController controller;
-    protected ContextType contextType;
-    protected ViewPort viewPort;
-    protected int width, height;
+   //TODO switch to EnumMap
+   private HashMap<Action, ActionHandler> actionMap;
+   private HashMap<Integer, Action> inputMap = new HashMap<>();
+   private InputHandler inputHandler = this;
+   private boolean isShowingMouseCursor, isRelativeMouseMovedEnabled;
+   private boolean paused = false;
+   protected World world;
+   protected GameController controller;
+   protected ContextType contextType;
+   protected Viewport viewPort;
+   protected int width, height;
 
-    /**
-     * Constructs a Context
-     *
-     * @param controller  The {@link GameController} controlling the game
-     * @param contextType the {@link ContextType} of the this context
-     */
-    protected Context(GameController controller, ContextType contextType) {
-        this.controller = controller;
-        this.contextType = contextType;
-        this.isShowingMouseCursor = false;
-        isRelativeMouseMovedEnabled = true;
-        actionMap = new HashMap<>();
-        setSize(controller.getWidth(), controller.getHeight());
-        world = new World(width * 0.5, height * 0.5, Math.max(width, height) * 0.5);
-        viewPort = new ViewPort(0, 0, 1, width, height);
-    }
+   /**
+    * Constructs a Context
+    *
+    * @param controller  The {@link GameController} controlling the game
+    * @param contextType the {@link ContextType} of the this context
+    */
+   protected Context(GameController controller, ContextType contextType) {
+      this.controller = controller;
+      this.contextType = contextType;
+      this.isShowingMouseCursor = false;
+      isRelativeMouseMovedEnabled = true;
+      actionMap = new HashMap<>();
+      setSize(controller.getWidth(), controller.getHeight());
+      world = new World(width * 0.5, height * 0.5, Math.max(width, height) * 0.5);
+      viewPort = new Viewport(0, 0, 1, width, height);
+   }
 
-    public void reset() {
-        paused = false;
-    }
+   public void reset() {
+      paused = false;
+   }
 
-    public boolean isPaused() {
-        return paused;
-    }
+   public boolean isPaused() {
+      return paused;
+   }
 
-    public void togglePause() {
-        paused = !paused;
-    }
+   public void togglePause() {
+      paused = !paused;
+   }
 
-    public boolean isRelativeMouseMovedEnabled() {
-        return isRelativeMouseMovedEnabled;
-    }
+   public boolean isRelativeMouseMovedEnabled() {
+      return isRelativeMouseMovedEnabled;
+   }
 
-    /**
-     * <p>
-     * If enabled the mouse will reset to the center of the screen after each
-     * time the mouse moves. When the mouse handler is called the position of
-     * the mouse will be a vector in the direction that the mouse was moved.
-     * </p>
-     * The change will take effect next time you enter the context
-     */
-    public void enterRelativeMouseMode() {
-        isRelativeMouseMovedEnabled = true;
-    }
+   /**
+    * <p>
+    * If enabled the mouse will reset to the center of the screen after each
+    * time the mouse moves. When the mouse handler is called the position of
+    * the mouse will be a vector in the direction that the mouse was moved.
+    * </p>
+    * The change will take effect next time you enter the context
+    */
+   public void enterRelativeMouseMode() {
+      isRelativeMouseMovedEnabled = true;
+   }
 
-    /**
-     * Sets the mouse mode back to normal
-     */
-    public void exitRelativeMouseMode() {
-        isRelativeMouseMovedEnabled = false;
-    }
+   /**
+    * Sets the mouse mode back to normal
+    */
+   public void exitRelativeMouseMode() {
+      isRelativeMouseMovedEnabled = false;
+   }
 
-    public boolean isShowingMouseCursor() {
-        return isShowingMouseCursor;
-    }
+   public boolean isShowingMouseCursor() {
+      return isShowingMouseCursor;
+   }
 
-    public void showMouseCursor() {
-        isShowingMouseCursor = true;
-    }
+   public void showMouseCursor() {
+      isShowingMouseCursor = true;
+   }
 
-    public void hideMouseCursor() {
-        isShowingMouseCursor = false;
-    }
+   public void hideMouseCursor() {
+      isShowingMouseCursor = false;
+   }
 
-    public final void setSize(int width, int height) {
-        this.width = width;
-        this.height = height;
-    }
+   public final void setSize(int width, int height) {
+      this.width = width;
+      this.height = height;
+   }
 
-    public int getWidth() {
-        return width;
-    }
+   public int getWidth() {
+      return width;
+   }
 
-    public int getHeight() {
-        return height;
-    }
+   public int getHeight() {
+      return height;
+   }
 
-    public ViewPort getViewPort() {
-        return viewPort;
-    }
+   public Viewport getViewPort() {
+      return viewPort;
+   }
 
-    /**
-     * Returns the {@link ContextType} of this context
-     *
-     * @return {@link ContextType}
-     */
-    public final ContextType getContextType() {
-        return contextType;
-    }
+   /**
+    * Returns the {@link ContextType} of this context
+    *
+    * @return {@link ContextType}
+    */
+   public final ContextType getContextType() {
+      return contextType;
+   }
 
-    public void updateWorld(double elapsedTime) {
-        world.update(elapsedTime, this);
-    }
+   public void updateWorld(double elapsedTime) {
+      world.update(elapsedTime, this);
+   }
 
-    /**
-     * Binds an {@link Action} to an {@link ActionHandler}
-     *
-     * @param action  The {@link Action} to be mapped to an {@link ActionHandler}
-     * @param handler the {@link ActionHandler} to handle the {@link Action}
-     */
-    protected final void bindAction(Action action, ActionHandler handler) {
-        actionMap.put(action, handler);
-    }
+   /**
+    * Binds an {@link Action} to an {@link ActionHandler}
+    *
+    * @param action  The {@link Action} to be mapped to an {@link ActionHandler}
+    * @param handler the {@link ActionHandler} to handle the {@link Action}
+    */
+   protected final void bindAction(Action action, ActionHandler handler) {
+      actionMap.put(action, handler);
+   }
 
-    /**
-     * Enters binding mode.
-     * <p>
-     * When in binding mode all input events except mouse movement will be
-     * handled, the specified {@link Action} is given to the
-     * {@link ActionHandler} when an input event happens.
-     * </p>
-     *
-     * @param bindingInputHandler the {@link InputHandler} that will handle the
-     *                            input while in binding mode
-     */
-    public void enterBindingMode(InputHandler bindingInputHandler) {
-        inputHandler = bindingInputHandler;
-    }
+   /**
+    * Enters binding mode.
+    * <p>
+    * When in binding mode all input events except mouse movement will be
+    * handled, the specified {@link Action} is given to the
+    * {@link ActionHandler} when an input event happens.
+    * </p>
+    *
+    * @param bindingInputHandler the {@link InputHandler} that will handle the
+    *                            input while in binding mode
+    */
+   public void enterBindingMode(InputHandler bindingInputHandler) {
+      inputHandler = bindingInputHandler;
+   }
 
-    /**
-     * Exits binding mode.
-     */
-    public void exitBindingMode() {
-        inputHandler = this;
-    }
+   /**
+    * Exits binding mode.
+    */
+   public void exitBindingMode() {
+      inputHandler = this;
+   }
 
-    public InputHandler getInputHandler() {
-        return inputHandler;
-    }
+   public InputHandler getInputHandler() {
+      return inputHandler;
+   }
 
-    //------------------ start InputHandler implementation ---------------------
-    @Override
-    public void clearInputMappings() {
-        inputMap.clear();
-    }
-
-
-    @Override
-    public void addInputMapping(int inputCode, Action action) {
-        inputMap.put(inputCode, action);
-    }
-
-    @Override
-    public final void startInput(int inputCode) {
-        Action action = inputMap.get(inputCode);
-        if (action == null) {
-            return;
-        }
-        startAction(action, inputCode);
-    }
-
-    @Override
-    public final void stopInput(int inputCode) {
-        Action action = inputMap.get(inputCode);
-        if (action == null) {
-            return;
-        }
-        stopAction(action, inputCode);
-    }
+   //------------------ start InputHandler implementation ---------------------
+   @Override
+   public void clearInputMappings() {
+      inputMap.clear();
+   }
 
 
-    //------------------ end InputHandler implementation -----------------------
+   @Override
+   public void addInputMapping(int inputCode, Action action) {
+      inputMap.put(inputCode, action);
+   }
 
-    //------------------ start ActionHandler implementation --------------------
-    @Override
-    public void startAction(Action action, int inputCode) {
-        ActionHandler actionHandler = actionMap.get(action);
-        if (actionHandler == null) {
-            return;
-        }
-        actionHandler.startAction(action, inputCode);
-    }
+   @Override
+   public final void startInput(int inputCode) {
+      Action action = inputMap.get(inputCode);
+      if (action == null) {
+         return;
+      }
+      startAction(action, inputCode);
+   }
 
-    @Override
-    public void stopAction(Action action, int inputCode) {
-        ActionHandler actionHandler = actionMap.get(action);
-        if (actionHandler == null) {
-            return;
-        }
-        actionHandler.stopAction(action, inputCode);
-    }
+   @Override
+   public final void stopInput(int inputCode) {
+      Action action = inputMap.get(inputCode);
+      if (action == null) {
+         return;
+      }
+      stopAction(action, inputCode);
+   }
 
-    //------------------- stop ActionHandler implementation --------------------
 
-    public abstract void update(double elapsedTime);
+   //------------------ end InputHandler implementation -----------------------
 
-    public abstract void draw(Graphics2D g);
+   //------------------ start ActionHandler implementation --------------------
+   @Override
+   public void startAction(Action action, int inputCode) {
+      ActionHandler actionHandler = actionMap.get(action);
+      if (actionHandler == null) {
+         return;
+      }
+      actionHandler.startAction(action, inputCode);
+   }
 
-    public abstract void handleCollision(Collision collision);
+   @Override
+   public void stopAction(Action action, int inputCode) {
+      ActionHandler actionHandler = actionMap.get(action);
+      if (actionHandler == null) {
+         return;
+      }
+      actionHandler.stopAction(action, inputCode);
+   }
+
+   //------------------- stop ActionHandler implementation --------------------
+
+   public abstract void update(double elapsedTime);
+
+   public abstract void draw(Graphics2D g);
+
+   public abstract void handleCollision(Collision collision);
 }

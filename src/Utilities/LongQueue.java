@@ -52,7 +52,7 @@ public class LongQueue {
          expandCapacity();
       }
       queue[tailIndex] = num;
-      tailIndex = tailIndex + 1 & modMask;
+      tailIndex = (tailIndex + 1) & modMask;
       size++;
    }
 
@@ -72,7 +72,7 @@ public class LongQueue {
    public long dequeue() {
       assert size > 0;
       long result = queue[headIndex];
-      headIndex = headIndex + 1 & modMask;
+      headIndex = (headIndex + 1) & modMask;
       size--;
       return result;
    }

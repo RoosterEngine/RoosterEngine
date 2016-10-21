@@ -78,7 +78,9 @@ public class GameController implements MouseMovedHandler {
     * Performs necessary cleanup prior to exiting the game.
     */
    public void cleanup() {
+      resetCursor();
       screenManager.restoreScreen();
+      System.exit(0);
    }
 
    public void startGame() {
@@ -87,7 +89,6 @@ public class GameController implements MouseMovedHandler {
    }
 
    public void stopGame() {
-      resetCursor();
       gameTimer.stop();
    }
 

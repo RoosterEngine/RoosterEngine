@@ -86,13 +86,18 @@ public class GameTimer implements Runnable {
       while (isRunning) {
          syncFrameRate(lastNanoTime);
          long currentTime = System.nanoTime();
+
          //The time difference since the last iteration of the game loop
          long timeDelta = currentTime - lastNanoTime;
          lastNanoTime = currentTime;
          //Introduce time dilation if the frame is taking too long so that it
          //doesn't grow out of control
          timeDelta = Math.min(timeDelta, maxFrameTime);
-         gameController.update(timeDelta);
+         double timeDeltaMillis = ((double) timeDelta) / NANOS_PER_MILLI;
+         gameController.updateMouseVelocity(timeDeltaMillis);
+         gameController.updateMouseMovedHandler(timeDeltaMillis);
+         gameController.update(timeDeltaMillis);
+         gameController.handleEvents(currentTime);
          gameController.draw();
       }
    }

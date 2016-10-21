@@ -61,6 +61,7 @@ public class LongQueue {
     */
    public long peek() {
       assert size > 0;
+
       return queue[headIndex];
    }
 
@@ -71,6 +72,7 @@ public class LongQueue {
     */
    public long dequeue() {
       assert size > 0;
+
       long result = queue[headIndex];
       headIndex = (headIndex + 1) & modMask;
       size--;
@@ -78,10 +80,11 @@ public class LongQueue {
    }
 
    /**
-    * Expancds the queue capacity.
+    * Expands the queue capacity.
     */
    private void expandCapacity() {
       long[] oldQueue = queue;
+      //important: the capacity must always be a power of 2 for the mod mask to be accurate
       int capacity = size << 1; //double the size
       modMask = capacity - 1;
       queue = new long[capacity];

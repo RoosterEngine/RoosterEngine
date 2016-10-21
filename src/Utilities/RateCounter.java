@@ -52,6 +52,8 @@ public class RateCounter {
     * so this reduces fluctuations in the reported tick rate.
     */
    public double getCurrentTickRate() {
+      //the number of ticks that occurred in the last second.  Multiply by 1000 since the times
+      //are in milliseconds
       return tickTimes.size() * 1000.0 / (lastTickTime - tickTimes.peek());
    }
 }

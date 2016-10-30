@@ -1,5 +1,6 @@
 package gameengine;
 
+import Utilities.RateCounter;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.graphics.Graphic;
@@ -23,6 +24,7 @@ public class GameController implements MouseMovedHandler {
     private User user;
     private Deque<Context> contextStack; // the built in stack extends Vector
     private Context activeContext;
+    private RateCounter frameRate;
 
     public GameController() {
         this(120, 60);
@@ -72,13 +74,21 @@ public class GameController implements MouseMovedHandler {
         gameThread = new Thread(gameTimer, "Game");
     }
 
+    /**
+     * Performs necessary cleanup prior to exiting the game.
+     */
+    public void cleanup() {
+        resetCursor();
+        screenManager.restoreScreen();
+        System.exit(0);
+    }
+
     public void startGame() {
         addInputListeners(screenManager.getWindow());
         gameThread.start();
     }
 
     public void stopGame() {
-        resetCursor();
         gameTimer.stop();
     }
 
@@ -118,6 +128,9 @@ public class GameController implements MouseMovedHandler {
      */
     public void enterContext(Context context) {
         contextStack.push(context);
+        if (contextStack.size() == 1) {
+            frameRate = new RateCounter();
+        }
         activeContext = context;
 
         InputHandler inputHandler = context.getInputHandler();
@@ -180,8 +193,8 @@ public class GameController implements MouseMovedHandler {
     }
 
     private static void setInvisibleMouseCursor(Window window) {
-        window.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit().getImage(""),
-                new Point(0, 0), "invisible"));
+        window.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(Toolkit.getDefaultToolkit
+                ().getImage(""), new Point(0, 0), "invisible"));
     }
 
     private static void resetMouseCursor(Window window) {
@@ -280,7 +293,7 @@ public class GameController implements MouseMovedHandler {
      * Returns the time in nanoseconds of the next input event.
      *
      * @return the time in nanoseconds of the next input event.<br></br>
-     *         Long.MAX_VALUE is returned if no events are in the queue
+     * Long.MAX_VALUE is returned if no events are in the queue
      */
     public long getNextInputEventTime() {
         return inputManager.getNextEventTime();
@@ -294,12 +307,8 @@ public class GameController implements MouseMovedHandler {
         screenManager.setFullScreen();
     }
 
-    public void restoreScreen() {
-        screenManager.restoreScreen();
-    }
-
     public double getFrameRate() {
-        return gameTimer.getFrameRate();
+        return frameRate.getCurrentTickRate();
     }
 
     public int getWidth() {
@@ -332,6 +341,7 @@ public class GameController implements MouseMovedHandler {
     }
 
     public void draw() {
+        frameRate.registerTick();
         Graphics2D g2D = screenManager.getGraphics();
         activeContext.draw(g2D);
         //clean up the graphics object and update the screenManager

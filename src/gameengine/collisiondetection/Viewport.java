@@ -10,8 +10,9 @@ import java.awt.*;
  * Date: 22/02/13
  * Time: 5:23 PM
  */
-public class ViewPort {
-    private double x = 0, y = 0, scale = 1, offsetX = 0, offsetY = 0, screenHalfWidth, screenHalfHeight;
+public class Viewport {
+    private double x = 0, y = 0, scale = 1, offsetX = 0, offsetY = 0, screenHalfWidth,
+            screenHalfHeight;
     private double minX, minY, maxX, maxY;
 
     /**
@@ -21,7 +22,7 @@ public class ViewPort {
      * @param screenWidth  the width of the {@link Context} that this ViewPort will be used in
      * @param screenHeight the height of the {@link Context} that this ViewPort will be used in
      */
-    public ViewPort(double x, double y, double scale, double screenWidth, double screenHeight) {
+    public Viewport(double x, double y, double scale, double screenWidth, double screenHeight) {
         this.x = x;
         this.y = y;
         this.scale = scale;

@@ -2,7 +2,7 @@ package gameengine.context;
 
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
-import gameengine.collisiondetection.ViewPort;
+import gameengine.collisiondetection.Viewport;
 import gameengine.collisiondetection.World;
 import gameengine.input.Action;
 import gameengine.input.ActionHandler;
@@ -28,7 +28,7 @@ public abstract class Context implements ActionHandler, InputHandler {
     protected World world;
     protected GameController controller;
     protected ContextType contextType;
-    protected ViewPort viewPort;
+    protected Viewport viewPort;
     protected int width, height;
 
     /**
@@ -45,7 +45,7 @@ public abstract class Context implements ActionHandler, InputHandler {
         actionMap = new HashMap<>();
         setSize(controller.getWidth(), controller.getHeight());
         world = new World(width * 0.5, height * 0.5, Math.max(width, height) * 0.5);
-        viewPort = new ViewPort(0, 0, 1, width, height);
+        viewPort = new Viewport(0, 0, 1, width, height);
     }
 
     public void reset() {
@@ -108,7 +108,7 @@ public abstract class Context implements ActionHandler, InputHandler {
         return height;
     }
 
-    public ViewPort getViewPort() {
+    public Viewport getViewPort() {
         return viewPort;
     }
 

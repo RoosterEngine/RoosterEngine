@@ -4,33 +4,61 @@ package gameengine;
  * @author danrusu
  */
 public class GameTimer implements Runnable {
-
-    private long startTime;
-    private int numFrames = 0;
-    private int lastFrameIndex;
-    private long[] frameTimes;
-
-    private GameController gameController;
-    private boolean isRunning = true;
-    private double nanosPerSecond = 1000000000;
-    private long milliToNano = 1000000;     //this is the number of nanoseconds in a millisecond (multiply milliseconds by this to convert to the number of nanoseconds)
-    private static final double millisPerNano = 1 / 1000000.0;
-    private long desiredFrameTime;     //minimum delay between rendering so that it doesn't exceed the desired frame rate
-    private long maxFrameTime;         //maximum delay between rendering so that it's not slower than the minimum frame rate
-    private long sleepAccumulator = 0;   //small differences between frame times are accumulated so that frames are sincronized to avoid drifting
-    private long overSleep = 0;        //the amount of nanoseconds that the last sleep operation overslept by (based on what was requested)
+    /**
+     * Number of nanoseconds in a millisecond.
+     */
+    private static final long NANOS_PER_MILLI = 1000000;
 
     /**
-     * @param desiredFrameRate render to screen this many times per second
-     * @param minFrameRate     minimum allowable frame rate before the updateRate
-     *                         slows down so it will appear to jump (game play doesn't slow down though)
+     * Number of nanoseconds in a second.
+     */
+    private static final long NANOS_PER_SECOND = 1000 * NANOS_PER_MILLI;
+
+    /**
+     * The sleep precision.  Don't attempt to sleep less than this amount (2 milliseconds).
+     */
+    private static final long SLEEP_PRECISION = 2 * NANOS_PER_MILLI;
+
+    /**
+     * This will remain true as long as the game is running and then the app will stop.
+     */
+    private volatile boolean isRunning = true;
+
+    /**
+     * minimum delay between rendering so that it doesn't exceed the desired frame rate.
+     */
+    private final long desiredFrameTime;
+
+    /**
+     * maximum delay between rendering so that it's not slower than the minimum frame rate.
+     */
+    private final long maxFrameTime;
+
+    /**
+     * the amount of nanoseconds that the last sleep operation overslept by (based on what was
+     * requested).
+     */
+    private long overSleep = 0;
+
+    /**
+     * The game controller.
+     */
+    private GameController gameController;
+
+    /**
+     * The frame rate is allowed to vary between minFrameRate and maxFrameRate.
+     * If the frame rate drops below the min frame rate then time dilation is
+     * introduced to slow down the game.
+     *
+     * @param desiredFrameRate The desired frame rate
+     * @param minFrameRate     The minimum acceptable frame rate
      */
     public GameTimer(GameController gameController, int desiredFrameRate, int minFrameRate) {
-        this.gameController = gameController;
-        desiredFrameTime = (long) (nanosPerSecond / desiredFrameRate);
-        maxFrameTime = (long) (nanosPerSecond / minFrameRate);
+        assert desiredFrameRate >= minFrameRate & minFrameRate > 0;
 
-        frameTimes = new long[desiredFrameRate];
+        this.gameController = gameController;
+        desiredFrameTime = (long) (NANOS_PER_SECOND / desiredFrameRate);
+        maxFrameTime = (long) (NANOS_PER_SECOND / minFrameRate);
     }
 
     /**
@@ -42,94 +70,103 @@ public class GameTimer implements Runnable {
 
     public void run() {
         try {
-            init();
+            enableHighResolutionTimer();
             gameLoop();
         } finally {
-            gameController.resetCursor();
-            gameController.restoreScreen();
+            gameController.cleanup();
         }
     }
 
-    public void init() {
-        // sets up the the frame and update times arrays so that the values stored are close to would be if the game was currently running
-        long twoSeconds = (long) (2 * nanosPerSecond);
-        long currentTime = System.nanoTime();
-        long offset = twoSeconds / frameTimes.length; // starts half way between 0 fps and the desired fps
-        for (int i = 0; i < frameTimes.length; i++) {
-            frameTimes[i] = currentTime - offset * (frameTimes.length - i);
-        }
-        startTime = System.nanoTime();
-        isRunning = true;
-    }
-
-    public void gameLoop() {
-        long currentTime = System.nanoTime();
-        long lastUpdateTime;
-        long gameTime = currentTime;
+    /**
+     * The game loop.
+     */
+    private void gameLoop() {
+        long lastNanoTime = System.nanoTime();
 
         while (isRunning) {
-            currentTime = System.nanoTime();
-            gameController.updateMouseVelocity((currentTime - gameTime) * millisPerNano);
-            // should predict if it has enough time to do two updates in the condition of the while loop
-            long eventTime = gameController.getNextInputEventTime();
-            while (eventTime <= currentTime) {
-                double eventUpdateTime = (eventTime - gameTime) * millisPerNano;
-                gameTime = eventTime;
-                gameController.updateMouseMovedHandler(eventUpdateTime);
-                gameController.update(eventUpdateTime);
-                gameController.handleEvents(eventTime);
-                eventTime = gameController.getNextInputEventTime();
-            }
-            lastUpdateTime = currentTime;
-            double finalUpdateTime = (currentTime - gameTime) * millisPerNano;
-            gameController.updateMouseMovedHandler(finalUpdateTime);
-            update(finalUpdateTime); //update the game based on how much time is left
-            gameTime = currentTime;
-            draw();
-            syncFrameRate(lastUpdateTime);
+            syncFrameRate(lastNanoTime);
+            long currentTime = System.nanoTime();
+
+            //The time difference since the last iteration of the game loop
+            long timeDelta = currentTime - lastNanoTime;
+            lastNanoTime = currentTime;
+            //Introduce time dilation if the frame is taking too long so that it
+            //doesn't grow out of control
+            timeDelta = Math.min(timeDelta, maxFrameTime);
+            double timeDeltaMillis = ((double) timeDelta) / NANOS_PER_MILLI;
+            gameController.updateMouseVelocity(timeDeltaMillis);
+            gameController.updateMouseMovedHandler(timeDeltaMillis);
+            gameController.update(timeDeltaMillis);
+            gameController.handleEvents(currentTime);
+            gameController.draw();
         }
     }
 
+    /**
+     * Synchronize the frame rate sleeping if the previous frame completed
+     * faster than the desired frame time
+     *
+     * @param lastUpdateTime The time when the last frame started
+     */
     private void syncFrameRate(long lastUpdateTime) {
-        long endTime = lastUpdateTime + desiredFrameTime;
         long currentTime = System.nanoTime();
-        if (currentTime < endTime) {
-            long timeLeft = endTime - currentTime - sleepAccumulator - overSleep;
-            long timeMS = timeLeft / milliToNano;
-            if (timeMS > 0) {
-                try {
-                    Thread.sleep(timeMS, (int) (timeLeft - milliToNano * timeMS));
-                    overSleep = System.nanoTime() - currentTime - timeLeft;
-                } catch (InterruptedException e) {
-                    overSleep = 0;
-                }
-            } else {
-                Thread.yield();
-            }
-            sleepAccumulator += System.nanoTime() - endTime;
-        } else {//the current frame lasted more than the desired frame time
+        long endTime = lastUpdateTime + desiredFrameTime;
+
+        //Threads don't sleep the exact amount of time that you ask them to so
+        //ask for the adjusted amount knowing that it will sleep for the amount
+        //of time you really want
+        long timeLeft = endTime - currentTime - overSleep;
+        if (timeLeft > 0) {
+            sleep(timeLeft);
+            //compare the time we slept (System.nanoTime() - currentTime)
+            //against timeLeft because that's how much time we asked to sleep
+            long delta = System.nanoTime() - currentTime - timeLeft;
+
+            //use a weighted average to compute the new value of overSleep so
+            //that our one-off jumps are not taken too seriously
+            overSleep = Math.max(0, (long) (overSleep * 0.95 + delta * 0.05));
+        } else {
+            //the current frame lasted more than the desired frame time
             Thread.yield();
-            sleepAccumulator += System.nanoTime() - endTime;
-            sleepAccumulator = Math.min(desiredFrameTime * 5, sleepAccumulator); //it's falling behind so we don't want it to go really fast for more than a frame afterwards to try to catch up
         }
     }
 
-    private void update(double elapsedTime) {
-        gameController.update(elapsedTime);
+    /**
+     * Sleep the specified number of nanoseconds
+     *
+     * @param nanoseconds The number of nanoseconds to sleep
+     */
+    private void sleep(long nanoseconds) {
+        long start = System.nanoTime();
+
+        //sleeping is not too precise so sleep a bit less time than what was
+        //really requested and perform a few yields
+        long milliseconds = (nanoseconds - SLEEP_PRECISION) / NANOS_PER_MILLI;
+        if (milliseconds > 0) {
+            try {
+                Thread.sleep(milliseconds);
+            } catch (InterruptedException e) {
+                //ignore as we'll be yielding anyway
+            }
+        }
+        //subtract 5 microseconds because Thread.yield() isn't free
+        nanoseconds += start - 5000;
+        while (System.nanoTime() < nanoseconds) {
+            Thread.yield();
+        }
     }
 
-    private void draw() {
-        numFrames++;
-        lastFrameIndex = (lastFrameIndex + 1) % frameTimes.length;
-        frameTimes[lastFrameIndex] = System.nanoTime();
-        gameController.draw();
-    }
-
-    public double getFrameRate() {
-        return nanosPerSecond * frameTimes.length / (frameTimes[lastFrameIndex] - frameTimes[(lastFrameIndex + 1) % frameTimes.length]);
-    }
-
-    public double getAverageFrameRate() {
-        return nanosPerSecond * numFrames / (System.nanoTime() - startTime);
+    /**
+     * Windows hack to enable high resolution timer while app is running
+     */
+    private void enableHighResolutionTimer() {
+        Thread thread = new Thread(() -> {
+            try {
+                Thread.sleep(Long.MAX_VALUE);
+            } catch (Exception e) {
+            }
+        });
+        thread.setDaemon(true);
+        thread.start();
     }
 }

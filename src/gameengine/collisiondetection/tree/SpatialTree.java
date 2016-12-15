@@ -9,6 +9,7 @@ import gameengine.entities.Entity;
 import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * The root of the spatial tree, used to access the spatial tree
@@ -239,5 +240,9 @@ public class SpatialTree implements Parent {
 
     public int getEntityCount() {
         return tree.getEntityCount();
+    }
+
+    public ArrayList<Entity> getEntities(double minX, double maxX, double minY, double maxY) {
+        return tree.getEntities(minX, maxX, minY, maxY);
     }
 }

@@ -1,5 +1,6 @@
 package gameengine.context;
 
+import bricklets.GameServer;
 import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.Viewport;
@@ -98,6 +99,10 @@ public abstract class Context implements ActionHandler, InputHandler {
     public final void setSize(int width, int height) {
         this.width = width;
         this.height = height;
+    }
+
+    public World getWorld() {
+        return world;
     }
 
     public int getWidth() {

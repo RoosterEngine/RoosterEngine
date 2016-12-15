@@ -8,6 +8,7 @@ import gameengine.entities.Entity;
 import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * Base class of spatial tree nodes
@@ -284,4 +285,6 @@ public abstract class Tree {
     public abstract void draw(double minX, double maxX, double minY, double maxY, Graphics2D g);
 
     public abstract void drawTree(Graphics2D g, Color color);
+
+    public abstract ArrayList<Entity> getEntities(double minX, double maxX, double minY, double maxY);
 }

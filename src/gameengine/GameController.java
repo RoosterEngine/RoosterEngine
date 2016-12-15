@@ -1,6 +1,7 @@
 package gameengine;
 
 import Utilities.RateCounter;
+import bricklets.GameServer;
 import gameengine.context.Context;
 import gameengine.context.ContextType;
 import gameengine.graphics.Graphic;
@@ -25,26 +26,27 @@ public class GameController implements MouseMovedHandler {
     private Deque<Context> contextStack; // the built in stack extends Vector
     private Context activeContext;
     private RateCounter frameRate;
+    private boolean isServer;
+    private GameServer gameServer;
 
     public GameController() {
-        this(120, 60);
+        this(120, 60, false);
     }
 
     /**
      * @param targetFPS render this many times per second
      */
     public GameController(int targetFPS) {
-        this(targetFPS, (int) (0.6 * targetFPS));
+        this(targetFPS, (int) (0.6 * targetFPS), false);
     }
 
     /**
      * @param targetFPS render this many times per second
      * @param minFPS    minimum allowable frame rate before the UPS slows down.
      */
-    public GameController(int targetFPS, int minFPS) {
-        User profile = new User("Default");
-        profile.setInputBinding(InputCode.KEY_A, Action.EXIT_GAME);
-        init(targetFPS, minFPS, profile);
+    public GameController(int targetFPS, int minFPS, boolean isServer) {
+        this(targetFPS, minFPS, new User("Default"), isServer);
+        user.setInputBinding(InputCode.KEY_ESCAPE, Action.EXIT_GAME);
     }
 
     /**
@@ -52,26 +54,39 @@ public class GameController implements MouseMovedHandler {
      * @param minFPS    minimum allowable frame rate before the UPS slows down.
      * @param user      the user profile from which to load user preferences from
      */
-    public GameController(int targetFPS, int minFPS, User user) {
-        init(targetFPS, minFPS, user);
+    public GameController(int targetFPS, int minFPS, User user, boolean isServer) {
+        init(targetFPS, minFPS, user, isServer);
     }
 
-    private void init(int targetFPS, int minFPS, User user) {
+    private void init(int targetFPS, int minFPS, User user, boolean isServer) {
+        this.isServer = isServer;
         this.user = user;
+
         inputManager = new InputManager(this);
-        screenManager = new ScreenManager();
-        //screenManager.setFullScreen();
-        screenManager.setWindowed();
+        if (!isServer) {
+            screenManager = new ScreenManager();
+            //screenManager.setFullScreen();
+            screenManager.setWindowed();
+        }
+
         contextStack = new ArrayDeque<>();
 
         contextTypeMap = new EnumMap<>(ContextType.class);
         ContextType[] contextTypes = ContextType.values();
         for (ContextType type : contextTypes) {
-            contextTypeMap.put(type, new ArrayList<InputMapping>());
+            contextTypeMap.put(type, new ArrayList<>());
         }
 
-        gameTimer = new GameTimer(this, targetFPS, minFPS);
+        gameTimer = new GameTimer(this, targetFPS, minFPS, isServer);
         gameThread = new Thread(gameTimer, "Game");
+
+        if (isServer) {
+            gameServer = new GameServer(8887);
+        }
+    }
+
+    public void setGameServer(GameServer gs) {
+        this.gameServer = gs;
     }
 
     /**
@@ -84,7 +99,9 @@ public class GameController implements MouseMovedHandler {
     }
 
     public void startGame() {
-        addInputListeners(screenManager.getWindow());
+        if (!isServer) {
+            addInputListeners(screenManager.getWindow());
+        }
         gameThread.start();
     }
 
@@ -137,8 +154,11 @@ public class GameController implements MouseMovedHandler {
         // TODO if the context type doesn't change, we might not have to update
         setInputHandler(inputHandler);
 
-        setMouseCursor(context.isShowingMouseCursor());
-        setMouseMode(context.isRelativeMouseMovedEnabled());
+        if (!isServer) {
+            setMouseCursor(context.isShowingMouseCursor());
+            setMouseMode(context.isRelativeMouseMovedEnabled());
+        }
+
         // mouse move event is injected for cases when the mouse would be moving
         // when a context was exited.
         mouseMoved(0, 0, 0, 0);
@@ -312,11 +332,19 @@ public class GameController implements MouseMovedHandler {
     }
 
     public int getWidth() {
-        return screenManager.getWindow().getWidth();
+        if (!isServer) {
+            return screenManager.getWindow().getWidth();
+        } else {
+            return 600;
+        }
     }
 
     public int getHeight() {
-        return screenManager.getWindow().getHeight();
+        if (!isServer) {
+            return screenManager.getWindow().getHeight();
+        } else {
+            return 400;
+        }
     }
 
     public void update(double elapsedTime) {
@@ -357,5 +385,11 @@ public class GameController implements MouseMovedHandler {
 
     public User getUser() {
         return user;
+    }
+
+    public void updateServer() {
+        if (activeContext != null) {
+            gameServer.sendEntities(activeContext.getWorld().getEntities());
+        }
     }
 }

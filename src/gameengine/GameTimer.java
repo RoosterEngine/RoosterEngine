@@ -44,7 +44,8 @@ public class GameTimer implements Runnable {
      * The game controller.
      */
     private GameController gameController;
-
+    private boolean isServer;
+    private long lastServerUpdate = 0;
     /**
      * The frame rate is allowed to vary between minFrameRate and maxFrameRate.
      * If the frame rate drops below the min frame rate then time dilation is
@@ -53,8 +54,9 @@ public class GameTimer implements Runnable {
      * @param desiredFrameRate The desired frame rate
      * @param minFrameRate     The minimum acceptable frame rate
      */
-    public GameTimer(GameController gameController, int desiredFrameRate, int minFrameRate) {
+    public GameTimer(GameController gameController, int desiredFrameRate, int minFrameRate, boolean isServer) {
         assert desiredFrameRate >= minFrameRate & minFrameRate > 0;
+        this.isServer = isServer;
 
         this.gameController = gameController;
         desiredFrameTime = (long) (NANOS_PER_SECOND / desiredFrameRate);
@@ -138,6 +140,14 @@ public class GameTimer implements Runnable {
      */
     private void sleep(long nanoseconds) {
         long start = System.nanoTime();
+        if (!isServer) {
+            gameController.draw();
+        } else {
+            if (System.nanoTime() - lastServerUpdate > 100 * 1000000) {
+                gameController.updateServer();
+                lastServerUpdate = System.nanoTime();
+            }
+        }
 
         //sleeping is not too precise so sleep a bit less time than what was
         //really requested and perform a few yields

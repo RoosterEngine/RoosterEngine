@@ -1,7 +1,7 @@
-package gameengine;
+package gameengine.core;
 
 /**
- * @author danrusu
+ * The GameTimer is responsible for running the game at the desired frame rate.
  */
 public class GameTimer implements Runnable {
     /**
@@ -12,7 +12,7 @@ public class GameTimer implements Runnable {
     /**
      * Number of nanoseconds in a second.
      */
-    private static final long NANOS_PER_SECOND = 1000 * NANOS_PER_MILLI;
+    public static final long NANOS_PER_SECOND = 1000 * NANOS_PER_MILLI;
 
     /**
      * The sleep precision.  Don't attempt to sleep less than this amount (2 milliseconds).
@@ -41,22 +41,23 @@ public class GameTimer implements Runnable {
     private long overSleep = 0;
 
     /**
-     * The game controller.
+     * The game core.
      */
-    private GameController gameController;
+    private GameCore core;
 
     /**
      * The frame rate is allowed to vary between minFrameRate and maxFrameRate.
      * If the frame rate drops below the min frame rate then time dilation is
      * introduced to slow down the game.
      *
+     * @param core             The GameCore
      * @param desiredFrameRate The desired frame rate
      * @param minFrameRate     The minimum acceptable frame rate
      */
-    public GameTimer(GameController gameController, int desiredFrameRate, int minFrameRate) {
+    public GameTimer(GameCore core, int desiredFrameRate, int minFrameRate) {
         assert desiredFrameRate >= minFrameRate & minFrameRate > 0;
 
-        this.gameController = gameController;
+        this.core = core;
         desiredFrameTime = (long) (NANOS_PER_SECOND / desiredFrameRate);
         maxFrameTime = (long) (NANOS_PER_SECOND / minFrameRate);
     }
@@ -73,7 +74,7 @@ public class GameTimer implements Runnable {
             enableHighResolutionTimer();
             gameLoop();
         } finally {
-            gameController.cleanup();
+            core.cleanup();
         }
     }
 
@@ -90,15 +91,12 @@ public class GameTimer implements Runnable {
             //The time difference since the last iteration of the game loop
             long timeDelta = currentTime - lastNanoTime;
             lastNanoTime = currentTime;
+
             //Introduce time dilation if the frame is taking too long so that it
             //doesn't grow out of control
             timeDelta = Math.min(timeDelta, maxFrameTime);
-            double timeDeltaMillis = ((double) timeDelta) / NANOS_PER_MILLI;
-            gameController.updateMouseVelocity(timeDeltaMillis);
-            gameController.updateMouseMovedHandler(timeDeltaMillis);
-            gameController.update(timeDeltaMillis);
-            gameController.handleEvents(currentTime);
-            gameController.draw();
+            core.update(timeDelta);
+            core.render();
         }
     }
 

@@ -4,9 +4,8 @@ import gameengine.entities.Entity;
 
 /**
  * documentation
- * User: davidrusu
- * Date: 27/02/13
- * Time: 6:04 PM
+ *
+ * @author davidrusu
  */
 public class VelocityEnforcerWorldEffect extends WorldEffect {
     private double maxSpeed;

@@ -1,6 +1,6 @@
 package gameengine.collisiondetection.shapes;
 
-import gameengine.math.Vector2D;
+import gameengine.geometry.Vector2D;
 
 /**
  * @author david

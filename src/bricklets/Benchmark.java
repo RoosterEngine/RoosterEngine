@@ -1,32 +1,37 @@
 package bricklets;
 
-import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
-import gameengine.collisiondetection.tree.Tree;
 import gameengine.context.Context;
-import gameengine.context.ContextType;
+import gameengine.core.GameController;
 import gameengine.entities.Entity;
 import gameengine.entities.Pointer;
-import gameengine.graphics.OvalGraphic;
-import gameengine.input.Action;
-import gameengine.input.ActionHandler;
+import gameengine.graphics.MutableColor;
+import gameengine.graphics.Renderer;
+import gameengine.graphics.ScreenManager;
+import gameengine.graphics.image.OvalGraphic;
 import gameengine.input.InputCode;
 import gameengine.physics.Material;
 import gameengine.physics.Physics;
 
-import java.awt.*;
 import java.util.Random;
 
-public class Benchmark extends Context implements ActionHandler {
+public class Benchmark extends Context {
+    private static final MutableColor RED = MutableColor.createRedInstance();
+    private static final MutableColor BLACK = MutableColor.createBlackInstance();
+
+    private static final String EXIT = "Exit";
+    private static final String INCREASE_BALL_COUNT = "Increase Ball Count";
+
     private Random rand = new Random(0);
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
     private double currentTime = 0;
     private double lastTime = 0;
     private int balls = 0, maxBalls = 3000;
+    private int width, height;
 
     public Benchmark(GameController controller) {
-        super(controller, ContextType.GAME);
+        super(controller);
         init();
     }
 
@@ -37,7 +42,12 @@ public class Benchmark extends Context implements ActionHandler {
 
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, 1));
         Entity.setDefaultEntityType(EntityType.STANDARD);
-        Pointer pointer = new Pointer(new OvalGraphic(15, 15, Color.RED), width / 2, height / 2);
+
+        ScreenManager screen = controller.getScreenManager();
+        width = screen.getWidth();
+        height = screen.getHeight();
+
+        Pointer pointer = new Pointer(new OvalGraphic(15, 15, RED), width / 2, height / 2);
         pointer.setMass(1);
 //        world.addEntity(pointer);
         initBounding();
@@ -61,8 +71,9 @@ public class Benchmark extends Context implements ActionHandler {
     }
 
     @Override
-    public void update(double elapsedTime) {
-        currentTime += elapsedTime;
+    protected void updateContext(long gameTime, double mouseDeltaX, double mouseDeltaY, double
+            mouseWheelRotation) {
+        currentTime = gameTime;
         double timeBetweenBalls = 25;
         if (lastTime + timeBetweenBalls <= currentTime && balls < maxBalls) {
             int ballSize = 2;
@@ -71,8 +82,8 @@ public class Benchmark extends Context implements ActionHandler {
             double xLength = width - 50;
             double yLength = height - 100;
             for (int i = 0; i < 100; i++) {
-                addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength,
-                        halfHeight + (rand.nextDouble() - 0.5) * yLength, ballSize);
+                addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength, halfHeight + (rand
+                        .nextDouble() - 0.5) * yLength, ballSize);
                 balls++;
             }
             lastTime = currentTime;// - (currentTime - lastTime + timeBetweenBalls);
@@ -80,18 +91,19 @@ public class Benchmark extends Context implements ActionHandler {
     }
 
     @Override
-    public void draw(Graphics2D g) {
-        g.setColor(Color.BLACK);
-        g.fillRect(0, 0, width, height);
-        world.draw(this, g);
-        world.drawTree(g, Color.red);
-        drawStats(g);
+    protected void renderContext(Renderer renderer, long gameTime) {
+        renderer.setForegroundColor(BLACK);
+        renderer.fillRect(width / 2, height / 2, width / 2, height / 2);
+        world.draw(this, renderer);
+        world.drawTree(renderer, RED);
+        drawStats(renderer);
     }
 
-    private void drawStats(Graphics2D g) {
-        g.setColor(Color.red);
-        g.drawString("fps: " + controller.getFrameRate(), 25, 25);
-        g.drawString("balls: " + balls + " / " + maxBalls, 25, 75);
+    private void drawStats(Renderer renderer) {
+        renderer.setForegroundColor(RED);
+        renderer.drawString("fps: " + controller.getFrameRateCounter().getCurrentTickRate(), 25,
+                25);
+        renderer.drawString("balls: " + balls + " / " + maxBalls, 25, 75);
     }
 
     @Override
@@ -100,48 +112,22 @@ public class Benchmark extends Context implements ActionHandler {
     }
 
     private void setupInput() {
-        controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
-        controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
-        controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_UP, Action.ZOOM_OUT);
-        controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_DOWN, Action.ZOOM_IN);
-    }
+        mapInputAction(EXIT, InputCode.KEY_ESCAPE);
+        mapInputAction(INCREASE_BALL_COUNT, InputCode.MOUSE_LEFT_BUTTON);
 
-    @Override
-    public void startAction(Action action, int inputCode) {
-        double scaleAmount = 0.1;
-        switch (action) {
-            case EXIT_GAME:
-                break;
-            case MOUSE_CLICK:
-                break;
-            case ZOOM_IN:
-                viewPort.scaleScale(1 - scaleAmount);
-                break;
-            case ZOOM_OUT:
-                viewPort.scaleScale(1 + scaleAmount);
-                break;
-        }
-    }
-
-    @Override
-    public void stopAction(Action action, int inputCode) {
-        switch (action) {
-            case EXIT_GAME:
-                controller.exitContext();
-                break;
-            case MOUSE_CLICK:
-                int ballSize = 2;
-                double halfWidth = width * 0.5;
-                double halfHeight = height * 0.5;
-                double xLength = width - 50;
-                double yLength = height - 100;
-                for (int i = 0; i < 200; i++) {
-                    addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength,
-                            halfHeight + (rand.nextDouble() - 0.5) * yLength, ballSize);
-                    balls++;
-                }
-                break;
-        }
+        mapActionStartedHandler(EXIT, () -> controller.exitContext());
+        mapActionStartedHandler(INCREASE_BALL_COUNT, () -> {
+            int ballSize = 2;
+            double halfWidth = width * 0.5;
+            double halfHeight = height * 0.5;
+            double xLength = width - 50;
+            double yLength = height - 100;
+            for (int i = 0; i < 200; i++) {
+                addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength, halfHeight + (rand
+                        .nextDouble() - 0.5) * yLength, ballSize);
+                balls++;
+            }
+        });
     }
 
     private void addBall(double x, double y, double radius) {

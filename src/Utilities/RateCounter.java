@@ -2,8 +2,6 @@ package Utilities;
 
 /**
  * Used to measure how many times an action happens per second.
- * <p>
- * Created by Dan on 10/19/2016.
  */
 public class RateCounter {
     private static final long NANOS_PER_MILLI = 1000000;

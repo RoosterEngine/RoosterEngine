@@ -1,13 +1,14 @@
 package bricklets;
 
+import gameengine.graphics.MutableColor;
+import gameengine.graphics.Renderer;
+
 import java.awt.*;
 
 /**
- * A brick to be used in brick breaker levels
- * <p/>
+ * A brick to be used in brick breaker levels.
+ *
  * User: davidrusu
- * Date: 09/12/12
- * Time: 12:35 AM
  */
 public class Brick extends BoxEntity {
     private static final double TOTAL_HEALTH = 100;
@@ -15,7 +16,8 @@ public class Brick extends BoxEntity {
 
     public Brick(double x, double y, double width, double height) {
         super(x, y, width, height);
-        color = Color.DARK_GRAY;
+        color = MutableColor.createGrayInstance();
+        color.darken();
     }
 
     public void doDamage(double amount) {
@@ -34,12 +36,13 @@ public class Brick extends BoxEntity {
     }
 
     @Override
-    public void draw(Graphics2D g) {
+    public void draw(Renderer renderer) {
         double offset = 0.1;
         int grad = (int) (((1 - health / TOTAL_HEALTH) + offset) * 255 / (offset + 1));
-        g.setColor(new Color(grad, grad, grad));
-        g.fillRect((int) (x - getHalfWidth()), (int) (y - getHalfHeight()), (int) (getWidth()), (int) (getHeight()));
-//        drawBoundingBoxes(g, Color.RED);
+        color.setValues(grad, grad, grad);
+        renderer.setForegroundColor(color);
+        renderer.fillRect(x, y, getHalfWidth(), getHalfHeight());
+//        drawBoundingBoxes(g, MutableColor.RED);
     }
 
     private void drawHealth(Graphics2D g) {
@@ -50,8 +53,8 @@ public class Brick extends BoxEntity {
         g.setColor(Color.WHITE);
         double xPadding = (getWidth() - textWidth) * 0.5;
         double yPadding = (getHeight() + textHeight / 2) * 0.5;
-        g.drawString(text, (int) (x - getWidth() / 2 + xPadding),
-                (int) (y - getHeight() / 2 + yPadding));
+        g.drawString(text, (int) (x - getWidth() / 2 + xPadding), (int) (y - getHeight() / 2 +
+                yPadding));
     }
 
 }

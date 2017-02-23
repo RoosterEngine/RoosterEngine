@@ -6,10 +6,8 @@ import gameengine.motion.integrators.Integrator;
 
 /**
  * A {@link Motion} that follows a {@link ParametricEquation}.
- * <p/>
- * User: davidrusu
- * Date: 30/12/12
- * Time: 5:42 PM
+ *
+ * @author davidrusu
  */
 public class PathMotion implements Motion {
     private ParametricEquation function;

@@ -1,12 +1,9 @@
 package gameengine.physics;
 
 /**
- * Materials are used to give your shapes physical properties like friction and
- * restitution.
- * <p/>
- * User: davidrusu
- * Date: 27/11/12
- * Time: 11:33 PM
+ * Materials are used to give your shapes physical properties like friction and restitution.
+ *
+ * @author davidrusu
  */
 public class Material {
     private static final double growRate = 1.5;
@@ -112,12 +109,13 @@ public class Material {
         return numberOfMaterials;
     }
 
-    private static void setMaterialData(int materialNumberA, int materialNumberB, double friction,
-                                        double restitution) {
+    private static void setMaterialData(int materialNumberA, int materialNumberB, double
+            friction, double restitution) {
         int x = Math.max(materialNumberA, materialNumberB);
         int y = Math.min(materialNumberA, materialNumberB);
 
-        // need a loop because we can't trust that one expandX will in large the table to be larger than x
+        // need a loop because we can't trust that one expandX will in large the table to be
+        // larger than x
         while (x >= table.length) {
             expandX();
         }

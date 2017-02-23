@@ -1,43 +1,56 @@
 package gameengine.context;
 
-import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
+import gameengine.core.GameController;
 import gameengine.entities.BasicButton;
 import gameengine.entities.Pointer;
-import gameengine.graphics.Graphic;
-import gameengine.graphics.OvalGraphic;
-import gameengine.input.Action;
-import gameengine.input.ActionHandler;
+import gameengine.graphics.MutableColor;
+import gameengine.graphics.Renderer;
+import gameengine.graphics.ScreenManager;
+import gameengine.graphics.image.Graphic;
+import gameengine.graphics.image.OvalGraphic;
 import gameengine.input.InputCode;
 import gameengine.motion.EffectFactory;
-
-import java.awt.*;
 
 /**
  * @author davidrusu
  */
 public class BasicMenu extends Context {
+    private static final String MENU_UP = "Menu Up";
+    private static final String MENU_DOWN = "Menu Down";
+    private static final String EXIT = "Exit";
+    private static final String MENU_SELECT = "Menu Select";
+    private static final String MENU_MOUSE_SELECT = "Menu Mouse Select";
 
     private BasicButton[] buttons;
-    private Pointer pointer = new Pointer(new OvalGraphic(10, 10, new Color(23, 44, 80)), getWidth() / 2, getHeight() / 2);
+    private Pointer pointer;
     private int selectedIndex;
     private ButtonHandler buttonHandler;
     private Graphic background;
     private boolean isMousePressed = false;
 
-    public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons, ButtonHandler handler, Graphic background) {
-        this(controller, type, buttons, handler, background, 0.25, 0.25, 0.1, 0.25, 0.25);
+    public BasicMenu(GameController controller, BasicButton[] buttons, ButtonHandler handler,
+                     Graphic background) {
+        this(controller, buttons, handler, background, 0.25, 0.25, 0.1, 0.25, 0.25);
     }
 
-    public BasicMenu(GameController controller, ContextType type, BasicButton[] buttons, ButtonHandler handler, Graphic background, double leftBorderRatio, double rightBorderRatio, double topBorderRatio, double bottomBorderRatio, double paddingRatio) {
-        super(controller, type);
+    public BasicMenu(GameController controller, BasicButton[] buttons, ButtonHandler handler,
+                     Graphic background, double leftBorderRatio, double rightBorderRatio, double
+                             topBorderRatio, double bottomBorderRatio, double paddingRatio) {
+        super(controller);
+
+        ScreenManager screen = controller.getScreenManager();
+        pointer = new Pointer(new OvalGraphic(10, 10, new MutableColor(23, 44, 80)), screen
+                .getWidth() / 2, screen.getHeight() / 2);
+
         this.buttons = buttons;
 
 
         world.addEntity(pointer);
 
         this.background = background;
-        setupButtons(leftBorderRatio, rightBorderRatio, topBorderRatio, bottomBorderRatio, paddingRatio);
+        setupButtons(leftBorderRatio, rightBorderRatio, topBorderRatio, bottomBorderRatio,
+                paddingRatio);
         for (BasicButton button : buttons) {
             world.addEntity(button);
         }
@@ -54,9 +67,9 @@ public class BasicMenu extends Context {
     }
 
     @Override
-    public void update(double elapsedTime) {
+    protected void updateContext(long gameTime, double mouseDeltaX, double mouseDeltaY, double
+            mouseWheelRotation) {
         updateButtons();
-        background.update(elapsedTime);
     }
 
     private void updateButtons() {
@@ -75,22 +88,27 @@ public class BasicMenu extends Context {
     }
 
     @Override
-    public void draw(Graphics2D g) {
-        background.draw(g, 0, 0);
-        world.draw(this, g);
+    protected void renderContext(Renderer renderer, long gameTime) {
+//        background.draw(renderer, 0, 0);
     }
 
     @Override
     public void handleCollision(Collision collision) {
     }
 
-    private void setupButtons(double leftBorderRatio, double rightBorderRatio, double topBorderRatio, double bottomBorderRatio, double paddingRatio) {
+    private void setupButtons(double leftBorderRatio, double rightBorderRatio, double
+            topBorderRatio, double bottomBorderRatio, double paddingRatio) {
+        ScreenManager screen = controller.getScreenManager();
+        int width = screen.getWidth();
+        int height = screen.getHeight();
+
         int leftBorder = (int) (width * leftBorderRatio);
         int topBorder = (int) (height * topBorderRatio);
         int bottomBorder = (int) (height * bottomBorderRatio);
         int padding = (int) ((height - topBorder - bottomBorder) / buttons.length * paddingRatio);
         int buttonWidth = width - leftBorder - (int) (width * rightBorderRatio);
-        int buttonHeight = (height - topBorder - bottomBorder - padding * (buttons.length - 1)) / buttons.length;
+        int buttonHeight = (height - topBorder - bottomBorder - padding * (buttons.length - 1)) /
+                buttons.length;
         int currentY = topBorder + buttonHeight / 2;
         for (BasicButton button : buttons) {
             button.initialize(width / 2, currentY, buttonWidth, buttonHeight);
@@ -100,13 +118,13 @@ public class BasicMenu extends Context {
     }
 
     /**
-     * Returns the number of the button under the specified point
+     * Returns the number of the button under the specified point.
      *
      * @param x the x coordinate of where to check for a button
      * @param y the y coordinate of where to check for a button
-     * @return the number of the button that is under the specified point,the
-     *         number corresponds to the the button order top to bottom when displayed.
-     *         -1 is returned if there is no point below the specified point
+     * @return the number of the button that is under the specified point,the number corresponds to
+     * the the button order top to bottom when displayed. -1 is returned if there is no point below
+     * the specified point
      */
     private int getButtonIndex(double x, double y) {
         for (int i = 0; i < buttons.length; i++) {
@@ -124,90 +142,55 @@ public class BasicMenu extends Context {
     }
 
     private void setUpInput() {
-        controller.setContextBinding(contextType, InputCode.KEY_R, Action.RESTART_GAME);
-        bindAction(Action.RESTART_GAME, new ActionHandler() {
+        mapInputAction(MENU_UP, InputCode.KEY_UP);
+        mapInputAction(MENU_DOWN, InputCode.KEY_DOWN);
+        mapInputAction(EXIT, InputCode.KEY_ESCAPE);
+        mapInputAction(MENU_SELECT, InputCode.KEY_ENTER);
+        mapInputAction(MENU_SELECT, InputCode.KEY_SPACE);
+        mapInputAction(MENU_MOUSE_SELECT, InputCode.MOUSE_LEFT_BUTTON);
 
-            @Override
-            public void startAction(Action action, int inputCode) {
+        mapActionStartedHandler(MENU_UP, () -> {
+            int newSelectedIndex = selectedIndex - 1;
+            if (newSelectedIndex == -1) {
+                newSelectedIndex = buttons.length - 1;
             }
-
-            @Override
-            public void stopAction(Action action, int inputCode) {
-            }
+            changeSelectedButton(newSelectedIndex);
         });
 
-        bindAction(Action.MENU_UP, new ActionHandler() {
-            @Override
-            public void startAction(Action action, int inputCode) {
-                int newSelectedIndex = selectedIndex - 1;
-                if (newSelectedIndex == -1) {
-                    newSelectedIndex = buttons.length - 1;
-                }
-                changeSelectedButton(newSelectedIndex);
-            }
-
-            @Override
-            public void stopAction(Action action, int inputCode) {
-            }
+        mapActionStartedHandler(MENU_DOWN, () -> {
+            changeSelectedButton((selectedIndex + 1) % buttons.length);
         });
 
-        bindAction(Action.MENU_DOWN, new ActionHandler() {
-            @Override
-            public void startAction(Action action, int inputCode) {
-                changeSelectedButton((selectedIndex + 1) % buttons.length);
-            }
-
-            @Override
-            public void stopAction(Action action, int inputCode) {
-            }
+        mapActionStartedHandler(EXIT, () -> {
+            controller.exitContext();
         });
 
-        bindAction(Action.EXIT_GAME, new ActionHandler() {
-            @Override
-            public void startAction(Action action, int inputCode) {
-            }
-
-            @Override
-            public void stopAction(Action action, int inputCode) {
-                controller.stopGame();
-            }
+        mapActionStartedHandler(MENU_SELECT, () -> {
+            BasicButton button = buttons[selectedIndex];
+            button.setPressed();
         });
 
-        bindAction(Action.MENU_SELECT, new ActionHandler() {
-            @Override
-            public void startAction(Action action, int inputCode) {
+        mapActionStoppedHandler(MENU_SELECT, () -> {
+            BasicButton button = buttons[selectedIndex];
+            buttonHandler.buttonActivated(button);
+            button.setUnpressed();
+        });
+
+        mapActionStartedHandler(MENU_MOUSE_SELECT, () -> {
+            if (selectedIndex >= 0) {
                 BasicButton button = buttons[selectedIndex];
                 button.setPressed();
             }
+            isMousePressed = true;
+        });
 
-            @Override
-            public void stopAction(Action action, int inputCode) {
+        mapActionStoppedHandler(MENU_MOUSE_SELECT, () -> {
+            if (selectedIndex >= 0) {
                 BasicButton button = buttons[selectedIndex];
                 buttonHandler.buttonActivated(button);
                 button.setUnpressed();
             }
-        });
-
-        bindAction(Action.MENU_MOUSE_SELECT, new ActionHandler() {
-
-            @Override
-            public void startAction(Action action, int inputCode) {
-                if (selectedIndex >= 0) {
-                    BasicButton button = buttons[selectedIndex];
-                    button.setPressed();
-                }
-                isMousePressed = true;
-            }
-
-            @Override
-            public void stopAction(Action action, int inputCode) {
-                if (selectedIndex >= 0) {
-                    BasicButton button = buttons[selectedIndex];
-                    buttonHandler.buttonActivated(button);
-                    button.setUnpressed();
-                }
-                isMousePressed = false;
-            }
+            isMousePressed = false;
         });
     }
 }

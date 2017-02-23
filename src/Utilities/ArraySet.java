@@ -3,9 +3,8 @@ package Utilities;
 
 /**
  * documentation
- * User: davidrusu
- * Date: 16/03/13
- * Time: 5:57 PM
+ *
+ * @author davidrusu
  */
 public class ArraySet<T> implements Iterator<T> {
     private UnorderedArrayList<T> list;

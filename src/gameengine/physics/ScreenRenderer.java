@@ -1,15 +1,8 @@
 package gameengine.physics;
 
-import gameengine.graphics.Graphic;
-import gameengine.math.Vector2D;
+import gameengine.graphics.image.Graphic;
+import gameengine.geometry.Vector2D;
 
-/**
- * Created with IntelliJ IDEA.
- * User: Core2Quad
- * Date: 03/03/13
- * Time: 11:44 PM
- * To change this template use File | Settings | File Templates.
- */
 public interface ScreenRenderer {
 
     public void setForegroundColour(float red, float green, float blue);
@@ -44,10 +37,12 @@ public interface ScreenRenderer {
 
     public void fillRect(double x, double y, double width, double height);
 
-    //The circle looks smooth when numSegments = 1 + (int)(9 * Math.log(radius)) but log is a slow operation
+    //The circle looks smooth when numSegments = 1 + (int)(9 * Math.log(radius)) but log is a
+    // slow operation
     public void drawCircle(double x, double y, double radius, int numSegments);
 
-    //The circle looks smooth when numSegments = 1 + (int)(9 * Math.log(radius)) but log is a slow operation
+    //The circle looks smooth when numSegments = 1 + (int)(9 * Math.log(radius)) but log is a
+    // slow operation
     public void fillCircle(double x, double y, double radius, int numSegments);
 
     public void drawPolygon(Vector2D[] points);

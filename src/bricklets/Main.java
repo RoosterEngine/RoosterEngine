@@ -1,15 +1,12 @@
 package bricklets;
 
-import gameengine.GameController;
 import gameengine.context.BasicMenu;
 import gameengine.context.ButtonHandler;
-import gameengine.context.ContextType;
+import gameengine.core.GameController;
 import gameengine.entities.BasicButton;
-import gameengine.graphics.SolidColorGraphic;
-import gameengine.input.Action;
-import gameengine.input.InputCode;
-
-import java.awt.*;
+import gameengine.graphics.MutableColor;
+import gameengine.graphics.ScreenManager;
+import gameengine.graphics.image.SolidColorGraphic;
 
 public class Main implements ButtonHandler {
     private GameController controller;
@@ -31,24 +28,19 @@ public class Main implements ButtonHandler {
         benchmark = new Benchmark(controller);
         bricks = new BrickBreaker(controller);
         testing = new Test(controller);
-        menu = new BasicMenu(controller, ContextType.MENU, buttons, this, new SolidColorGraphic(new Color(19, 9, 18), controller.getWidth(), controller.getHeight()));
+        ScreenManager screen = controller.getScreenManager();
+        menu = new BasicMenu(controller, buttons, this, new SolidColorGraphic(new MutableColor
+                (19, 9, 18), screen.getWidth(), screen.getHeight()));
     }
 
     public static void main(String[] args) {
-//        Scanner input = new Scanner(System.in);
-//        System.out.println("press Enter to start");
-//        input.nextLine();
-//        input.close();
-
-        GameController controller = new GameController(200);
-        setupInputToActionMappings(controller);
+        GameController controller = new GameController(60);
         Main main = new Main(controller);
         main.startGame();
     }
 
     public void startGame() {
         controller.enterContext(menu);
-        controller.startGame();
     }
 
     @Override
@@ -69,13 +61,5 @@ public class Main implements ButtonHandler {
             controller.enterContext(testing);
             menu.reset();
         }
-    }
-
-    private static void setupInputToActionMappings(GameController controller) {
-        controller.setContextBinding(ContextType.MENU, InputCode.KEY_UP, Action.MENU_UP);
-        controller.setContextBinding(ContextType.MENU, InputCode.KEY_DOWN, Action.MENU_DOWN);
-        controller.setContextBinding(ContextType.MENU, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
-        controller.setContextBinding(ContextType.MENU, InputCode.KEY_ENTER, Action.MENU_SELECT);
-        controller.setContextBinding(ContextType.MENU, InputCode.MOUSE_LEFT_BUTTON, Action.MENU_MOUSE_SELECT);
     }
 }

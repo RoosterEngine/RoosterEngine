@@ -1,8 +1,7 @@
 package bricklets;
 
 import gameengine.collisiondetection.shapes.CircleShape;
-
-import java.awt.*;
+import gameengine.graphics.Renderer;
 
 public class CircleEntity extends TestingEntity {
     protected double radius;
@@ -23,12 +22,8 @@ public class CircleEntity extends TestingEntity {
     }
 
     @Override
-    public void draw(Graphics2D g) {
-        g.setColor(color);
-        g.fillOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
+    public void draw(Renderer renderer) {
+        renderer.setForegroundColor(color);
+        renderer.fillCircle(x, y, radius);
     }
 }

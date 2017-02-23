@@ -1,8 +1,7 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
-
-import java.awt.*;
+import gameengine.graphics.Renderer;
 
 /**
  * @author david
@@ -74,10 +73,7 @@ public class AABBShape extends Shape {
     }
 
     @Override
-    public void draw(Graphics2D g, Color color) {
-        g.setColor(color);
-        double x = getX();
-        double y = getY();
-        g.drawRect((int) (x - halfWidth), (int) (y - halfHeight), (int) width, (int) height);
+    public void draw(Renderer renderer) {
+        renderer.drawRect(getX(), getY(), getHalfWidth(), getHalfHeight());
     }
 }

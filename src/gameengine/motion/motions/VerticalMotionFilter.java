@@ -3,11 +3,10 @@ package gameengine.motion.motions;
 import gameengine.entities.Entity;
 
 /**
- * A {@link Motion} that will return the y velocities from the {@link Motion} passed to it, but will always return 0
- * as it's x velocity
- * User: davidrusu
- * Date: 17/12/12
- * Time: 6:38 PM
+ * A {@link Motion} that will return the y velocities from the {@link Motion} passed to it, but will
+ * always return 0 as it's x velocity.
+ *
+ * @author davidrusu
  */
 public class VerticalMotionFilter implements Motion {
     private Motion motion;

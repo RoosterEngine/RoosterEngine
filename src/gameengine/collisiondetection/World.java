@@ -5,7 +5,7 @@ import gameengine.collisiondetection.tree.CollisionList;
 import gameengine.collisiondetection.tree.SpatialTree;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
 
@@ -75,11 +75,11 @@ public class World {
         viewPort.applyTransformations(renderer);
         tree.draw(viewPort.getMinX(), viewPort.getMaxX(), viewPort.getMinY(), viewPort.getMaxY(),
                 renderer);
-//        tree.drawTree(g, MutableColor.RED);
+//        tree.drawTree(g, RColor.RED);
         viewPort.reverseTransformations(renderer);
     }
 
-    public void drawTree(Renderer renderer, MutableColor color) {
+    public void drawTree(Renderer renderer, RColor color) {
         tree.drawTree(renderer, color);
     }
 

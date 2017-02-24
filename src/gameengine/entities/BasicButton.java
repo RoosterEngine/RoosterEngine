@@ -2,7 +2,7 @@ package gameengine.entities;
 
 import gameengine.collisiondetection.shapes.AABBShape;
 import gameengine.collisiondetection.shapes.CircleShape;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.image.SolidColorGraphic;
 import gameengine.physics.Material;
@@ -13,7 +13,6 @@ import java.awt.*;
  * @author davidrusu
  */
 public class BasicButton extends Entity {
-    private final MutableColor WHITE = MutableColor.createWhiteInstance();
 
     private String text;
     private boolean selected = false, isPressed = false;
@@ -21,9 +20,9 @@ public class BasicButton extends Entity {
     private double initialX, initialY;
 
     public BasicButton(String text) {
-        this(text, new SolidColorGraphic(new MutableColor(177, 70, 35), 0, 0), new
-                SolidColorGraphic(new MutableColor(62, 28, 51), 0, 0), new SolidColorGraphic(new
-                MutableColor(96, 39, 73), 0, 0));
+        this(text, new SolidColorGraphic(new RColor(177, 70, 35), 0, 0), new SolidColorGraphic
+                (new RColor(62, 28, 51), 0, 0), new SolidColorGraphic(new RColor(96, 39, 73), 0,
+                0));
     }
 
     public BasicButton(String text, SolidColorGraphic upGraphic, SolidColorGraphic downGraphic,
@@ -106,7 +105,7 @@ public class BasicButton extends Entity {
         FontMetrics metrics = renderer.getFontMetrics();
         int textWidth = metrics.stringWidth(text);
         int textHeight = metrics.getHeight();
-        renderer.setForegroundColor(WHITE);
+        renderer.setForegroundColor(RColor.WHITE);
         double xPadding = (width - textWidth) * 0.5;
         double yPadding = (height + textHeight / 2) * 0.5;
         renderer.drawString(text, x - width / 2 + xPadding, y - height / 2 + yPadding);

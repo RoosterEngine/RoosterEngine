@@ -6,7 +6,7 @@ import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
 
@@ -209,7 +209,7 @@ public class SpatialTree implements Parent {
         tree.draw(minX, maxX, minY, maxY, renderer);
     }
 
-    public void drawTree(Renderer renderer, MutableColor color) {
+    public void drawTree(Renderer renderer, RColor color) {
         tree.drawTree(renderer, color);
     }
 

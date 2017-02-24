@@ -1,7 +1,7 @@
 package bricklets;
 
 import gameengine.collisiondetection.shapes.PolygonShape;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
 /**
@@ -16,7 +16,7 @@ public class Paddle extends TestingEntity {
 //        super(x, y, new CircleShape(Math.max(width, height)));
 //        super(x, y, new AABBShape(width, height));
 //        super(x, y, PolygonShape.getCircle(Math.max(width, height), 4));
-        color = MutableColor.createWhiteInstance();
+        color = RColor.WHITE;
     }
 
     private static PolygonShape createPaddlePolygon(double width, double height) {
@@ -53,7 +53,7 @@ public class Paddle extends TestingEntity {
         renderer.setForegroundColor(color);
         getShape().draw(renderer);
 
-//        g.setColor(MutableColor.ORANGE);
+//        g.setColor(RColor.ORANGE);
 //        double halfHeight = getHalfHeight();
 //        g.drawString("dx: " + dx, (int) (x), (int) (y + halfHeight + 10));
 //        g.drawString("dy: " + dy, (int) (x), (int) (y + halfHeight + 25));

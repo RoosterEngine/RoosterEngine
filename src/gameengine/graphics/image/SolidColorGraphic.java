@@ -1,6 +1,6 @@
 package gameengine.graphics.image;
 
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
 /**
@@ -9,7 +9,7 @@ import gameengine.graphics.Renderer;
  * @author david
  */
 public class SolidColorGraphic implements Graphic {
-    private MutableColor color;
+    private RColor color;
     private int halfWidth, halfHeight;
 
     /**
@@ -19,7 +19,7 @@ public class SolidColorGraphic implements Graphic {
      * @param width  the halfWidth of the graphic
      * @param height the halfWidth of the graphic
      */
-    public SolidColorGraphic(MutableColor color, int width, int height) {
+    public SolidColorGraphic(RColor color, int width, int height) {
         this.color = color;
         this.halfWidth = width / 2;
         this.halfHeight = height / 2;

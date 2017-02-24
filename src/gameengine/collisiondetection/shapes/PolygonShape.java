@@ -2,7 +2,7 @@ package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
 import gameengine.geometry.Vector2D;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
 import java.util.Random;
@@ -167,7 +167,7 @@ public class PolygonShape extends Shape {
         renderer.fillPolygon(points, getX(), getY());
     }
 
-    private void drawPoints(Renderer renderer, MutableColor color) {
+    private void drawPoints(Renderer renderer, RColor color) {
         int radius = 2;
         renderer.setForegroundColor(color);
         for (int i = 0; i < numPoints; i++) {
@@ -176,7 +176,7 @@ public class PolygonShape extends Shape {
         }
     }
 
-    private void drawNormals(Renderer renderer, MutableColor color) {
+    private void drawNormals(Renderer renderer, RColor color) {
         double scale = 100;
         renderer.setForegroundColor(color);
         double x = getX();

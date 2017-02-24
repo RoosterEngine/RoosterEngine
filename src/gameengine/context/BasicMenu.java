@@ -4,7 +4,7 @@ import gameengine.collisiondetection.Collision;
 import gameengine.core.GameController;
 import gameengine.entities.BasicButton;
 import gameengine.entities.Pointer;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
 import gameengine.graphics.image.Graphic;
@@ -40,7 +40,7 @@ public class BasicMenu extends Context {
         super(controller);
 
         ScreenManager screen = controller.getScreenManager();
-        pointer = new Pointer(new OvalGraphic(10, 10, new MutableColor(23, 44, 80)), screen
+        pointer = new Pointer(new OvalGraphic(10, 10, new RColor(23, 44, 80)), screen
                 .getWidth() / 2, screen.getHeight() / 2);
 
         this.buttons = buttons;

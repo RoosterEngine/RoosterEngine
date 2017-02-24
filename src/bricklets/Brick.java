@@ -1,6 +1,6 @@
 package bricklets;
 
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
 import java.awt.*;
@@ -16,7 +16,7 @@ public class Brick extends BoxEntity {
 
     public Brick(double x, double y, double width, double height) {
         super(x, y, width, height);
-        color = MutableColor.createGrayInstance();
+        color = RColor.GREY;
         color.darken();
     }
 
@@ -38,11 +38,10 @@ public class Brick extends BoxEntity {
     @Override
     public void draw(Renderer renderer) {
         double offset = 0.1;
-        int grad = (int) (((1 - health / TOTAL_HEALTH) + offset) * 255 / (offset + 1));
-        color.setValues(grad, grad, grad);
-        renderer.setForegroundColor(color);
+        float grad = (float) (((1 - health / TOTAL_HEALTH) + offset) / (offset + 1));
+        renderer.setForegroundColor(grad, grad, grad);
         renderer.fillRect(x, y, getHalfWidth(), getHalfHeight());
-//        drawBoundingBoxes(g, MutableColor.RED);
+//        drawBoundingBoxes(g, RColor.RED);
     }
 
     private void drawHealth(Graphics2D g) {

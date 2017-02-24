@@ -13,7 +13,7 @@ public abstract class Renderer {
      *
      * @param color The foreground color
      */
-    public final void setForegroundColor(MutableColor color) {
+    public final void setForegroundColor(RColor color) {
         setForegroundColor(color.getRed(), color.getGreen(), color.getBlue());
     }
 
@@ -31,7 +31,7 @@ public abstract class Renderer {
      *
      * @param color The background color
      */
-    public final void setBackgroundColor(MutableColor color) {
+    public final void setBackgroundColor(RColor color) {
         setBackgroundColor(color.getRed(), color.getGreen(), color.getBlue());
     }
 
@@ -53,11 +53,11 @@ public abstract class Renderer {
     public abstract void setZIndex(float index);
 
     /**
-     * Sets the scaling factor.
+     * Scales the screen (eg. zoom).
      *
      * @param scale The scaling factor
      */
-    public abstract void setScale(double scale);
+    public abstract void scale(double scale);
 
     /**
      * Sets the line width.

@@ -5,7 +5,7 @@ import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
 import gameengine.input.InputCode;
@@ -26,8 +26,6 @@ public class BrickBreaker extends Context {
     private static final String SHOOT = "Shoot";
     private static final String EXIT = "Exit";
 
-    private static final MutableColor RED = MutableColor.createRedInstance();
-
     private int width, height;
     private int brickCount = 0;
     private Paddle paddle;
@@ -42,7 +40,7 @@ public class BrickBreaker extends Context {
     private double ballRadius = 10;
     private double ballMass = 50;
     private int lives = 100;
-    private MutableColor bgColor = MutableColor.createBlackInstance();
+    private RColor bgColor = RColor.BLACK;
     private long currentTime;
 
     private RepeatedAction shootAction = createRepeatedAction(50, () -> {
@@ -149,7 +147,7 @@ public class BrickBreaker extends Context {
     }
 
     private void drawText(Renderer renderer) {
-        renderer.setForegroundColor(RED);
+        renderer.setForegroundColor(RColor.RED);
         renderer.drawString("fps " + controller.getFrameRateCounter().getCurrentTickRate(), 25, 50);
         renderer.drawString("Lives " + lives, 25, 70);
         renderer.drawString("entities " + world.getEntityCount(), 25, 90);
@@ -159,7 +157,7 @@ public class BrickBreaker extends Context {
     @Override
     public void handleCollision(Collision collision) {
         Physics.performCollision(collision);
-//        bgColor = new MutableColor(
+//        bgColor = new RColor(
 //                (int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() *
 // 255));
         double damage = 30;
@@ -207,7 +205,7 @@ public class BrickBreaker extends Context {
     private void addBall(double x, double y, double radius, double mass) {
         double speed = 1.5;
         CircleEntity entity = new CircleEntity(x, y, radius);
-//        entity.setColor(new MutableColor((float)Math.random(), (float)Math.random(), (float)
+//        entity.setColor(new RColor((float)Math.random(), (float)Math.random(), (float)
 // Math.random()));
         double spread = (Math.sin(currentTime / 1000) + 1.5) * 2;
         entity.setVelocity((Math.random() - 0.5) * spread, -10);

@@ -4,7 +4,7 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
 /**
@@ -13,7 +13,6 @@ import gameengine.graphics.Renderer;
  * @author davidrusu
  */
 public class Leaf extends Tree {
-    private static final MutableColor RED = MutableColor.createRedInstance();
 
     public static final int INITIAL_NUM_LEAFS = 32;
     private static final int EXPANSION_FACTOR = 2;
@@ -186,7 +185,7 @@ public class Leaf extends Tree {
     @Override
     public void relocateAndCheck(double timeToCheck, Entity entity) {
         assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method " +
-                "" + "" + "is called";
+                "" + "" + "" + "is called";
         entityCount--;
         Collision collision = node.getCollision();
         if (entity == collision.getA() || entity == collision.getB()) {
@@ -235,8 +234,8 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void drawTree(Renderer renderer, MutableColor color) {
-        renderer.setForegroundColor(RED);
+    public void drawTree(Renderer renderer, RColor color) {
+        renderer.setForegroundColor(RColor.RED);
         renderer.drawRect(centerX, centerY, halfLength, halfLength);
     }
 

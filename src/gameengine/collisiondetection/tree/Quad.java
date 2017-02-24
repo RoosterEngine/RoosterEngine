@@ -5,7 +5,7 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
 
@@ -350,7 +350,7 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
-    public void drawTree(Renderer renderer, MutableColor color) {
+    public void drawTree(Renderer renderer, RColor color) {
         topLeft.drawTree(renderer, color);
         topRight.drawTree(renderer, color);
         bottomLeft.drawTree(renderer, color);
@@ -358,7 +358,7 @@ public class Quad extends Tree implements Parent {
         renderer.setForegroundColor(color);
         renderer.drawLine(getMinX(), getCenterY(), getMaxX(), getCenterY());
         renderer.drawLine(getCenterX(), getMinY(), getCenterX(), getMaxY());
-//        drawNumEntities(g, MutableColor.BLACK);
+//        drawNumEntities(g, RColor.BLACK);
     }
 
     @Override

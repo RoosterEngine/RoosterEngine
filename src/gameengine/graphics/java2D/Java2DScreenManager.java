@@ -195,8 +195,8 @@ public class Java2DScreenManager implements ScreenManager {
         }
 
         @Override
-        public void setScale(double scale) {
-            // TODO Auto-generated method stub
+        public void scale(double scale) {
+            g2.scale(scale, scale);
         }
 
         @Override

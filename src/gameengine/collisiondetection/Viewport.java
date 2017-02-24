@@ -106,11 +106,11 @@ public class Viewport {
 
     public void applyTransformations(Renderer renderer) {
         renderer.translate(-offsetX, -offsetY);
-        renderer.setScale(scale);
+        renderer.scale(scale);
     }
 
     public void reverseTransformations(Renderer renderer) {
-        renderer.setScale(1);
+        renderer.scale(1);
         renderer.translate(offsetX, offsetY);
     }
 }

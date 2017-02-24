@@ -5,7 +5,7 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
 
@@ -289,5 +289,5 @@ public abstract class Tree {
     public abstract void draw(double minX, double maxX, double minY, double maxY, Renderer
             renderer);
 
-    public abstract void drawTree(Renderer renderer, MutableColor color);
+    public abstract void drawTree(Renderer renderer, RColor color);
 }

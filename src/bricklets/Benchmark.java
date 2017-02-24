@@ -6,7 +6,7 @@ import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
 import gameengine.entities.Pointer;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
 import gameengine.graphics.image.OvalGraphic;
@@ -17,8 +17,6 @@ import gameengine.physics.Physics;
 import java.util.Random;
 
 public class Benchmark extends Context {
-    private static final MutableColor RED = MutableColor.createRedInstance();
-    private static final MutableColor BLACK = MutableColor.createBlackInstance();
 
     private static final String EXIT = "Exit";
     private static final String INCREASE_BALL_COUNT = "Increase Ball Count";
@@ -47,7 +45,7 @@ public class Benchmark extends Context {
         width = screen.getWidth();
         height = screen.getHeight();
 
-        Pointer pointer = new Pointer(new OvalGraphic(15, 15, RED), width / 2, height / 2);
+        Pointer pointer = new Pointer(new OvalGraphic(15, 15, RColor.RED), width / 2, height / 2);
         pointer.setMass(1);
 //        world.addEntity(pointer);
         initBounding();
@@ -92,15 +90,15 @@ public class Benchmark extends Context {
 
     @Override
     protected void renderContext(Renderer renderer, long gameTime) {
-        renderer.setForegroundColor(BLACK);
+        renderer.setForegroundColor(RColor.BLACK);
         renderer.fillRect(width / 2, height / 2, width / 2, height / 2);
         world.draw(this, renderer);
-        world.drawTree(renderer, RED);
+        world.drawTree(renderer, RColor.RED);
         drawStats(renderer);
     }
 
     private void drawStats(Renderer renderer) {
-        renderer.setForegroundColor(RED);
+        renderer.setForegroundColor(RColor.RED);
         renderer.drawString("fps: " + controller.getFrameRateCounter().getCurrentTickRate(), 25,
                 25);
         renderer.drawString("balls: " + balls + " / " + maxBalls, 25, 75);

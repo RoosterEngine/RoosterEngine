@@ -2,7 +2,7 @@ package bricklets;
 
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 
 /**
  * documentation
@@ -10,17 +10,17 @@ import gameengine.graphics.MutableColor;
  * @author davidrusu
  */
 abstract class TestingEntity extends Entity {
-    protected MutableColor color = MutableColor.createWhiteInstance();
+    protected RColor color = RColor.WHITE;
 
     public TestingEntity(double x, double y, Shape shape) {
         super(x, y, shape);
     }
 
-    public MutableColor getColor() {
+    public RColor getColor() {
         return color;
     }
 
-    public void setColor(MutableColor color) {
+    public void setColor(RColor color) {
         this.color = color;
     }
 }

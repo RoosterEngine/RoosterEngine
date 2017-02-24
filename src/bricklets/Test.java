@@ -5,7 +5,7 @@ import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
 import gameengine.input.InputCode;
@@ -25,10 +25,6 @@ import java.util.ArrayList;
 public class Test extends Context {
     private static final String EXIT = "Exit";
     private static final String CHANGE_CONTROL = "Change Control";
-
-    private static final MutableColor BLACK = MutableColor.createBlackInstance();
-    private static final MutableColor RED = MutableColor.createRedInstance();
-    private static final MutableColor WHITE = MutableColor.createWhiteInstance();
 
     private ArrayList<TestingEntity> entities = new ArrayList<>();
     private int controlIndex = 0;
@@ -120,15 +116,15 @@ public class Test extends Context {
     protected void updateContext(long gameTime, double mouseDeltaX, double mouseDeltaY, double
             mouseWheelRotation) {
         for (int i = 0; i < entities.size(); i++) {
-            entities.get(i).setColor(WHITE);
+            entities.get(i).setColor(RColor.WHITE);
         }
         for (int i = 0; i < entities.size(); i++) {
             TestingEntity a = entities.get(i);
             for (int j = i + 1; j < entities.size(); j++) {
                 TestingEntity b = entities.get(j);
                 if (a.getShape().isOverlappingShape(b.getShape())) {
-                    a.setColor(RED);
-                    b.setColor(RED);
+                    a.setColor(RColor.RED);
+                    b.setColor(RColor.RED);
                 }
             }
         }
@@ -136,7 +132,7 @@ public class Test extends Context {
 
     @Override
     protected void renderContext(Renderer renderer, long gameTime) {
-        renderer.setForegroundColor(BLACK);
+        renderer.setForegroundColor(RColor.BLACK);
         renderer.fillRect(width / 2, height / 2, width / 2, height / 2);
         world.draw(this, renderer);
         drawStats(renderer);
@@ -144,7 +140,7 @@ public class Test extends Context {
     }
 
     private void drawStats(Renderer renderer) {
-        renderer.setForegroundColor(RED);
+        renderer.setForegroundColor(RColor.RED);
         renderer.drawString("fps: " + controller.getFrameRateCounter().getCurrentTickRate(), 25,
                 25);
         renderer.drawString("entities: " + world.getEntityCount(), 25, 75);

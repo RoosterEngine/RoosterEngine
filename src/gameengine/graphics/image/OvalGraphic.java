@@ -1,6 +1,6 @@
 package gameengine.graphics.image;
 
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
 /**
@@ -10,9 +10,9 @@ import gameengine.graphics.Renderer;
  */
 public class OvalGraphic implements Graphic {
     private int width, height, xRadius, yRadius;
-    private MutableColor color;
+    private RColor color;
 
-    public OvalGraphic(int width, int height, MutableColor color) {
+    public OvalGraphic(int width, int height, RColor color) {
         setSize(width, height);
         this.color = color;
     }

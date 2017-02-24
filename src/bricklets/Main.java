@@ -4,7 +4,7 @@ import gameengine.context.BasicMenu;
 import gameengine.context.ButtonHandler;
 import gameengine.core.GameController;
 import gameengine.entities.BasicButton;
-import gameengine.graphics.MutableColor;
+import gameengine.graphics.RColor;
 import gameengine.graphics.ScreenManager;
 import gameengine.graphics.image.SolidColorGraphic;
 
@@ -29,7 +29,7 @@ public class Main implements ButtonHandler {
         bricks = new BrickBreaker(controller);
         testing = new Test(controller);
         ScreenManager screen = controller.getScreenManager();
-        menu = new BasicMenu(controller, buttons, this, new SolidColorGraphic(new MutableColor
+        menu = new BasicMenu(controller, buttons, this, new SolidColorGraphic(new RColor
                 (19, 9, 18), screen.getWidth(), screen.getHeight()));
     }
 

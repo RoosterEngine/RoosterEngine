@@ -1,16 +1,16 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
-import gameengine.math.Vector2D;
+import gameengine.geometry.Vector2D;
+import gameengine.graphics.RColor;
+import gameengine.graphics.Renderer;
 
-import java.awt.*;
 import java.util.Random;
 
 public class PolygonShape extends Shape {
     private static Random rand = new Random(0);
     private Vector2D[] normals, points; // points are relative to the center
     private double[] normalMins, normalMaxs;
-    private int[] xInts, yInts;
     private double width, height, minX, maxX, minY, maxY;
     private int numPoints;
 
@@ -21,8 +21,6 @@ public class PolygonShape extends Shape {
         normals = new Vector2D[numPoints];
         normalMins = new double[numPoints];
         normalMaxs = new double[numPoints];
-        xInts = new int[numPoints];
-        yInts = new int[numPoints];
         setupPoints(xPoints, yPoints);
         setupMaxMin();
         setupNormalsAndShadows();
@@ -43,8 +41,8 @@ public class PolygonShape extends Shape {
         return new PolygonShape(xPoints, yPoints);
     }
 
-    public static PolygonShape getRandConvexPolygon(double radiusMin, double radiusMax, int numPointsMin,
-                                                    int numPointsMax) {
+    public static PolygonShape getRandConvexPolygon(double radiusMin, double radiusMax, int
+            numPointsMin, int numPointsMax) {
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
         int pointsDiff = numPointsMax - numPointsMin;
         int numPoints = (int) (rand.nextDouble() * pointsDiff) + numPointsMin;
@@ -165,32 +163,26 @@ public class PolygonShape extends Shape {
     }
 
     @Override
-    public void draw(Graphics2D g, Color color) {
-        double x = getX();
-        double y = getY();
-        for (int i = 0; i < numPoints; i++) {
-            xInts[i] = (int) (points[i].getX() + x);
-            yInts[i] = (int) (points[i].getY() + y);
-        }
-        g.setColor(color);
-        g.fillPolygon(xInts, yInts, numPoints);
+    public void draw(Renderer renderer) {
+        renderer.fillPolygon(points, getX(), getY());
     }
 
-    private void drawPoints(Graphics2D g, Color color) {
-        int width = 2;
-        g.setColor(color);
+    private void drawPoints(Renderer renderer, RColor color) {
+        int radius = 2;
+        renderer.setForegroundColor(color);
         for (int i = 0; i < numPoints; i++) {
-            g.fillOval(xInts[i], yInts[i], width, width);
+            Vector2D point = points[i];
+            renderer.fillCircle(point.getX(), point.getY(), radius);
         }
     }
 
-    private void drawNormals(Graphics2D g, Color color) {
+    private void drawNormals(Renderer renderer, RColor color) {
         double scale = 100;
-        g.setColor(color);
+        renderer.setForegroundColor(color);
         double x = getX();
         double y = getY();
         for (Vector2D normal : normals) {
-            g.drawLine((int) x, (int) y, (int) (x + normal.getX() * scale), (int) (y + normal.getY() * scale));
+            renderer.drawLine(x, y, x + normal.getX() * scale, y + normal.getY() * scale);
         }
     }
 

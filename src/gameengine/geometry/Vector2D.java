@@ -1,4 +1,4 @@
-package gameengine.math;
+package gameengine.geometry;
 
 /**
  * @author davidrusu

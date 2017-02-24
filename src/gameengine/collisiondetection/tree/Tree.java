@@ -5,16 +5,14 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
+import gameengine.graphics.RColor;
+import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
 
-import java.awt.*;
-
 /**
- * Base class of spatial tree nodes
- * <p/>
- * User: davidrusu
- * Date: 15/01/13
- * Time: 9:27 PM
+ * Base class of spatial tree nodes.
+ *
+ * @author davidrusu
  */
 public abstract class Tree {
     public static final int GROW_THRESH = 2;
@@ -48,7 +46,8 @@ public abstract class Tree {
         world.getCollisionList().add(node);
     }
 
-    protected void init(World world, Parent parent, double centerX, double centerY, double halfLength) {
+    protected void init(World world, Parent parent, double centerX, double centerY, double
+            halfLength) {
         assert world != null;
         this.world = world;
         this.parent = parent;
@@ -102,8 +101,8 @@ public abstract class Tree {
     }
 
     public boolean isContainedInTree(Entity entity) {
-        return isContained(entity.getBBCenterX(), getCenterX(), entity.getBBHalfWidth())
-                && isContained(entity.getBBCenterY(), getCenterY(), entity.getBBHalfHeight());
+        return isContained(entity.getBBCenterX(), getCenterX(), entity.getBBHalfWidth()) &&
+                isContained(entity.getBBCenterY(), getCenterY(), entity.getBBHalfHeight());
     }
 
     private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {
@@ -136,10 +135,12 @@ public abstract class Tree {
     protected void collideShapes(Collision result, double timeToCheck, Entity a, Entity b) {
         if ((world.getCollisionGroups()[a.getEntityType()] & b.getEntityTypeBitMask()) != 0) {
             Collision temp = world.getTempCollision();
-            temp.setNoCollision(); // TODO might not need to do this because collideShapes overwrites temp anyway
+            temp.setNoCollision(); // TODO might not need to do this because collideShapes
+            // overwrites temp anyway
             Shape.collideShapes(a.getShape(), b.getShape(), timeToCheck, temp);
             if (temp.getCollisionTime() < result.getCollisionTime() - timeInTree) {
-                assert temp.getCollisionTime() <= timeToCheck : "too long" + temp.getCollisionTime() + ", " + timeToCheck;
+                assert temp.getCollisionTime() <= timeToCheck : "too long" + temp
+                        .getCollisionTime() + ", " + timeToCheck;
                 result.set(temp);
                 result.setCollisionTime(result.getCollisionTime() + timeInTree);
             }
@@ -209,15 +210,16 @@ public abstract class Tree {
         assert entityCount == 0 : "entityCount: " + entityCount;
         assert entityListPos == 0 : "entityListPos: " + entityListPos;
         assert parent == null : "parent: " + parent;
-        assert node.getPrev() == null && node.getNext() == null : "node.prev: " + node.getPrev() + " node.next: " + node.getNext();
+        assert node.getPrev() == null && node.getNext() == null : "node.prev: " + node.getPrev()
+                + " node.next: " + node.getNext();
         assert timeInTree == 0;
         assert world == null;
         return true;
     }
 
     public boolean doesEntitysIndexMatchIndexInTree(Entity entity) {
-        assert entity.getIndexInTree() < entityListPos : "entities index must be less than entityListPos: "
-                + entityListPos + ", " + entity.getIndexInTree();
+        assert entity.getIndexInTree() < entityListPos : "entities index must be less than " +
+                "entityListPos: " + entityListPos + ", " + entity.getIndexInTree();
         return entity == entities[entity.getIndexInTree()];
     }
 
@@ -271,17 +273,21 @@ public abstract class Tree {
 
     public abstract void relocateAndCheck(double timeToCheck, Entity entity);
 
-    public abstract void entityRemovedDuringCollision(double timeToCheck, Entity entity, double currentTime);
+    public abstract void entityRemovedDuringCollision(double timeToCheck, Entity entity, double
+            currentTime);
 
     public abstract void addAndCheck(double timeToCheck, Entity entity);
 
-    public abstract void initCheckCollisionWithEntity(Collision result, double timeToCheck, Entity entity);
+    public abstract void initCheckCollisionWithEntity(Collision result, double timeToCheck,
+                                                      Entity entity);
 
-    public abstract void checkCollisionWithEntity(Collision result, double timeToCheck, Entity entity);
+    public abstract void checkCollisionWithEntity(Collision result, double timeToCheck, Entity
+            entity);
 
     public abstract void recycle();
 
-    public abstract void draw(double minX, double maxX, double minY, double maxY, Graphics2D g);
+    public abstract void draw(double minX, double maxX, double minY, double maxY, Renderer
+            renderer);
 
-    public abstract void drawTree(Graphics2D g, Color color);
+    public abstract void drawTree(Renderer renderer, RColor color);
 }

@@ -1,12 +1,9 @@
 package gameengine.physics;
 
 /**
- * Wrapper for material properties that are between two surfaces, like friction
- * and restitution.
- * <p/>
- * User: davidrusu
- * Date: 28/11/12
- * Time: 3:12 PM
+ * Wrapper for material properties that are between two surfaces, like friction and restitution.
+ *
+ * @author davidrusu
  */
 public class MaterialData {
     private double friction, restitution;

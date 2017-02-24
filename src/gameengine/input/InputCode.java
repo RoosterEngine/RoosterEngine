@@ -4,17 +4,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 /**
- * List of input code constants and utility methods. the
- * representation formatting can be changed in the formatKeyString method
+ * List of input code constants and utility methods.
  *
  * @author davidrusu
  */
 public class InputCode {
-
-    private static final int PARTITION = Integer.MAX_VALUE / 4;
     private static final int KEY_OFFSET = 0;
-    private static final int MOUSE_BUTTON_OFFSET = PARTITION * 2;
-    private static final int MOUSE_WHEEL_OFFSET = PARTITION * 3;
+    private static final int MOUSE_BUTTON_OFFSET = Integer.MAX_VALUE / 4;
 
     public static final int KEY_A = getKeyInputCode(KeyEvent.VK_A);
     public static final int KEY_B = getKeyInputCode(KeyEvent.VK_B);
@@ -115,8 +111,6 @@ public class InputCode {
     public static final int MOUSE_LEFT_BUTTON = getMouseButtonInputCode(MouseEvent.BUTTON1);
     public static final int MOUSE_MIDDLE_BUTTON = getMouseButtonInputCode(MouseEvent.BUTTON2);
     public static final int MOUSE_RIGHT_BUTTON = getMouseButtonInputCode(MouseEvent.BUTTON3);
-    public static final int MOUSE_WHEEL_UP = MOUSE_WHEEL_OFFSET;
-    public static final int MOUSE_WHEEL_DOWN = MOUSE_WHEEL_OFFSET + 1;
 
     //private constructor to avoid any instances of this class from being created
     private InputCode() {
@@ -143,31 +137,12 @@ public class InputCode {
     }
 
     /**
-     * Gets the input code associated with a mouse wheel up event
-     *
-     * @return the integer input code for a mouse wheel up event
-     */
-    public static int getWheelUpInputCode() {
-        return MOUSE_WHEEL_UP;
-    }
-
-    /**
-     * Gets the input code associated with a mouse wheel down event
-     *
-     * @return the integer input code for a mouse wheel down event
-     */
-    public static int getWheelDownInputCode() {
-        return MOUSE_WHEEL_DOWN;
-    }
-
-    /**
      * gets the string representation of an input code.
      *
      * @param inputCode the input code
      * @return the string representation of the provided input code
      */
-    public static String getStringRep(int inputCode) {
-
+    public static String getStringRepresentation(int inputCode) {
         if (inputCode < MOUSE_BUTTON_OFFSET) {
             return formatKeyString(KeyEvent.getKeyText(inputCode - KEY_OFFSET));
         }
@@ -178,10 +153,6 @@ public class InputCode {
             return "RIGHT MOUSE BUTTON";
         } else if (inputCode == MOUSE_MIDDLE_BUTTON) {
             return "MIDDLE MOUSE BUTTON";
-        } else if (inputCode == MOUSE_WHEEL_UP) {
-            return "MOUSE WHEEL UP";
-        } else if (inputCode == MOUSE_WHEEL_DOWN) {
-            return "MOUSE_WHEEL_DOWN";
         }
         return "NOT RECOGNIZED";
     }
@@ -200,14 +171,10 @@ public class InputCode {
     }
 
     public static boolean isKeyboardInput(int inputCode) {
-        return inputCode >= KEY_OFFSET && inputCode < KEY_OFFSET + PARTITION;
+        return inputCode >= KEY_OFFSET && inputCode < MOUSE_BUTTON_OFFSET;
     }
 
     public static boolean isMouseButtonInput(int inputCode) {
-        return inputCode >= MOUSE_BUTTON_OFFSET && inputCode < MOUSE_BUTTON_OFFSET + PARTITION;
-    }
-
-    public static boolean isMouseWheelInput(int inputCode) {
-        return inputCode >= MOUSE_WHEEL_OFFSET && inputCode < MOUSE_WHEEL_OFFSET + PARTITION;
+        return inputCode >= MOUSE_BUTTON_OFFSET;
     }
 }

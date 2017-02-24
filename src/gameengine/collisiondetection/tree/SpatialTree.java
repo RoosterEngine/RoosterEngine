@@ -6,16 +6,14 @@ import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
+import gameengine.graphics.RColor;
+import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
 
-import java.awt.*;
-
 /**
- * The root of the spatial tree, used to access the spatial tree
- * <p/>
- * User: davidrusu
- * Date: 15/01/13
- * Time: 9:31 PM
+ * The root of the spatial tree, used to access the spatial tree.
+ *
+ * @author davidrusu
  */
 public class SpatialTree implements Parent {
     private Tree tree;
@@ -144,7 +142,8 @@ public class SpatialTree implements Parent {
     }
 
     @Override
-    public void entityRemovedDuringCollision(double timeToCheck, Entity entity, double currentTime) {
+    public void entityRemovedDuringCollision(double timeToCheck, Entity entity, double
+            currentTime) {
     }
 
     public void tryResize() {
@@ -201,20 +200,21 @@ public class SpatialTree implements Parent {
                 bottomLeft = Leaf.createInstance(world);
             }
         }
-        grow(centerX, centerY, tree.getHalfLength() * 2, topLeft, topRight, bottomLeft, bottomRight);
+        grow(centerX, centerY, tree.getHalfLength() * 2, topLeft, topRight, bottomLeft,
+                bottomRight);
         tree.addEntity(entity);
     }
 
-    public void draw(double minX, double maxX, double minY, double maxY, Graphics2D g) {
-        tree.draw(minX, maxX, minY, maxY, g);
+    public void draw(double minX, double maxX, double minY, double maxY, Renderer renderer) {
+        tree.draw(minX, maxX, minY, maxY, renderer);
     }
 
-    public void drawTree(Graphics2D g, Color color) {
-        tree.drawTree(g, color);
+    public void drawTree(Renderer renderer, RColor color) {
+        tree.drawTree(renderer, color);
     }
 
-    private void grow(double centerX, double centerY, double halfLength,
-                      Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
+    private void grow(double centerX, double centerY, double halfLength, Tree topLeft, Tree
+            topRight, Tree bottomLeft, Tree bottomRight) {
         double quartLength = halfLength / 2;
         double left = centerX - quartLength;
         double right = centerX + quartLength;
@@ -224,13 +224,13 @@ public class SpatialTree implements Parent {
         topRight.resize(right, top, quartLength);
         bottomLeft.resize(left, bottom, quartLength);
         bottomRight.resize(right, bottom, quartLength);
-        tree = Quad.createInstance(world, this, centerX, centerY, halfLength, topLeft, topRight, bottomLeft,
-                bottomRight);
+        tree = Quad.createInstance(world, this, centerX, centerY, halfLength, topLeft, topRight,
+                bottomLeft, bottomRight);
     }
 
     private boolean isNotContainedInTree(Entity entity) {
-        return !isContained(entity.getBBCenterX(), tree.getCenterX(), entity.getBBHalfWidth())
-                || !isContained(entity.getBBCenterY(), tree.getCenterY(), entity.getBBHalfHeight());
+        return !isContained(entity.getBBCenterX(), tree.getCenterX(), entity.getBBHalfWidth()) ||
+                !isContained(entity.getBBCenterY(), tree.getCenterY(), entity.getBBHalfHeight());
     }
 
     private boolean isContained(double shapePosition, double treePosition, double shapeHalfLength) {

@@ -1,17 +1,14 @@
 package gameengine.entities;
 
 import gameengine.collisiondetection.shapes.CircleShape;
-import gameengine.graphics.Graphic;
+import gameengine.graphics.Renderer;
+import gameengine.graphics.image.Graphic;
 import gameengine.motion.motions.MouseMotion;
 
-import java.awt.*;
-
 /**
- * Used as a mouse pointer
- * <p/>
- * User: davidrusu
- * Date: 17/12/12
- * Time: 6:53 PM
+ * Used as a mouse pointer.
+ *
+ * @author davidrusu
  */
 public class Pointer extends Entity {
     Graphic graphic;
@@ -27,7 +24,7 @@ public class Pointer extends Entity {
     }
 
     @Override
-    public void draw(Graphics2D g) {
-        graphic.draw(g, (int) x, (int) y);
+    public void draw(Renderer renderer) {
+        graphic.draw(renderer, x, y);
     }
 }

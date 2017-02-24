@@ -5,16 +5,17 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
+import gameengine.graphics.RColor;
+import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
 /**
- * A node in the spatial tree that has four children
- * User: davidrusu
- * Date: 15/01/13
- * Time: 9:30 PM
+ * A node in the spatial tree that has four children.
+ *
+ * @author davidrusu
  */
 public class Quad extends Tree implements Parent {
     private static final int INITIAL_NUM_QUADS = Leaf.INITIAL_NUM_LEAFS / 4 + 1;
@@ -42,13 +43,14 @@ public class Quad extends Tree implements Parent {
         initQuads(world);
     }
 
-    private Quad(World world, Parent parent, double centerX, double centerY, double halfLength, Tree topLeft,
-                 Tree topRight, Tree bottomLeft, Tree bottomRight) {
+    private Quad(World world, Parent parent, double centerX, double centerY, double halfLength,
+                 Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
         super(world, parent, centerX, centerY, halfLength);
         initQuads(topLeft, topRight, bottomLeft, bottomRight);
     }
 
-    public static Quad createInstance(World world, Parent parent, double centerX, double centerY, double halfLength) {
+    public static Quad createInstance(World world, Parent parent, double centerX, double centerY,
+                                      double halfLength) {
         if (numRecycledQuads == 0) {
             return new Quad(world, parent, centerX, centerY, halfLength);
         }
@@ -60,10 +62,12 @@ public class Quad extends Tree implements Parent {
         return quad;
     }
 
-    public static Quad createInstance(World world, Parent parent, double centerX, double centerY, double halfLength,
-                                      Tree topLeft, Tree topRight, Tree bottomLeft, Tree bottomRight) {
+    public static Quad createInstance(World world, Parent parent, double centerX, double centerY,
+                                      double halfLength, Tree topLeft, Tree topRight, Tree
+                                              bottomLeft, Tree bottomRight) {
         if (numRecycledQuads == 0) {
-            return new Quad(world, parent, centerX, centerY, halfLength, topLeft, topRight, bottomLeft, bottomRight);
+            return new Quad(world, parent, centerX, centerY, halfLength, topLeft, topRight,
+                    bottomLeft, bottomRight);
         }
         numRecycledQuads--;
         Quad quad = recycledQuads[numRecycledQuads];
@@ -81,7 +85,8 @@ public class Quad extends Tree implements Parent {
         bottomLeft.parent = this;
         this.bottomRight = bottomRight;
         bottomRight.parent = this;
-        entityCount = topLeft.entityCount + topRight.entityCount + bottomLeft.entityCount + bottomRight.entityCount;
+        entityCount = topLeft.entityCount + topRight.entityCount + bottomLeft.entityCount +
+                bottomRight.entityCount;
     }
 
     private void initQuads(World world) {
@@ -119,13 +124,13 @@ public class Quad extends Tree implements Parent {
                 assert isEntityCountCorrect();
             } else if (entity.getBBMinX() > getCenterX()) {
                 assert isEntityCountCorrect();
-                index = ensureVerticallyContained(
-                        index, entity, entity.getBBMinY(), entity.getBBMaxY(), bottomRight, topRight);
+                index = ensureVerticallyContained(index, entity, entity.getBBMinY(), entity
+                        .getBBMaxY(), bottomRight, topRight);
                 assert isEntityCountCorrect();
             } else if (entity.getBBMaxX() < getCenterX()) {
                 assert isEntityCountCorrect();
-                index = ensureVerticallyContained(
-                        index, entity, entity.getBBMinY(), entity.getBBMaxY(), bottomLeft, topLeft);
+                index = ensureVerticallyContained(index, entity, entity.getBBMinY(), entity
+                        .getBBMaxY(), bottomLeft, topLeft);
                 assert isEntityCountCorrect();
             } else {
                 index++;
@@ -147,7 +152,8 @@ public class Quad extends Tree implements Parent {
 
         if (entityCount == 0) {
             assert world != null;
-            Leaf leaf = Leaf.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength());
+            Leaf leaf = Leaf.createInstance(world, parent, getCenterX(), getCenterY(),
+                    getHalfLength());
             clear();
             recycle();
             return leaf;
@@ -165,7 +171,8 @@ public class Quad extends Tree implements Parent {
     public Tree updateAllEntityPositionsAndResize(double currentTime) {
         if (entityCount == 0) {
             assert world != null;
-            Leaf leaf = Leaf.createInstance(world, parent, getCenterX(), getCenterY(), getHalfLength());
+            Leaf leaf = Leaf.createInstance(world, parent, getCenterX(), getCenterY(),
+                    getHalfLength());
             clear();
             recycle();
             return leaf;
@@ -253,7 +260,8 @@ public class Quad extends Tree implements Parent {
 
     @Override
     public void relocateAndCheck(double timeToCheck, Entity entity) {
-        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method is called";
+        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method " +
+                "" + "is called";
         entityCount--;
         Collision collision = node.getCollision();
         if (entity == collision.getA() || entity == collision.getB()) {
@@ -278,7 +286,8 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
-    public void entityRemovedDuringCollision(double timeToCheck, Entity entity, double currentTime) {
+    public void entityRemovedDuringCollision(double timeToCheck, Entity entity, double
+            currentTime) {
         assert entity.getContainingTree() == null;
         assert checkEntities();
         assert !isEntityInTree(entity);
@@ -318,38 +327,38 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
-    public void draw(double minX, double maxX, double minY, double maxY, Graphics2D g) {
+    public void draw(double minX, double maxX, double minY, double maxY, Renderer renderer) {
         for (int i = 0; i < entityListPos; i++) {
-            entities[i].draw(g);
+            entities[i].draw(renderer);
         }
         if (minX < topLeft.getMaxX()) {
             if (minY < topLeft.getMaxY()) {
-                topLeft.draw(minX, maxX, minY, maxY, g);
+                topLeft.draw(minX, maxX, minY, maxY, renderer);
             }
             if (maxY > bottomLeft.getMinY()) {
-                bottomLeft.draw(minX, maxX, minY, maxY, g);
+                bottomLeft.draw(minX, maxX, minY, maxY, renderer);
             }
         }
         if (maxX > topRight.getMinX()) {
             if (minY < topRight.getMaxY()) {
-                topRight.draw(minX, maxX, minY, maxY, g);
+                topRight.draw(minX, maxX, minY, maxY, renderer);
             }
             if (maxY > bottomRight.getMinY()) {
-                bottomRight.draw(minX, maxX, minY, maxY, g);
+                bottomRight.draw(minX, maxX, minY, maxY, renderer);
             }
         }
     }
 
     @Override
-    public void drawTree(Graphics2D g, Color color) {
-        topLeft.drawTree(g, color);
-        topRight.drawTree(g, color);
-        bottomLeft.drawTree(g, color);
-        bottomRight.drawTree(g, color);
-        g.setColor(color);
-        g.drawLine((int) getMinX(), (int) getCenterY(), (int) getMaxX(), (int) getCenterY());
-        g.drawLine((int) getCenterX(), (int) getMinY(), (int) getCenterX(), (int) getMaxY());
-//        drawNumEntities(g, Color.BLACK);
+    public void drawTree(Renderer renderer, RColor color) {
+        topLeft.drawTree(renderer, color);
+        topRight.drawTree(renderer, color);
+        bottomLeft.drawTree(renderer, color);
+        bottomRight.drawTree(renderer, color);
+        renderer.setForegroundColor(color);
+        renderer.drawLine(getMinX(), getCenterY(), getMaxX(), getCenterY());
+        renderer.drawLine(getCenterX(), getMinY(), getCenterX(), getMaxY());
+//        drawNumEntities(g, RColor.BLACK);
     }
 
     @Override
@@ -414,15 +423,16 @@ public class Quad extends Tree implements Parent {
         world.getCollisionList().collisionUpdated(node);
     }
 
-    private void checkHalfTree(Collision result, double timeToCheck, Entity entity, Tree top, Tree bottom) {
-        if (Math.abs(top.getCenterX() - entity.getBBCenterX())
-                < entity.getBBHalfWidth() + top.getHalfLength()) {
-            if (Math.abs(top.getCenterY() - entity.getBBCenterY())
-                    < entity.getBBHalfHeight() + top.getHalfLength()) {
+    private void checkHalfTree(Collision result, double timeToCheck, Entity entity, Tree top,
+                               Tree bottom) {
+        if (Math.abs(top.getCenterX() - entity.getBBCenterX()) < entity.getBBHalfWidth() + top
+                .getHalfLength()) {
+            if (Math.abs(top.getCenterY() - entity.getBBCenterY()) < entity.getBBHalfHeight() +
+                    top.getHalfLength()) {
                 top.checkCollisionWithEntity(result, timeToCheck, entity);
             }
-            if (Math.abs(bottom.getCenterY() - entity.getBBCenterY())
-                    < entity.getBBHalfHeight() + bottom.getHalfLength()) {
+            if (Math.abs(bottom.getCenterY() - entity.getBBCenterY()) < entity.getBBHalfHeight()
+                    + bottom.getHalfLength()) {
                 bottom.checkCollisionWithEntity(result, timeToCheck, entity);
             }
         }
@@ -430,7 +440,7 @@ public class Quad extends Tree implements Parent {
 
     private void checkCollisionInSubTrees(Collision result, double timeToCheck, Entity entity) {
         checkHalfTree(result, timeToCheck, entity, topLeft, bottomLeft);
-        checkHalfTree( result, timeToCheck, entity, topRight, bottomRight);
+        checkHalfTree(result, timeToCheck, entity, topRight, bottomRight);
     }
 
     private void initCheckCollisionInSubTrees(Collision result, double timeToCheck, Entity entity) {
@@ -438,21 +448,23 @@ public class Quad extends Tree implements Parent {
         initCheckHalfTree(result, timeToCheck, entity, topRight, bottomRight);
     }
 
-    private void initCheckHalfTree(Collision result, double timeToCheck, Entity entity, Tree top, Tree bottom) {
-        if (Math.abs(top.getCenterX() - entity.getBBCenterX())
-                < entity.getBBHalfWidth() + top.getHalfLength()) {
-            if (Math.abs(top.getCenterY() - entity.getBBCenterY())
-                    < entity.getBBHalfHeight() + top.getHalfLength()) {
+    private void initCheckHalfTree(Collision result, double timeToCheck, Entity entity, Tree top,
+                                   Tree bottom) {
+        if (Math.abs(top.getCenterX() - entity.getBBCenterX()) < entity.getBBHalfWidth() + top
+                .getHalfLength()) {
+            if (Math.abs(top.getCenterY() - entity.getBBCenterY()) < entity.getBBHalfHeight() +
+                    top.getHalfLength()) {
                 top.initCheckCollisionWithEntity(result, timeToCheck, entity);
             }
-            if (Math.abs(bottom.getCenterY() - entity.getBBCenterY())
-                    < entity.getBBHalfHeight() + bottom.getHalfLength()) {
+            if (Math.abs(bottom.getCenterY() - entity.getBBCenterY()) < entity.getBBHalfHeight()
+                    + bottom.getHalfLength()) {
                 bottom.initCheckCollisionWithEntity(result, timeToCheck, entity);
             }
         }
     }
 
-    private int ensureVerticallyContained(int index, Entity entity, double minY, double maxY, Tree bottom, Tree top) {
+    private int ensureVerticallyContained(int index, Entity entity, double minY, double maxY,
+                                          Tree bottom, Tree top) {
         if (minY > getCenterY()) {
             removeEntityFromList(index);
             bottom.addEntity(entity);

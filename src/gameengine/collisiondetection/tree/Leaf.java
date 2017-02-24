@@ -4,17 +4,16 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
-
-import java.awt.*;
+import gameengine.graphics.RColor;
+import gameengine.graphics.Renderer;
 
 /**
  * The Leaf node of the spatial tree data structure
- * <p/>
- * User: davidrusu
- * Date: 15/01/13
- * Time: 9:27 PM
+ *
+ * @author davidrusu
  */
 public class Leaf extends Tree {
+
     public static final int INITIAL_NUM_LEAFS = 32;
     private static final int EXPANSION_FACTOR = 2;
     private static Leaf[] recycledLeafs = new Leaf[INITIAL_NUM_LEAFS];
@@ -38,7 +37,8 @@ public class Leaf extends Tree {
         super();
     }
 
-    public static Leaf createInstance(World world, Parent parent, double centerX, double centerY, double halfLength) {
+    public static Leaf createInstance(World world, Parent parent, double centerX, double centerY,
+                                      double halfLength) {
         if (numRecycledLeafs == 0) {
             return new Leaf(world, parent, centerX, centerY, halfLength);
         }
@@ -184,8 +184,8 @@ public class Leaf extends Tree {
 
     @Override
     public void relocateAndCheck(double timeToCheck, Entity entity) {
-        assert !isEntityInTree(entity) :
-                "Entity should not be in the this tree when this method is called";
+        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method " +
+                "" + "" + "" + "is called";
         entityCount--;
         Collision collision = node.getCollision();
         if (entity == collision.getA() || entity == collision.getB()) {
@@ -203,7 +203,8 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void entityRemovedDuringCollision(double timeToCheck, Entity entity, double currentTime) {
+    public void entityRemovedDuringCollision(double timeToCheck, Entity entity, double
+            currentTime) {
         assert entity.getContainingTree() == null;
         assert checkEntities();
         assert !isEntityInTree(entity);
@@ -226,17 +227,16 @@ public class Leaf extends Tree {
     }
 
     @Override
-    public void draw(double minX, double maxX, double minY, double maxY, Graphics2D g) {
+    public void draw(double minX, double maxX, double minY, double maxY, Renderer renderer) {
         for (int i = 0; i < entityListPos; i++) {
-            entities[i].draw(g);
+            entities[i].draw(renderer);
         }
     }
 
     @Override
-    public void drawTree(Graphics2D g, Color color) {
-        g.setColor(Color.RED);
-        int length = (int) (getHalfLength() * 2);
-        g.drawRect((int) getMinX(), (int) getMinY(), length, length);
+    public void drawTree(Renderer renderer, RColor color) {
+        renderer.setForegroundColor(RColor.RED);
+        renderer.drawRect(centerX, centerY, halfLength, halfLength);
     }
 
     @Override

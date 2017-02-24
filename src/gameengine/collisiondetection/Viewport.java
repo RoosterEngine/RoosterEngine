@@ -1,14 +1,12 @@
 package gameengine.collisiondetection;
 
 import gameengine.context.Context;
-
-import java.awt.*;
+import gameengine.graphics.Renderer;
 
 /**
  * documentation
- * User: davidrusu
- * Date: 22/02/13
- * Time: 5:23 PM
+ *
+ * @author davidrusu
  */
 public class Viewport {
     private double x = 0, y = 0, scale = 1, offsetX = 0, offsetY = 0, screenHalfWidth,
@@ -106,14 +104,13 @@ public class Viewport {
         calcDim();
     }
 
-    public void applyTransformations(Graphics2D g) {
-        g.translate((int) -offsetX, (int) -offsetY);
-        g.scale(scale, scale);
+    public void applyTransformations(Renderer renderer) {
+        renderer.translate(-offsetX, -offsetY);
+        renderer.scale(scale);
     }
 
-    public void reverseTransformations(Graphics2D g) {
-        double inverseScale = 1 / scale;
-        g.scale(inverseScale, inverseScale);
-        g.translate((int) offsetX, (int) offsetY);
+    public void reverseTransformations(Renderer renderer) {
+        renderer.scale(1);
+        renderer.translate(offsetX, offsetY);
     }
 }

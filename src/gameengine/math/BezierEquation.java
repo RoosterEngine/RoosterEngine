@@ -4,10 +4,8 @@ import java.awt.*;
 
 /**
  * A class for making Bezier curves
- * <p/>
- * User: davidrusu
- * Date: 10/12/12
- * Time: 5:43 PM
+ *
+ * @author davidrusu
  */
 public class BezierEquation extends ParametricEquation {
     private double x0, y0, x1, y1, x2, y2;
@@ -70,8 +68,11 @@ public class BezierEquation extends ParametricEquation {
         }
         g.setColor(Color.MAGENTA);
         double radius = 3;
-        g.fillOval((int) (x0 - radius), (int) (y0 - radius), (int) (radius * 2), (int) (radius * 2));
-        g.fillOval((int) (x1 - radius), (int) (y1 - radius), (int) (radius * 2), (int) (radius * 2));
-        g.fillOval((int) (x2 - radius), (int) (y2 - radius), (int) (radius * 2), (int) (radius * 2));
+        g.fillOval((int) (x0 - radius), (int) (y0 - radius), (int) (radius * 2), (int) (radius *
+                2));
+        g.fillOval((int) (x1 - radius), (int) (y1 - radius), (int) (radius * 2), (int) (radius *
+                2));
+        g.fillOval((int) (x2 - radius), (int) (y2 - radius), (int) (radius * 2), (int) (radius *
+                2));
     }
 }

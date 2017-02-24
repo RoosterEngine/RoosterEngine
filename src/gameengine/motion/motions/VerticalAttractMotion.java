@@ -5,10 +5,8 @@ import gameengine.physics.Physics;
 
 /**
  * This {@link Motion} will pull entities towards the specified y coordinate.
- * <p/>
- * User: davidrusu
- * Date: 29/12/12
- * Time: 10:49 AM
+ *
+ * @author davidrusu
  */
 public class VerticalAttractMotion implements Motion {
     private double destination;
@@ -20,13 +18,17 @@ public class VerticalAttractMotion implements Motion {
      *
      * @param destination     the destination to attract towards
      * @param SpringConstant  the strength of the attraction force
-     * @param dampeningFactor the dampening factor to be applied to velocity, 0 is no dampening, 1 is critically damped
-     * @param entityMass      the mass of the entity this motion will be applied to, the mass is assumed to never change
+     * @param dampeningFactor the dampening factor to be applied to velocity, 0 is no dampening, 1
+     *                        is critically damped
+     * @param entityMass      the mass of the entity this motion will be applied to, the mass is
+     *                        assumed to never change
      */
-    public VerticalAttractMotion(double destination, double SpringConstant, double dampeningFactor, double entityMass) {
+    public VerticalAttractMotion(double destination, double SpringConstant, double
+            dampeningFactor, double entityMass) {
         this.destination = destination;
         this.k = SpringConstant;
-        this.d = dampeningFactor * Physics.getCriticallyDampedSpringConstant(SpringConstant, entityMass);
+        this.d = dampeningFactor * Physics.getCriticallyDampedSpringConstant(SpringConstant,
+                entityMass);
     }
 
     @Override

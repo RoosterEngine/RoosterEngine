@@ -1,14 +1,11 @@
 package gameengine.collisiondetection.tree;
 
-import gameengine.collisiondetection.Collision;
 import gameengine.entities.Entity;
 
 /**
- * Interface for nodes in the spatial tree that have children
- * <p/>
- * User: davidrusu
- * Date: 15/01/13
- * Time: 9:31 PM
+ * Interface for nodes in the spatial tree that have children.
+ *
+ * @author davidrusu
  */
 public interface Parent {
 

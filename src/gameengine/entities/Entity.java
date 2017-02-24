@@ -3,6 +3,7 @@ package gameengine.entities;
 import gameengine.collisiondetection.EntityType;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.collisiondetection.tree.Tree;
+import gameengine.graphics.Renderer;
 import gameengine.motion.motions.Motion;
 import gameengine.motion.motions.NormalMotion;
 import gameengine.physics.Material;
@@ -287,8 +288,7 @@ public abstract class Entity {
      * Sets the {@link Motion} that will controlling the velocity of this
      * {@link Entity}
      *
-     * @param motion the {@link Motion} that will control the velocity of this
-     *               {@link Entity}
+     * @param motion the {@link Motion} that will control the velocity of this {@link Entity}
      */
     public void setMotion(Motion motion) {
         this.motion = motion;
@@ -296,5 +296,5 @@ public abstract class Entity {
 
     public abstract void update(double elapsedTime);
 
-    public abstract void draw(Graphics2D g);
+    public abstract void draw(Renderer renderer);
 }

@@ -5,14 +5,14 @@
 package bricklets;
 
 import gameengine.collisiondetection.shapes.AABBShape;
-
-import java.awt.*;
+import gameengine.graphics.RColor;
+import gameengine.graphics.Renderer;
 
 public class BoxEntity extends TestingEntity {
 
     public BoxEntity(double x, double y, double width, double height) {
         super(x, y, new AABBShape(width, height));
-        color = Color.WHITE;
+        color = RColor.WHITE;
     }
 
     @Override
@@ -20,9 +20,8 @@ public class BoxEntity extends TestingEntity {
     }
 
     @Override
-    public void draw(Graphics2D g) {
-        g.setColor(color);
-        g.fillRect((int) (x - getHalfWidth()), (int) (y - getHalfHeight()), (int) getWidth(), (int) getHeight());
+    public void draw(Renderer renderer) {
+        renderer.setForegroundColor(color);
+        renderer.fillRect(x, y, getHalfWidth(), getHalfHeight());
     }
-
 }

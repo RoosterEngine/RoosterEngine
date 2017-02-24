@@ -3,12 +3,9 @@ package gameengine.motion.motions;
 import gameengine.entities.Entity;
 
 /**
- * Motions are used to move your entities.
- * Motions can be used to create complex movement
- * User: davidrusu
- * Date: 08/12/12
- * Time: 8:34 PM
- * To change this template use File | Settings | File Templates.
+ * Motions are used to move your entities.  Motions can be used to create complex movement.
+ *
+ * @author davidrusu
  */
 public interface Motion {
 

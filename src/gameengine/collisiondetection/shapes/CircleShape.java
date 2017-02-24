@@ -5,8 +5,7 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
-
-import java.awt.*;
+import gameengine.graphics.Renderer;
 
 public class CircleShape extends Shape {
     private double radius;
@@ -66,10 +65,7 @@ public class CircleShape extends Shape {
     }
 
     @Override
-    public void draw(Graphics2D g, Color color) {
-        g.setColor(color);
-        double x = getX();
-        double y = getY();
-        g.drawOval((int) (x - radius), (int) (y - radius), (int) (radius * 2), (int) (radius * 2));
+    public void draw(Renderer renderer) {
+        renderer.drawCircle(getX(), getY(), radius);
     }
 }

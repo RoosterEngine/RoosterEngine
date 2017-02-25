@@ -4,9 +4,8 @@ import gameengine.entities.Entity;
 
 /**
  * documentation
- * User: davidrusu
- * Date: 27/02/13
- * Time: 5:29 PM
+ *
+ * @author davidrusu
  */
 public class GravityWorldEffect extends WorldEffect {
     private double gX, gY, updateGX = 0, updateGY = 0;

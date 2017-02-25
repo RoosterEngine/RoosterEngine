@@ -1,11 +1,9 @@
 package gameengine.math;
 
 /**
- * A {@link ParametricEquation} that models a circle
- * <p/>
- * User: davidrusu
- * Date: 30/12/12
- * Time: 9:59 PM
+ * A {@link ParametricEquation} that models a circle.
+ *
+ * @author davidrusu
  */
 public class CircleEquation extends ParametricEquation {
     private double radius;

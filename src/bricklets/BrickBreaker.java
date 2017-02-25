@@ -1,13 +1,13 @@
 package bricklets;
 
-import gameengine.GameController;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
 import gameengine.context.Context;
-import gameengine.context.ContextType;
+import gameengine.core.GameController;
 import gameengine.entities.Entity;
-import gameengine.input.Action;
-import gameengine.input.ActionHandler;
+import gameengine.graphics.RColor;
+import gameengine.graphics.Renderer;
+import gameengine.graphics.ScreenManager;
 import gameengine.input.InputCode;
 import gameengine.motion.environmentmotions.VelocityEnforcerWorldEffect;
 import gameengine.motion.motions.AttractMotion;
@@ -17,15 +17,16 @@ import gameengine.motion.motions.VerticalAttractMotion;
 import gameengine.physics.Material;
 import gameengine.physics.Physics;
 
-import java.awt.*;
 import java.util.Random;
 
 /**
- * User: davidrusu
- * Date: 24/11/12
- * Time: 9:55 AM
+ * @author davidrusu
  */
-public class BrickBreaker extends Context implements ActionHandler {
+public class BrickBreaker extends Context {
+    private static final String SHOOT = "Shoot";
+    private static final String EXIT = "Exit";
+
+    private int width, height;
     private int brickCount = 0;
     private Paddle paddle;
     private BoxEntity topBounds, rightBounds, leftBounds, bottomBounds;
@@ -35,27 +36,39 @@ public class BrickBreaker extends Context implements ActionHandler {
     private double xThrustMultiplier = 0;
     private double yThrustMultiplier = 0;
     private Random rand = new Random(1);
-    private double initialPaddleY = height - 200;
+    private double initialPaddleY;
     private double ballRadius = 10;
     private double ballMass = 50;
     private int lives = 100;
-    private Color bgColor = Color.black;
-    private double currentTime = 0, lastTime = 0;
-    private boolean shooting = false;
+    private RColor bgColor = RColor.BLACK;
+    private long currentTime;
+
+    private RepeatedAction shootAction = createRepeatedAction(50, () -> {
+        addBall(controlledEntity.getX(), controlledEntity.getY() - controlledEntity.getHeight(),
+                ballRadius, 50);
+    });
+
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
 
     public BrickBreaker(GameController controller) {
-        super(controller, ContextType.GAME);
+        super(controller);
         init();
     }
 
     private void init() {
+        ScreenManager screen = controller.getScreenManager();
+        width = screen.getWidth();
+        height = screen.getHeight();
+        initialPaddleY = height - 200;
+
+        shootAction.pause();
         rand.setSeed(1);
         world.clear();
         lives = 100;
-        reset();
-        world.setCollisionGroups(EntityType.STANDARD, EntityType.STANDARD, EntityType.PADDLE, EntityType.WALL, EntityType.BALL);
-        world.setCollisionGroups(EntityType.BALL, EntityType.PADDLE, EntityType.BALL, EntityType.WALL);
+        world.setCollisionGroups(EntityType.STANDARD, EntityType.STANDARD, EntityType.PADDLE,
+                EntityType.WALL, EntityType.BALL);
+        world.setCollisionGroups(EntityType.BALL, EntityType.PADDLE, EntityType.BALL, EntityType
+                .WALL);
         world.setCollisionGroups(EntityType.WALL, EntityType.PADDLE);
 
         VelocityEnforcerWorldEffect velocityEnforcer = new VelocityEnforcerWorldEffect(0.5, 0.6);
@@ -72,8 +85,8 @@ public class BrickBreaker extends Context implements ActionHandler {
         initBounding();
 
         controlledEntity = paddle;
-        controlledEntity.setMotion(new MotionCompositor(new MouseMotion(),
-                new VerticalAttractMotion(paddle.getY(), 0.005, 0.3, controlledEntity.getMass())));
+        controlledEntity.setMotion(new MotionCompositor(new MouseMotion(), new
+                VerticalAttractMotion(paddle.getY(), 0.005, 0.3, controlledEntity.getMass())));
 
         setupInput();
     }
@@ -118,45 +131,35 @@ public class BrickBreaker extends Context implements ActionHandler {
     }
 
     @Override
-    public void update(double elapsedTime) {
-        if (shooting) {
-            currentTime += elapsedTime;
-            double timeBetweenBalls = 50;
-            if (lastTime + timeBetweenBalls <= currentTime) {
-
-                for (int i = 0; i < 1; i++) {
-                    addBall(controlledEntity.getX(), controlledEntity.getY() - controlledEntity.getHeight(),
-                            ballRadius, 50);
-                }
-                lastTime = currentTime;// - (currentTime - lastTime + timeBetweenBalls);
-            }
-        }
+    protected void updateContext(long gameTime, double mouseDeltaX, double mouseDeltaY, double
+            mouseWheelRotation) {
+        currentTime = gameTime;
         if (brickCount == 0) {
             init();
         }
     }
 
     @Override
-    public void draw(Graphics2D g) {
-        g.setColor(bgColor);
-        g.fillRect(0, 0, width, height);
-        world.draw(this, g);
-        drawText(g);
+    protected void renderContext(Renderer renderer, long gameTime) {
+//        renderer.setForegroundColor(bgColor);
+//        renderer.fillRect(width / 2, height / 2, width / 2, height / 2);
+        drawText(renderer);
     }
 
-    private void drawText(Graphics2D g) {
-        g.setColor(Color.red);
-        g.drawString("fps " + controller.getFrameRate(), 25, 50);
-        g.drawString("Lives " + lives, 25, 70);
-        g.drawString("entities " + world.getEntityCount(), 25, 90);
-        g.drawString("bricks " + brickCount, 25, 110);
+    private void drawText(Renderer renderer) {
+        renderer.setForegroundColor(RColor.RED);
+        renderer.drawString("fps " + controller.getFrameRateCounter().getCurrentTickRate(), 25, 50);
+        renderer.drawString("Lives " + lives, 25, 70);
+        renderer.drawString("entities " + world.getEntityCount(), 25, 90);
+        renderer.drawString("bricks " + brickCount, 25, 110);
     }
 
     @Override
     public void handleCollision(Collision collision) {
         Physics.performCollision(collision);
-//        bgColor = new Color(
-//                (int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() * 255));
+//        bgColor = new RColor(
+//                (int)(Math.random() * 255), (int)(Math.random() * 255), (int)(Math.random() *
+// 255));
         double damage = 30;
         Entity a = collision.getA();
         Entity b = collision.getB();
@@ -191,86 +194,19 @@ public class BrickBreaker extends Context implements ActionHandler {
     }
 
     private void setupInput() {
-        controller.setContextBinding(contextType, InputCode.MOUSE_LEFT_BUTTON, Action.MOUSE_CLICK);
-        controller.setContextBinding(contextType, InputCode.MOUSE_RIGHT_BUTTON, Action.RIGHT_CLICK);
-        controller.setContextBinding(contextType, InputCode.KEY_P, Action.PAUSE_GAME);
-        controller.setContextBinding(contextType, InputCode.KEY_ESCAPE, Action.EXIT_GAME);
-        controller.setContextBinding(contextType, InputCode.KEY_UP, Action.GAME_UP);
-        controller.setContextBinding(contextType, InputCode.KEY_DOWN, Action.GAME_DOWN);
-        controller.setContextBinding(contextType, InputCode.KEY_LEFT, Action.GAME_LEFT);
-        controller.setContextBinding(contextType, InputCode.KEY_RIGHT, Action.GAME_RIGHT);
-        controller.setContextBinding(contextType, InputCode.KEY_Q, Action.GAME_UNDO);
-        controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_UP, Action.ZOOM_OUT);
-        controller.setContextBinding(contextType, InputCode.MOUSE_WHEEL_DOWN, Action.ZOOM_IN);
-    }
+        mapInputAction(EXIT, InputCode.KEY_ESCAPE);
+        mapInputAction(SHOOT, InputCode.MOUSE_LEFT_BUTTON);
 
-    @Override
-    public void startAction(Action action, int inputCode) {
-        double scaleAmount = 0.01;
-        switch (action) {
-            case MOUSE_CLICK:
-                shooting = true;
-                break;
-            case RIGHT_CLICK:
-
-                break;
-            case PAUSE_GAME:
-                break;
-            case EXIT_GAME:
-                break;
-            case GAME_UP:
-                break;
-            case GAME_DOWN:
-                break;
-            case GAME_LEFT:
-                break;
-            case GAME_RIGHT:
-                break;
-            case GAME_UNDO:
-                break;
-            case ZOOM_IN:
-                viewPort.scaleScale(1 - scaleAmount);
-                break;
-            case ZOOM_OUT:
-                viewPort.scaleScale(1 + scaleAmount);
-                break;
-        }
-    }
-
-    @Override
-    public void stopAction(Action action, int inputCode) {
-        switch (action) {
-            case MOUSE_CLICK:
-                shooting = false;
-//                addBall(paddle.getX(), paddle.getY() - paddle.getHeight() / 2 - 5, ballRadius, ballMass);
-                break;
-            case RIGHT_CLICK:
-
-                break;
-            case PAUSE_GAME:
-                togglePause();
-                break;
-            case EXIT_GAME:
-//                init();
-                controller.exitContext();
-                break;
-            case GAME_UP:
-                break;
-            case GAME_DOWN:
-                break;
-            case GAME_LEFT:
-                break;
-            case GAME_RIGHT:
-                break;
-            case GAME_UNDO:
-                break;
-        }
+        mapActionStartedHandler(EXIT, () -> controller.exitContext());
+        mapActionStartedHandler(SHOOT, () -> shootAction.resume());
+        mapActionStoppedHandler(SHOOT, () -> shootAction.pause());
     }
 
     private void addBall(double x, double y, double radius, double mass) {
         double speed = 1.5;
         CircleEntity entity = new CircleEntity(x, y, radius);
-//        entity.setColor(new Color((float)Math.random(), (float)Math.random(), (float)Math.random()));
+//        entity.setColor(new RColor((float)Math.random(), (float)Math.random(), (float)
+// Math.random()));
         double spread = (Math.sin(currentTime / 1000) + 1.5) * 2;
         entity.setVelocity((Math.random() - 0.5) * spread, -10);
         entity.setMass(mass);

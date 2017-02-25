@@ -5,9 +5,8 @@ import gameengine.entities.Entity;
 
 /**
  * documentation
- * User: davidrusu
- * Date: 27/02/13
- * Time: 4:45 PM
+ *
+ * @author davidrusu
  */
 public abstract class WorldEffect {
     private int collisionTypes = 0;

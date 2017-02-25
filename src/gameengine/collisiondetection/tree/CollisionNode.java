@@ -5,9 +5,7 @@ import gameengine.collisiondetection.Collision;
 /**
  * Node for {@link CollisionList} linked list
  *
- * User: davidrusu
- * Date: 15/02/13
- * Time: 6:07 PM
+ * @author davidrusu
  */
 public class CollisionNode {
     private CollisionNode prev = null, next = null;

@@ -2,9 +2,8 @@ package Utilities;
 
 /**
  * documentation
- * User: davidrusu
- * Date: 28/02/13
- * Time: 5:28 PM
+ *
+ * @author davidrusu
  */
 public class UnorderedArrayList<T> implements List<T> {
     private static final int DEFAULT_INIT_CAPACITY = 16;

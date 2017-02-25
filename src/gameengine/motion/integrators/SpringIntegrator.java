@@ -6,10 +6,9 @@ import gameengine.physics.Physics;
 
 /**
  * A {@link Motion} using this {@link Integrator} will be pulled towards its
- * destination as if by a spring
- * User: davidrusu
- * Date: 25/12/12
- * Time: 11:00 PM
+ * destination as if by a spring.
+ *
+ * @author davidrusu
  */
 public class SpringIntegrator implements Integrator {
     private double k, d, velocity;
@@ -19,7 +18,8 @@ public class SpringIntegrator implements Integrator {
      *
      * @param k          the strength of the spring
      * @param d          the dampening of the spring, 1 is critically damped, 0 is no damping
-     * @param entityMass the mass of the {@link Entity} that will be affected by this {@link Integrator}
+     * @param entityMass the mass of the {@link Entity} that will be affected by this {@link
+     *                   Integrator}
      */
     public SpringIntegrator(double k, double d, double entityMass) {
         this.k = k;
@@ -27,8 +27,10 @@ public class SpringIntegrator implements Integrator {
     }
 
     @Override
-    public double getVelocity(Entity entity, double displacementFromDestination, double elapsedTime) {
-        double entityVelocity = Math.sqrt(entity.getDX() * entity.getDX() + entity.getDY() * entity.getDY());
+    public double getVelocity(Entity entity, double displacementFromDestination, double
+            elapsedTime) {
+        double entityVelocity = Math.sqrt(entity.getDX() * entity.getDX() + entity.getDY() *
+                entity.getDY());
         double springForce = k * displacementFromDestination - d * velocity;
         velocity += springForce / entity.getMass() * elapsedTime;
         return velocity;

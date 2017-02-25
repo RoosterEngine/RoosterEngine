@@ -1,16 +1,15 @@
 package gameengine.motion.motions;
 
 import gameengine.entities.Entity;
-import gameengine.math.Vector2D;
+import gameengine.geometry.Vector2D;
 import gameengine.physics.Physics;
 
 import java.awt.*;
 
 /**
- * A {@link gameengine.motion.motions.Motion} that follows a straight line towards it's destination
- * User: davidrusu
- * Date: 26/12/12
- * Time: 5:56 PM
+ * A {@link gameengine.motion.motions.Motion} that follows a straight line towards it's destination.
+ *
+ * @author davidrusu
  */
 public class SpringMotion implements Motion {
     private double destinationX, destinationY, targetLength;
@@ -24,10 +23,13 @@ public class SpringMotion implements Motion {
      * @param destinationX the x position of the destination
      * @param destinationY the y position of the destination
      * @param k            the strength of the attraction
-     * @param d            the damping that will be applied to the entity, 0 is no damping, 1 is critically damped
-     * @param entityMass   the mass of the {@link gameengine.entities.Entity} that will be affected by this {@link gameengine.motion.integrators.Integrator}
+     * @param d            the damping that will be applied to the entity, 0 is no damping, 1 is
+     *                     critically damped
+     * @param entityMass   the mass of the {@link gameengine.entities.Entity} that will be affected
+     *                     by this {@link gameengine.motion.integrators.Integrator}
      */
-    public SpringMotion(double destinationX, double destinationY, double targetLength, double k, double d, double entityMass) {
+    public SpringMotion(double destinationX, double destinationY, double targetLength, double k,
+                        double d, double entityMass) {
         this.destinationX = destinationX;
         this.destinationY = destinationY;
         this.targetLength = targetLength;
@@ -72,7 +74,8 @@ public class SpringMotion implements Motion {
         }
         deltaX /= dist;
         deltaY /= dist;
-        double entityVel = Vector2D.unitScalarProject(entity.getDX(), entity.getDY(), deltaX, deltaY);
+        double entityVel = Vector2D.unitScalarProject(entity.getDX(), entity.getDY(), deltaX,
+                deltaY);
         dist = targetLength - dist;
         double attractAcceleration = (-k * dist) / mass - (d * entityVel);
         double accelX = deltaX * attractAcceleration;
@@ -86,6 +89,7 @@ public class SpringMotion implements Motion {
 
     public void draw(Graphics2D g, Color color, Entity entity) {
         g.setColor(color);
-        g.drawLine((int) destinationX, (int) destinationY, (int) entity.getX(), (int) entity.getY());
+        g.drawLine((int) destinationX, (int) destinationY, (int) entity.getX(), (int) entity.getY
+                ());
     }
 }

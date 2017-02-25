@@ -3,10 +3,10 @@ package gameengine.collisiondetection;
 import gameengine.collisiondetection.shapes.CollisionData;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
-import gameengine.math.Vector2D;
+import gameengine.geometry.Vector2D;
 
 /**
- * Stores collision data
+ * Stores collision data.
  *
  * @author davidrusu
  */

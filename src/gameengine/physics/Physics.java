@@ -2,7 +2,7 @@ package gameengine.physics;
 
 import gameengine.collisiondetection.Collision;
 import gameengine.entities.Entity;
-import gameengine.math.Vector2D;
+import gameengine.geometry.Vector2D;
 
 /**
  * @author davidrusu

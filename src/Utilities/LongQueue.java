@@ -1,9 +1,9 @@
 package Utilities;
 
+import gameengine.math.Utils;
+
 /**
  * A queue of primitive long values.
- * <p>
- * Created by Dan on 10/19/2016.
  */
 public class LongQueue {
     private static final int DEFAULT_INITIAL_CAPACITY = 16;
@@ -31,7 +31,7 @@ public class LongQueue {
      * @param initialCapacity The minimum initial capacity
      */
     public LongQueue(int initialCapacity) {
-        int capacity = nextPowerOf2(initialCapacity);
+        int capacity = Utils.nextPowerOf2(initialCapacity);
         queue = new long[capacity];
         modMask = capacity - 1;
     }
@@ -94,23 +94,5 @@ public class LongQueue {
         System.arraycopy(oldQueue, 0, queue, firstPart, headIndex);
         headIndex = 0;
         tailIndex = size;
-    }
-
-    /**
-     * Returns the next power of 2 that is greater or equal to the specified value.
-     *
-     * @param n The value
-     * @return The next power of power of 2
-     */
-    private int nextPowerOf2(int n) {
-        assert n > 0;
-
-        n--;
-        n |= n >>> 1;
-        n |= n >>> 2;
-        n |= n >>> 4;
-        n |= n >>> 8;
-        n |= n >>> 16;
-        return n + 1;
     }
 }

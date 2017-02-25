@@ -4,10 +4,8 @@ import gameengine.entities.Entity;
 
 /**
  * This {@link Motion} will not affect the velocity of the {@link Entity}
- * <p/>
- * User: davidrusu
- * Date: 29/12/12
- * Time: 12:22 PM
+ *
+ * @author davidrusu
  */
 public class NormalMotion implements Motion {
     private double velocityX, velocityY;

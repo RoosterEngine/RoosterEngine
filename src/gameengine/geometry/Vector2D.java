@@ -4,159 +4,262 @@ package gameengine.geometry;
  * @author davidrusu
  */
 public class Vector2D {
+    /**
+     * The components of this vector.
+     */
     private double x, y;
 
+    /**
+     * Creates a Vector2D instance at the origin.
+     */
     public Vector2D() {
-        x = 0;
-        y = 0;
+        this(0, 0);
     }
 
+    /**
+     * Creates a Vector2D instance by copying the specified vector.
+     *
+     * @param vector The vector to copy
+     */
+    public Vector2D(Vector2D vector) {
+        this(vector.x, vector.y);
+    }
+
+    /**
+     * Creates a Vector2D instance with the specified components.
+     *
+     * @param x The X component
+     * @param y The Y component
+     */
     public Vector2D(double x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public Vector2D(Vector2D v) {
-        x = v.x;
-        y = v.y;
+    @Override
+    public String toString() {
+        return "Vector2D(" + x + ", " + y + ")";
     }
 
-    public Vector2D setX(double x) {
+    public void set(Vector2D v) {
+        set(v.x, v.y);
+    }
+
+    /**
+     * Sets the components of this vector.
+     *
+     * @param x The X component
+     * @param y The Y component
+     */
+    public void set(double x, double y) {
         this.x = x;
-        return this;
-    }
-
-    public Vector2D setY(double y) {
         this.y = y;
-        return this;
     }
 
-    public Vector2D set(double x, double y) {
+    /**
+     * Sets the X component of this vector.
+     *
+     * @param x The X component
+     */
+    public void setX(double x) {
         this.x = x;
+    }
+
+    /**
+     * Sets the Y component of this vector.
+     *
+     * @param y The Y component
+     */
+    public void setY(double y) {
         this.y = y;
-        return this;
     }
 
-    public Vector2D set(Vector2D v) {
-        x = v.x;
-        y = v.y;
-        return this;
+    /**
+     * Clears this vector setting the components to the origin.
+     */
+    public void clear() {
+        set(0, 0);
     }
 
+    /**
+     * @return The X component.
+     */
     public double getX() {
         return x;
     }
 
+    /**
+     * @return The Y component.
+     */
     public double getY() {
         return y;
     }
 
     /**
-     * Adds the provided {@link Vector2D} to this {@link Vector2D}
-     *
-     * @param v the {@link Vector2D} you want to add to this {@link Vector2D}
-     * @return itself
+     * @return The length of this vector.
      */
-    public Vector2D add(Vector2D v) {
-        x += v.x;
-        y += v.y;
-        return this;
-    }
-
-    /**
-     * Adds the provided values to this {@link Vector2D}
-     *
-     * @param x the amount to add to the x component
-     * @param y the amount to add to the y component
-     * @return itself
-     */
-    public Vector2D add(double x, double y) {
-        this.x += x;
-        this.y += y;
-        return this;
-    }
-
-    /**
-     * Subtracts the provided {@link Vector2D} from this vector
-     *
-     * @param v the {@link Vector2D} to subtract
-     * @return itself
-     */
-    public Vector2D subtract(Vector2D v) {
-        x -= v.x;
-        y -= v.y;
-        return this;
-    }
-
-    /**
-     * Subtracts the provided values from this {@link Vector2D}
-     *
-     * @param x he amount to subtract to the x component
-     * @param y he amount to subtract to the y component
-     * @return itself
-     */
-    public Vector2D subtract(double x, double y) {
-        this.x -= x;
-        this.y -= y;
-        return this;
-    }
-
-    /**
-     * Scales this {@link Vector2D} by the provided amount.
-     *
-     * @param a the amount to scale this {@link Vector2D} by.
-     * @return itself
-     */
-    public Vector2D scale(double a) {
-        x *= a;
-        y *= a;
-        return this;
-    }
-
-    /**
-     * Divides this {@link Vector2D} by the provided amount
-     *
-     * @param a the amount to divide this {@link Vector2D} by.
-     * @return itself
-     */
-    public Vector2D divide(double a) {
-        x /= a;
-        y /= a;
-        return this;
-    }
-
     public double length() {
-        return Math.sqrt(x * x + y * y);
+        return Math.sqrt(lengthSquared());
     }
 
+    /**
+     * @return The length of this vector squared (to avoid expensive square root operation).
+     */
     public double lengthSquared() {
         return x * x + y * y;
     }
 
-    public double dot(Vector2D v) {
-        return x * v.x + y * v.y;
+    /**
+     * Adds the specified vector to this vector.
+     *
+     * @param vector The vector to be added
+     */
+    public void add(Vector2D vector) {
+        add(vector.x, vector.y);
     }
 
-    public static double dot(double x, double y, Vector2D v) {
-        return x * v.x + y * v.y;
+    /**
+     * Adds the provided values to this vector.
+     *
+     * @param x the amount to add to the x component
+     * @param y the amount to add to the y component
+     */
+    public void add(double x, double y) {
+        this.x += x;
+        this.y += y;
     }
 
-    public static double dot(double x1, double y1, double x2, double y2) {
+    /**
+     * Subtracts the specified vector from this vector.
+     *
+     * @param vector The vector to subtract
+     */
+    public void subtract(Vector2D vector) {
+        subtract(vector.x, vector.y);
+    }
+
+    /**
+     * Subtracts the specified values from this vector.
+     *
+     * @param x he amount to subtract to the x component
+     * @param y he amount to subtract to the y component
+     */
+    public void subtract(double x, double y) {
+        this.x -= x;
+        this.y -= y;
+    }
+
+    /**
+     * Scales this vector by the specified scaling factor.
+     *
+     * @param factor The scaling factor
+     */
+    public void scale(double factor) {
+        x *= factor;
+        y *= factor;
+    }
+
+    /**
+     * Makes this a unit vector by dividing by its length.
+     */
+    public void unit() {
+        scale(1 / length());
+    }
+
+    /**
+     * Rotates this vector.
+     *
+     * @param sinAngle The sin of the angle to be rotated by
+     * @param cosAngle The cos of the angle to be rotated by
+     */
+    public void rotate(double sinAngle, double cosAngle) {
+        set(perpendicularProduct(sinAngle, cosAngle), dotProduct(sinAngle, cosAngle));
+    }
+
+    /**
+     * Modifies this vector to become perpendicular.
+     */
+    public void perpendicular() {
+        set(-y, x);
+    }
+
+    /**
+     * Computes the dot product of this vector with the specified vector.
+     *
+     * @param vector The vector to perform the dot product with
+     * @return The dot product
+     */
+    public double dotProduct(Vector2D vector) {
+        return dotProduct(vector.x, vector.y);
+    }
+
+    /**
+     * Computes the dot product of this vector with the specified vector components.
+     *
+     * @param x The X component of the vector to perform the dot product with
+     * @param y The Y component of the vector to perform the doct product with
+     * @return The dot product
+     */
+    public double dotProduct(double x, double y) {
+        return this.x * x + this.y * y;
+    }
+
+    /**
+     * Computes the dot product of the 2 vectors.
+     *
+     * @param x1 The X component of the first vector
+     * @param y1 The Y component of the first vector
+     * @param x2 The X component of the second vector
+     * @param y2 The Y component of the second vector
+     * @return The dot product
+     */
+    public static double dotProduct(double x1, double y1, double x2, double y2) {
         return x1 * x2 + y1 * y2;
     }
 
-    public Vector2D project(Vector2D onTo) {
-        double dist = (x * onTo.x + y * onTo.y) / (onTo.x * onTo.x + onTo.y * onTo.y);
-        x = dist * onTo.x;
-        y = dist * onTo.y;
-        return this;
+    /**
+     * Computes the perpendicular product of this vector with the specified vector.  The
+     * perpendicular product is the dot product against the perpendicular of the specified vector.
+     *
+     * @param vector The vector to perform the perpendicular product with
+     * @return The perpendicular product
+     */
+    public double perpendicularProduct(Vector2D vector) {
+        return perpendicularProduct(vector.x, vector.y);
     }
 
-    public Vector2D project(double ontoX, double ontoY) {
+    /**
+     * Computes the perpendicular product of this vector with the specified vector.  The
+     * perpendicular product is the dot product against the perpendicular of the specified vector.
+     *
+     * @param x The X component of the vector to perform the perpendicular product with
+     * @param y The Y component of the vector to perform the perpendicular product with
+     * @return The perpendicular product
+     */
+    public double perpendicularProduct(double x, double y) {
+        return this.x * y - this.y * x;
+    }
+
+    /**
+     * Interpreting the current vector as a line from the origin, checks if the specified point is
+     * to the left of this line.  If horizontal then returns true if the point is above.
+     *
+     * @param point The point to check
+     * @return True if the point is to the left of the line
+     */
+    public boolean isLeft(Vector2D point) {
+        return perpendicularProduct(point) > 0;
+    }
+
+    public void project(Vector2D onTo) {
+        double dist = dotProduct(onTo) / onTo.lengthSquared();
+        set(dist * onTo.x, dist * onTo.y);
+    }
+
+    public void project(double ontoX, double ontoY) {
         double dist = (x * ontoX + y * ontoY) / (ontoX * ontoX + ontoY * ontoY);
         x = dist * ontoX;
         y = dist * ontoY;
-        return this;
     }
 
     public double unitScalarProject(Vector2D onto) {
@@ -183,27 +286,9 @@ public class Vector2D {
         return (x * ontoX + y * ontoY) / ontoLength;
     }
 
-    public static double scalarProject(double x, double y, double ontoX, double ontoY, double ontoLength) {
+    public static double scalarProject(double x, double y, double ontoX, double ontoY, double
+            ontoLength) {
         return (x * ontoX + y * ontoY) / ontoLength;
-    }
-
-    public static double distToLine(double x, double y, double x1, double y1, double x2, double y2) {
-        return Math.abs(signedDistToLine(x, y, x1, y1, x2, y2));
-    }
-
-    public static double distToLineSquared(double x, double y, double x1, double y1, double x2, double y2) {
-        double dx = x1 - x2;
-        double dy = y2 - y1;
-        double dist = x * dy + y * dx + x2 * y1 - x1 * y2;
-        return dist * dist / (dx * dx + dy * dy);
-    }
-
-    public double distToLineSquared(double x1, double y1, double x2, double y2) {
-        return distToLineSquared(x, y, x1, y1, x2, y2);
-    }
-
-    public double distToLine(double x1, double y1, double x2, double y2) {
-        return distToLine(x, y, x1, y1, x2, y2);
     }
 
     /**
@@ -218,44 +303,67 @@ public class Vector2D {
         return Math.abs(signedDistToLine(x, y, p1.x, p1.y, p2.x, p2.y));
     }
 
-    public static double signedDistToLine(double x, double y, double x1, double y1, double x2, double y2) {
-        double dx = x1 - x2;
-        double dy = y2 - y1;
-        double dist = x * dy + y * dx + x2 * y1 - x1 * y2;
-        return dist / Math.sqrt(dx * dx + dy * dy);
+    public double distToLine(double x1, double y1, double x2, double y2) {
+        return distToLine(x, y, x1, y1, x2, y2);
+    }
+
+    public static double distToLine(double x, double y, double x1, double y1, double x2, double
+            y2) {
+        return Math.abs(signedDistToLine(x, y, x1, y1, x2, y2));
     }
 
     public double signedDistanceToLine(double x1, double y1, double x2, double y2) {
         return signedDistToLine(x, y, x1, y1, x2, y2);
     }
 
-    public Vector2D unit() {
-        double length = length();
-        this.x /= length;
-        this.y /= length;
-        return this;
+    public static double signedDistToLine(double x, double y, double x1, double y1, double x2,
+                                          double y2) {
+        double dx = x1 - x2;
+        double dy = y2 - y1;
+        double dist = x * dy + y * dx + x2 * y1 - x1 * y2;
+        return dist / Math.sqrt(dx * dx + dy * dy);
     }
 
-    public Vector2D unit(double length) {
-        this.x /= length;
-        this.y /= length;
-        return this;
+    public static double distToLineSquared(double x, double y, double x1, double y1, double x2,
+                                           double y2) {
+        double dx = x1 - x2;
+        double dy = y2 - y1;
+        double dist = x * dy + y * dx + x2 * y1 - x1 * y2;
+        return dist * dist / (dx * dx + dy * dy);
     }
 
-    public static boolean isPointsProjectionWithinLine(double px, double py, double r1x, double r1y, double r2x, double r2y) {
+    public double distToLineSquared(double x1, double y1, double x2, double y2) {
+        return distToLineSquared(x, y, x1, y1, x2, y2);
+    }
+
+    public static boolean isPointsProjectionWithinLine(double px, double py, double r1x, double
+            r1y, double r2x, double r2y) {
         double dx = r1x - r2x;
         double dy = r1y - r2y;
         double x = px - r2x;
         double y = py - r2y;
-        return dot(x, y, dx, dy) >= 0 == dot(x - dx, y - dy, dx, dy) <= 0;
+        return dotProduct(x, y, dx, dy) >= 0 == dotProduct(x - dx, y - dy, dx, dy) <= 0;
     }
 
-    public void clear() {
-        x = 0;
-        y = 0;
-    }
+    /**
+     * Checks if the line segments a1 - b1 and a2 - b2 intersect.
+     *
+     * @return True if the lines intersect
+     */
+    public static boolean lineSegmentsIntersect(Vector2D a1, Vector2D b1, Vector2D a2, Vector2D
+            b2) {
+        //the line segments don't intersect if both points of one line segment are on the same side
+        // of the other line segment (and make sure to test both lines)
+        double deltaX2 = b2.x - a2.x, deltaY2 = b2.y - a2.y;
+        double deltaX12 = a1.x - a2.x, deltaY12 = a1.y - a2.y;
 
-    public String toString() {
-        return "Vector2D(" + x + ", " + y + ")";
+        if ((deltaX2 * deltaY12 - deltaY2 * deltaX12) > 0 == (deltaX2 * (b1.y - a2.y) - deltaY2 *
+                (b1.x - a2.x)) > 0) {
+            return false;
+        }
+
+        double deltaX1 = b1.x - a1.x, deltaY1 = b1.y - a1.y;
+        return (deltaY1 * deltaX12 - deltaX1 * deltaY12) > 0 != (deltaX1 * (b2.y - a1.y) -
+                deltaY1 * (b2.x - a1.x)) > 0;
     }
 }

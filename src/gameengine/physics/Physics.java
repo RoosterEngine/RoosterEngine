@@ -20,7 +20,10 @@ public class Physics {
     }
 
     public static double springForce(Vector2D a, Vector2D b, double k, double restingLength) {
-        double displacement = new Vector2D(a).subtract(b).length() - restingLength;
+        double dx = a.getX() - b.getX();
+        double dy = a.getY() - b.getY();
+        double length = Math.sqrt(dx * dx + dy * dy);
+        double displacement = length - restingLength;
         return displacement * k;
     }
 
@@ -46,10 +49,12 @@ public class Physics {
             b.setVelocity(unitX.getX() * xLengthB, unitX.getY() * xLengthB);
             return;
         } else if (isMassAInfinite) {
-            performInfiniteMassCollision(b, friction, restitution, unitX, unitY, yLengthA, xLengthB, yLengthB);
+            performInfiniteMassCollision(b, friction, restitution, unitX, unitY, yLengthA,
+                    xLengthB, yLengthB);
             return;
         } else if (isMassBInfinite) {
-            performInfiniteMassCollision(a, friction, restitution, unitX, unitY, yLengthB, xLengthA, yLengthA);
+            performInfiniteMassCollision(a, friction, restitution, unitX, unitY, yLengthB,
+                    xLengthA, yLengthA);
             return;
         }
 
@@ -66,7 +71,8 @@ public class Physics {
 
         double impulse = (yFinalA - yLengthA) * aMass;
         double xVelDiff = xLengthB - xLengthA;
-        double frictionImpulse = Math.min(friction * Math.abs(impulse), Math.abs(xVelDiff) * aMass * bMass / combinedMass);
+        double frictionImpulse = Math.min(friction * Math.abs(impulse), Math.abs(xVelDiff) *
+                aMass * bMass / combinedMass);
         double frictionDirection = Math.signum(xVelDiff);
 
         double xFinalA = xLengthA + frictionDirection * frictionImpulse / aMass;
@@ -82,7 +88,9 @@ public class Physics {
         b.setVelocity(xB, yB);
     }
 
-    private static void performInfiniteMassCollision(Entity b, double friction, double restitution, Vector2D unitX, Vector2D unitY, double yLengthA, double xLengthB, double yLengthB) {
+    private static void performInfiniteMassCollision(Entity b, double friction, double
+            restitution, Vector2D unitX, Vector2D unitY, double yLengthA, double xLengthB, double
+            yLengthB) {
         double yFinalB = yLengthA * (1 + restitution) - restitution * yLengthB;
         double xB = unitY.getX() * yFinalB + unitX.getX() * xLengthB;
         double yB = unitY.getY() * yFinalB + unitX.getY() * xLengthB;

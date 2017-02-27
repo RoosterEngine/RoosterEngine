@@ -3,7 +3,6 @@ package gameengine.graphics;
 import gameengine.graphics.image.Graphic;
 import gameengine.input.MouseController;
 
-import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 /**
@@ -29,8 +28,7 @@ public interface ScreenManager {
     void initializeWindow();
 
     /**
-     * Restores the screen back to how it was.  This should be called prior to
-     * exiting the game.
+     * Restores the screen back to how it was.  This should be called prior to exiting the game.
      */
     void restoreWindow();
 
@@ -40,15 +38,6 @@ public interface ScreenManager {
      * @param mouse The mouse controller
      */
     void addMouseListener(MouseController mouse);
-
-    /**
-     * Creates a new Graphic that is compatible with the active renderer by copying the contents
-     * from the provided buffered image.
-     *
-     * @param image The buffered image to copy the image data from
-     * @return A Graphic with the contents of the provided image
-     */
-    Graphic createImage(BufferedImage image);
 
     /**
      * Loads a Graphic from the specified path.

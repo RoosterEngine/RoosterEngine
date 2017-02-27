@@ -5,6 +5,7 @@ import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
+import gameengine.entities.RegionSensor;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
@@ -133,17 +134,20 @@ public abstract class Tree {
     }
 
     protected void collideShapes(Collision result, double timeToCheck, Entity a, Entity b) {
-        if ((world.getCollisionGroups()[a.getEntityType()] & b.getEntityTypeBitMask()) != 0) {
-            Collision temp = world.getTempCollision();
-            temp.setNoCollision(); // TODO might not need to do this because collideShapes
-            // overwrites temp anyway
-            Shape.collideShapes(a.getShape(), b.getShape(), timeToCheck, temp);
-            if (temp.getCollisionTime() < result.getCollisionTime() - timeInTree) {
-                assert temp.getCollisionTime() <= timeToCheck : "too long" + temp
-                        .getCollisionTime() + ", " + timeToCheck;
-                result.set(temp);
-                result.setCollisionTime(result.getCollisionTime() + timeInTree);
-            }
+        if ((world.getCollisionGroups()[a.getEntityType()] & b.getEntityTypeBitMask()) == 0 || a
+                instanceof RegionSensor && ((RegionSensor) a).containsEntity(b) || b instanceof
+                RegionSensor && ((RegionSensor) b).containsEntity(a)) {
+            return;
+        }
+        Collision temp = world.getTempCollision();
+        temp.setNoCollision(); // TODO might not need to do this because collideShapes
+        // overwrites temp anyway
+        Shape.collideShapes(a.getShape(), b.getShape(), timeToCheck, temp);
+        if (temp.getCollisionTime() < result.getCollisionTime() - timeInTree) {
+            assert temp.getCollisionTime() <= timeToCheck : "too long" + temp.getCollisionTime()
+                    + ", " + timeToCheck;
+            result.set(temp);
+            result.setCollisionTime(result.getCollisionTime() + timeInTree);
         }
     }
 

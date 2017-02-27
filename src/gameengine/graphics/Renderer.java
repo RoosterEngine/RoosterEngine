@@ -115,6 +115,22 @@ public abstract class Renderer {
     }
 
     /**
+     * Draws the strings in order using the specified offset and padding.
+     *
+     * @param xOffset The distance from the left side of the screen
+     * @param yOffset The distance from the top of the screen for the first string
+     * @param padding The vertical padding between strings
+     * @param strings The strings to be drawn
+     */
+    public final void drawStrings(double xOffset, double yOffset, double padding, String...
+            strings) {
+        for (int i = 0; i < strings.length; i++) {
+            drawString(strings[i], xOffset, yOffset);
+            yOffset += padding;
+        }
+    }
+
+    /**
      * Draws the specified string at the specified location.
      *
      * @param text The string to draw

@@ -11,7 +11,8 @@ public class LongQueue {
      * The values in the queue.
      */
     private long[] queue;
-    private int headIndex = 0, tailIndex = 0, size = 0;
+    private int headIndex = 0, tailIndex = 0;
+    private int size = 0;
     /**
      * Used for finding the remainder efficiently since x % powerOf2 == x & (powerOf2 - 1).
      */
@@ -34,6 +35,15 @@ public class LongQueue {
         int capacity = Utils.nextPowerOf2(initialCapacity);
         queue = new long[capacity];
         modMask = capacity - 1;
+    }
+
+    /**
+     * Clears the queue.
+     */
+    public void clear() {
+        headIndex = 0;
+        tailIndex = 0;
+        size = 0;
     }
 
     /**

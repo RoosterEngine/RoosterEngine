@@ -7,14 +7,14 @@ import gameengine.graphics.Renderer;
 
 import java.util.Random;
 
-public class PolygonShape extends Shape {
+public class Polygon extends Shape {
     private static Random rand = new Random(0);
     private Vector2D[] normals, points; // points are relative to the center
     private double[] normalMins, normalMaxs;
     private double width, height, minX, maxX, minY, maxY;
     private int numPoints;
 
-    public PolygonShape(double[] xPoints, double[] yPoints) {
+    public Polygon(double[] xPoints, double[] yPoints) {
         super(getHalfLength(xPoints), getHalfLength(yPoints));
         numPoints = xPoints.length;
         points = new Vector2D[numPoints];
@@ -26,7 +26,7 @@ public class PolygonShape extends Shape {
         setupNormalsAndShadows();
     }
 
-    public static PolygonShape getCircle(double radius, int points) {
+    public static Polygon getCircle(double radius, int points) {
         double angle = 2 * Math.PI / points;
         double[] xPoints = new double[points];
         double[] yPoints = new double[points];
@@ -38,10 +38,10 @@ public class PolygonShape extends Shape {
             xPoints[i] = x;
             yPoints[i] = y;
         }
-        return new PolygonShape(xPoints, yPoints);
+        return new Polygon(xPoints, yPoints);
     }
 
-    public static PolygonShape getRandConvexPolygon(double radiusMin, double radiusMax, int
+    public static Polygon getRandConvexPolygon(double radiusMin, double radiusMax, int
             numPointsMin, int numPointsMax) {
         double radius = rand.nextDouble() * (radiusMax - radiusMin) + radiusMin;
         int pointsDiff = numPointsMax - numPointsMin;
@@ -58,7 +58,7 @@ public class PolygonShape extends Shape {
             xPoints[p] = pX;
             yPoints[p] = pY;
         }
-        return new PolygonShape(xPoints, yPoints);
+        return new Polygon(xPoints, yPoints);
     }
 
     private static double getHalfLength(double[] points) {
@@ -75,17 +75,17 @@ public class PolygonShape extends Shape {
     }
 
     @Override
-    public void collideWithCircle(CircleShape circleShape, double maxTime, Collision result) {
+    public void collideWithCircle(Circle circleShape, double maxTime, Collision result) {
         Shape.collideCirclePoly(circleShape, this, maxTime, result);
     }
 
     @Override
-    public void collideWithAABB(AABBShape aabbShape, double maxTime, Collision result) {
-        Shape.collideAABBPoly(aabbShape, this, maxTime, result);
+    public void collideWithRectangle(Rectangle aabbShape, double maxTime, Collision result) {
+        Shape.collideRectanglePoly(aabbShape, this, maxTime, result);
     }
 
     @Override
-    public void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision result) {
+    public void collideWithPolygon(Polygon polygonShape, double maxTime, Collision result) {
         Shape.collidePolyPoly(this, polygonShape, maxTime, result);
     }
 
@@ -95,18 +95,18 @@ public class PolygonShape extends Shape {
     }
 
     @Override
-    public boolean isOverlappingPolygon(PolygonShape shape) {
+    public boolean isOverlappingPolygon(Polygon shape) {
         return Shape.isOverlappingPolyPoly(this, shape);
     }
 
     @Override
-    public boolean isOverlappingCircle(CircleShape shape) {
+    public boolean isOverlappingCircle(Circle shape) {
         return Shape.isOverlappingPolyCircle(this, shape);
     }
 
     @Override
-    public boolean isOverlappingAABB(AABBShape shape) {
-        return Shape.isOverlappingPolyAABB(this, shape);
+    public boolean isOverlappingRectangle(Rectangle shape) {
+        return Shape.isOverlappingPolyRectangle(this, shape);
     }
 
     /**
@@ -226,7 +226,8 @@ public class PolygonShape extends Shape {
             double x = point.getX();
             double y = point.getY();
             Vector2D normal = new Vector2D(y - lastY, lastX - x);
-            normals[i] = normal.unit();
+            normal.unit();
+            normals[i] = normal;
             lastX = x;
             lastY = y;
 

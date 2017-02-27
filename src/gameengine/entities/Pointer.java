@@ -1,6 +1,6 @@
 package gameengine.entities;
 
-import gameengine.collisiondetection.shapes.CircleShape;
+import gameengine.collisiondetection.shapes.Circle;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.image.Graphic;
 import gameengine.motion.motions.MouseMotion;
@@ -14,7 +14,7 @@ public class Pointer extends Entity {
     Graphic graphic;
 
     public Pointer(Graphic graphic, double startX, double startY) {
-        super(startX, startY, new CircleShape(graphic.getWidth() / 2));
+        super(startX, startY, new Circle(graphic.getWidth() / 2));
         this.graphic = graphic;
         setMotion(new MouseMotion());
     }

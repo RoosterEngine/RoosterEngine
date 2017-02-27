@@ -7,7 +7,7 @@ public class GameTimer implements Runnable {
     /**
      * Number of nanoseconds in a millisecond.
      */
-    private static final long NANOS_PER_MILLI = 1000000;
+    public static final long NANOS_PER_MILLI = 1000000;
 
     /**
      * Number of nanoseconds in a second.

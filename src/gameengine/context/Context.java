@@ -5,6 +5,7 @@ import gameengine.collisiondetection.Viewport;
 import gameengine.collisiondetection.World;
 import gameengine.core.Action;
 import gameengine.core.GameController;
+import gameengine.core.GameTimer;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
 import gameengine.motion.motions.MouseMotion;
@@ -19,7 +20,7 @@ public abstract class Context {
     protected GameController controller;
 
     /**
-     * The amount of time that this context has been active (in nanoseconds)
+     * The amount of time that this context has been active.
      */
     long gameTime = 0;
 
@@ -86,7 +87,7 @@ public abstract class Context {
         double elapsedTimeMillis = elapsedTime / 1000000.0;
         MouseMotion.setVelocity(mouseDeltaX / elapsedTimeMillis, mouseDeltaY / elapsedTimeMillis);
         world.update(elapsedTimeMillis, this);
-        gameTime += (elapsedTime + 500) / 1000; //round to nearest microsecond
+        gameTime += elapsedTime;
         //perform all the actions that have met the delay requirement
         while (!actions.isEmpty() && actions.peek().timeOfNextAction <= gameTime) {
             actions.poll().performAction();
@@ -259,7 +260,7 @@ public abstract class Context {
                 freezeDelayOnPause, Action action) {
             assert repeatDelay > 0;
             this.action = action;
-            delay = repeatDelay * 1000;
+            delay = repeatDelay * GameTimer.NANOS_PER_MILLI;
             this.freezeDelayOnPause = freezeDelayOnPause;
 
             if (!zeroDelayToFirstAction) {

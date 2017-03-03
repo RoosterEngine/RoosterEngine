@@ -1,6 +1,6 @@
 package bricklets;
 
-import gameengine.collisiondetection.shapes.PolygonShape;
+import gameengine.collisiondetection.shapes.Polygon;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
@@ -13,13 +13,13 @@ public class Paddle extends TestingEntity {
 
     public Paddle(double x, double y, double width, double height) {
         super(x, y, createPaddlePolygon(width, height));
-//        super(x, y, new CircleShape(Math.max(width, height)));
-//        super(x, y, new AABBShape(width, height));
-//        super(x, y, PolygonShape.getCircle(Math.max(width, height), 4));
+//        super(x, y, new Circle(Math.max(width, height)));
+//        super(x, y, new Rectangle(width, height));
+//        super(x, y, Polygon.getCircle(Math.max(width, height), 4));
         color = RColor.WHITE;
     }
 
-    private static PolygonShape createPaddlePolygon(double width, double height) {
+    private static Polygon createPaddlePolygon(double width, double height) {
         double halfWidth = width * 0.5;
         double halfHeight = height * 0.5;
 
@@ -41,7 +41,7 @@ public class Paddle extends TestingEntity {
             yPoints[i] = yPoint;
         }
 
-        return new PolygonShape(xPoints, yPoints);
+        return new Polygon(xPoints, yPoints);
     }
 
     @Override

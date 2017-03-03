@@ -1,25 +1,29 @@
 package Utilities;
 
+import gameengine.core.GameTimer;
+
 /**
  * Used to measure how many times an action happens per second.
  */
 public class RateCounter {
-    private static final long NANOS_PER_MILLI = 1000000;
-    private static final long NANOS_PER_SECOND = NANOS_PER_MILLI * 1000;
-    private long totalTickCount;
+    private long totalTickCount = 0;
     private long startTime, lastTickTime;
-    private LongQueue tickTimes;
+    private LongQueue tickTimes = new LongQueue(60);
 
     /**
      * Creates a RateCounter instance.
      */
     public RateCounter() {
-        startTime = System.currentTimeMillis();
+        reset();
+    }
+
+    public final void reset() {
+        tickTimes.clear();
+        startTime = System.nanoTime();
         lastTickTime = startTime;
-        tickTimes = new LongQueue(60);
         //add an artificial tick a sixtieth of a second in the past which will only affect the
         // current tick rate during the first second
-        tickTimes.enqueue(System.nanoTime() - 16 * NANOS_PER_MILLI);
+        tickTimes.enqueue(System.nanoTime() - 16 * GameTimer.NANOS_PER_MILLI);
     }
 
     /**
@@ -29,7 +33,7 @@ public class RateCounter {
         long now = System.nanoTime();
         lastTickTime = now;
         tickTimes.enqueue(now);
-        long cutoff = now - NANOS_PER_SECOND;//only keep samples for the last second
+        long cutoff = now - GameTimer.NANOS_PER_SECOND;//only keep samples for the last second
         //keep at least 2 samples since the tick rate is calculated from the last tick time (not
         // the current time)
         while (tickTimes.size() > 2 && tickTimes.peek() < cutoff) {
@@ -43,15 +47,19 @@ public class RateCounter {
      * instance.
      */
     public double getAverageTickRate() {
-        return totalTickCount * 1000.0 / (System.currentTimeMillis() - startTime);
+        return totalTickCount * GameTimer.NANOS_PER_SECOND / (System.nanoTime() - startTime);
     }
 
     /**
-     * @return The # of ticks per second.  This ignores any time that has passed
-     * since the last tick because another tick might be right around the corner
-     * so this reduces fluctuations in the reported tick rate.
+     * @return The # of ticks per second.  This ignores any time that has passed since the last tick
+     * because another tick might be right around the corner so this reduces fluctuations in the
+     * reported tick rate.
      */
     public double getCurrentTickRate() {
-        return tickTimes.size() * NANOS_PER_SECOND / (double) (lastTickTime - tickTimes.peek());
+        //TODO: subtracting 1 makes the reported fps inline with the target but I'm not sure why
+        double result = (tickTimes.size() - 1) * GameTimer.NANOS_PER_SECOND / (double)
+                (lastTickTime - tickTimes.peek());
+        //round to the nearest decimal point to avoid misleading accuracy assumptions
+        return Math.floor(result * 10 + 0.5) / 10;
     }
 }

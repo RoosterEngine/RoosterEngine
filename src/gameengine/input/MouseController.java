@@ -2,6 +2,7 @@ package gameengine.input;
 
 import gameengine.core.GameCore;
 import gameengine.core.GameTimer;
+import gameengine.geometry.Vector2D;
 import gameengine.graphics.ScreenManager;
 
 import java.awt.*;
@@ -16,7 +17,7 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
     public static final double DEFAULT_WHEEL_SENSITIVITY = 1;
     public static final double DEFAULT_ACCELERATION = 0;
     /**
-     * some smoothing with no noticeable lag.
+     * Some smoothing with no noticeable lag.
      */
     public static final double DEFAULT_SMOOTHING_FACTOR = 1.5;
     private static final double INVERTED = -1;
@@ -30,39 +31,38 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
     private double smoothingFactor = DEFAULT_SMOOTHING_FACTOR;
 
     /**
-     * The accumulation of mouse movements since the last frame.
-     * Updated and read on both the game and EDT threads
+     * The accumulation of mouse movements since the last frame.  Updated and read on both the game
+     * and EDT threads.
      */
-    private double deltaX = 0, deltaY = 0;
+    private Vector2D delta = new Vector2D();
 
     /**
-     * The reported movement for the last frame taking into account smoothing
+     * The reported movement for the last frame taking into account smoothing.
      */
-    private double dx = 0, dy = 0;
+    private Vector2D reportedDelta = new Vector2D();
 
     /**
-     * The delta from the reported position and the true position since
-     * smoothing adds some delay
+     * The delta from the reported position and the true position since smoothing adds some delay.
      */
-    private double trueXDelta = 0, trueYDelta = 0;
+    private Vector2D trueDelta = new Vector2D();
 
     /**
-     * The average elapsed time per frame in nanoseconds
+     * The average elapsed time per frame in nanoseconds.
      */
     private double averageFrameTime;
 
     /**
-     * Updated & read on both the game and EDT threads
+     * Updated & read on both the game and EDT threads.
      */
     private double wheelDelta = 0;
 
     /**
-     * The center position of the screen
+     * The center position of the screen.
      */
     private final int centerX, centerY;
 
     /**
-     * The robot for moving the mouse back to the center
+     * The robot for moving the mouse back to the center.
      */
     private Robot robot = null;
 
@@ -91,17 +91,11 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
         }
     }
 
-    /**
-     * @see MouseProperties#isInvertedVerticalAxis()
-     */
     @Override
     public boolean isInvertedVerticalAxis() {
         return verticalInversion == INVERTED;
     }
 
-    /**
-     * @see MouseProperties#setInvertedVerticalAxis(boolean)
-     */
     @Override
     public void setInvertedVerticalAxis(boolean inverted) {
         if (inverted) {
@@ -111,17 +105,11 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
         }
     }
 
-    /**
-     * @see MouseProperties#isInvertedHorizontalAxis()
-     */
     @Override
     public boolean isInvertedHorizontalAxis() {
         return horizontalInversion == INVERTED;
     }
 
-    /**
-     * @see MouseProperties#setInvertedHorizontalAxis(boolean)
-     */
     @Override
     public void setInvertedHorizontalAxis(boolean inverted) {
         if (inverted) {
@@ -131,17 +119,11 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
         }
     }
 
-    /**
-     * @see MouseProperties#getSensitivity()
-     */
     @Override
     public double getSensitivity() {
         return sensitivity;
     }
 
-    /**
-     * @see MouseProperties#setSensitivity(double)
-     */
     @Override
     public void setSensitivity(double sensitivity) {
         assert sensitivity > 0;
@@ -149,33 +131,21 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
         this.sensitivity = sensitivity;
     }
 
-    /**
-     * @see MouseProperties#getWheelSensitivity()
-     */
     @Override
     public double getWheelSensitivity() {
         return wheelSensitivity;
     }
 
-    /**
-     * @see MouseProperties#setWheelSensitivity(double)
-     */
     @Override
     public void setWheelSensitivity(double wheelSensitivity) {
         this.wheelSensitivity = wheelSensitivity;
     }
 
-    /**
-     * @see MouseProperties#getAcceleration()
-     */
     @Override
     public double getAcceleration() {
         return acceleration;
     }
 
-    /**
-     * @see MouseProperties#setAcceleration(double)
-     */
     @Override
     public void setAcceleration(double acceleration) {
         assert acceleration >= 0;
@@ -183,17 +153,11 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
         this.acceleration = acceleration;
     }
 
-    /**
-     * @see MouseProperties#getSmoothingFactor()
-     */
     @Override
     public double getSmoothingFactor() {
         return smoothingFactor;
     }
 
-    /**
-     * @see MouseProperties#setSmoothingFactor(double)
-     */
     @Override
     public void setSmoothingFactor(double smoothingFactor) {
         assert smoothingFactor >= 1;
@@ -202,19 +166,18 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
     }
 
     /**
-     * Updates the mouse movement deltas based on the movement that occurred
-     * during the last frame.  This should be called once per frame prior to
-     * calling the {@link #getDeltaX()} and {@link #getDeltaY()} methods
+     * Updates the mouse movement deltas based on the movement that occurred during the last frame.
+     * This should be called once per frame prior to calling the {@link #getDeltaX()} and
+     * {@link #getDeltaY()} methods.
      */
     public void updateMouseDelta(long elapsedTime) {
         double tempDeltaX, tempDeltaY;
 
-        //deltaX & deltaY are modified by the EDT and game threads
-        synchronized (this) {
-            tempDeltaX = deltaX;
-            tempDeltaY = deltaY;
-            deltaX = 0;
-            deltaY = 0;
+        //delta is modified by the EDT and game threads
+        synchronized (delta) {
+            tempDeltaX = delta.getX();
+            tempDeltaY = delta.getY();
+            delta.clear();
         }
 
         double distance = Math.sqrt(tempDeltaX * tempDeltaX + tempDeltaY * tempDeltaY);
@@ -223,58 +186,53 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
         tempDeltaX *= multiplier * horizontalInversion;
         tempDeltaY *= multiplier * verticalInversion;
 
-        trueXDelta += tempDeltaX;
-        trueYDelta += tempDeltaY;
+        trueDelta.add(tempDeltaX, tempDeltaY);
 
         //use weighted average so that averageFrameTime doesn't jump around too much
         averageFrameTime = 0.1 * elapsedTime + 0.9 * averageFrameTime;
         double frameRatio = elapsedTime / averageFrameTime;
 
+        frameRatio /= smoothingFactor;
         //multiply by the frameRatio to smooth out mouse velocity
-        dx = trueXDelta * frameRatio / smoothingFactor;
-        dy = trueYDelta * frameRatio / smoothingFactor;
+        reportedDelta.set(trueDelta.getX() * frameRatio, trueDelta.getY() * frameRatio);
 
-        double dSquared = dx * dx + dy * dy;
+        double dSquared = reportedDelta.lengthSquared();
 
         //it's important to check the overshoot condition first even if the mouse
         //is moving slowly
-        if (trueXDelta * trueXDelta + trueYDelta * trueYDelta < dSquared) {
+        if (trueDelta.lengthSquared() < dSquared) {
             //moving too fast will overshoot the destination so jump to destination
-            dx = trueXDelta;
-            dy = trueYDelta;
+            reportedDelta.set(trueDelta);
         } else if (dSquared < 4E-18 * elapsedTime * elapsedTime) {
             //stop the mouse from moving tiny fractions of a pixel so pretend that we'll reach the
-            //destination this frame it's important to set the true deltas to the current values
+            //destination this frame.  It's important to set the true deltas to the current values
             //instead of the other way around otherwise there will be a noticeable jump and that
             // won't be smooth at all
-            trueXDelta = dx;
-            trueYDelta = dy;
+            trueDelta.set(reportedDelta);
         }
 
-        trueXDelta -= dx;
-        trueYDelta -= dy;
+        trueDelta.subtract(reportedDelta);
     }
 
     /**
-     * @return The horizontal mouse movement that occurred during the last frame
+     * @return The horizontal mouse movement that occurred during the last frame.
      */
     public double getDeltaX() {
-        return dx;
+        return reportedDelta.getX();
     }
 
     /**
-     * @return The vertical mouse movement that occurred during the last frame
+     * @return The vertical mouse movement that occurred during the last frame.
      */
     public double getDeltaY() {
-        return dy;
+        return reportedDelta.getY();
     }
 
     /**
-     * Retrieves the accumulated wheel rotation that occurred since the last
-     * time this method was called.  The value is negative if the mouse wheel
-     * was rotated up (away from the user), and positive if the mouse wheel was
-     * rotated down (towards the user).  A partial rotation occurs if the mouse
-     * has a high resolution wheel or if the wheel sensitivity is less than 1.
+     * Retrieves the accumulated wheel rotation that occurred since the last time this method was
+     * called.  The value is negative if the mouse wheel was rotated up (away from the user), and
+     * positive if the mouse wheel was rotated down (towards the user).  A partial rotation occurs
+     * if the mouse has a high resolution wheel or if the wheel sensitivity is less than 1.
      *
      * @return The total wheel rotation
      */
@@ -287,67 +245,43 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
         return delta * wheelSensitivity;
     }
 
-    /**
-     * @see MouseWheelListener#mouseWheelMoved(MouseWheelEvent)
-     */
     @Override
     public synchronized void mouseWheelMoved(MouseWheelEvent e) {
         wheelDelta += e.getPreciseWheelRotation();
     }
 
-    /**
-     * @see MouseListener#mouseClicked(MouseEvent)
-     */
     @Override
     public void mouseClicked(MouseEvent e) {
         e.consume(); //do nothing
     }
 
-    /**
-     * @see MouseListener#mousePressed(MouseEvent)
-     */
     @Override
     public void mousePressed(MouseEvent e) {
         int inputCode = InputCode.getMouseButtonInputCode(e.getButton());
         core.addGameEvent(Context -> Context.inputPressed(inputCode));
     }
 
-    /**
-     * @see MouseListener#mouseReleased(MouseEvent)
-     */
     @Override
     public void mouseReleased(MouseEvent e) {
         int inputCode = InputCode.getMouseButtonInputCode(e.getButton());
         core.addGameEvent(Context -> Context.inputReleased(inputCode));
     }
 
-    /**
-     * @see MouseListener#mouseEntered(MouseEvent)
-     */
     @Override
     public void mouseEntered(MouseEvent e) {
         e.consume(); //do nothing
     }
 
-    /**
-     * @see MouseListener#mouseExited(MouseEvent)
-     */
     @Override
     public void mouseExited(MouseEvent e) {
         e.consume(); //do nothing
     }
 
-    /**
-     * @see MouseMotionListener#mouseDragged(MouseEvent)
-     */
     @Override
     public void mouseDragged(MouseEvent e) {
         mouseMoved(e);
     }
 
-    /**
-     * @see MouseMotionListener#mouseMoved(MouseEvent)
-     */
     @Override
     public void mouseMoved(MouseEvent e) {
         int x = e.getX(), y = e.getY();
@@ -358,9 +292,8 @@ public class MouseController implements MouseMotionListener, MouseListener, Mous
             return;
         }
 
-        synchronized (this) {
-            deltaX += x - centerX;
-            deltaY += y - centerY;
+        synchronized (delta) {
+            delta.add(x - centerX, y - centerY);
         }
         if (robot != null) {
             //move the mouse back to the center

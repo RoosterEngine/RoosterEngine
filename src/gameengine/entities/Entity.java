@@ -258,6 +258,13 @@ public abstract class Entity {
         containingTree.removeEntityFromWorld(this);
     }
 
+    /**
+     * @return True if this entity is still in the world.
+     */
+    public boolean isInWorld() {
+        return containingTree != null;
+    }
+
     public void drawLineToPartition(Graphics2D g, Color color) {
         g.setColor(color);
         double endX;

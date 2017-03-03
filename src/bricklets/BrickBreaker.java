@@ -2,9 +2,11 @@ package bricklets;
 
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
+import gameengine.collisiondetection.shapes.Circle;
 import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
+import gameengine.entities.RegionSensor;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
@@ -49,6 +51,7 @@ public class BrickBreaker extends Context {
     });
 
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
+    private RegionSensor sensor;
 
     public BrickBreaker(GameController controller) {
         super(controller);
@@ -80,6 +83,9 @@ public class BrickBreaker extends Context {
         Entity.setDefaultEntityType(EntityType.STANDARD);
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
         world.addEntity(paddle);
+
+        sensor = new RegionSensor(width / 2, height / 2, new Circle(100));
+        world.addEntity(sensor);
 
         initBricks();
         initBounding();
@@ -121,7 +127,7 @@ public class BrickBreaker extends Context {
                 double xPos = padding * (1 + x) + brickWidth * x + brickWidth / 2 + borderPadding;
                 double yPos = padding * (1 + y) + brickHeight * y + brickHeight / 2 + yOffset;
                 Brick brick = new Brick(xPos, yPos, brickWidth, brickHeight);
-//                brick.setShape(new CircleShape(xPos, yPos, brickWidth));
+//                brick.setShape(new Circle(xPos, yPos, brickWidth));
                 brick.setMass(20);
                 brick.setMotion(new AttractMotion(xPos, yPos, 0.0005, 0.3, brick.getMass()));
                 brickCount++;
@@ -133,6 +139,8 @@ public class BrickBreaker extends Context {
     @Override
     protected void updateContext(long gameTime, double mouseDeltaX, double mouseDeltaY, double
             mouseWheelRotation) {
+        //TODO: Entities should be automatically updated from the world
+        sensor.update(gameTime - currentTime);
         currentTime = gameTime;
         if (brickCount == 0) {
             init();
@@ -148,10 +156,10 @@ public class BrickBreaker extends Context {
 
     private void drawText(Renderer renderer) {
         renderer.setForegroundColor(RColor.RED);
-        renderer.drawString("fps " + controller.getFrameRateCounter().getCurrentTickRate(), 25, 50);
-        renderer.drawString("Lives " + lives, 25, 70);
-        renderer.drawString("entities " + world.getEntityCount(), 25, 90);
-        renderer.drawString("bricks " + brickCount, 25, 110);
+
+        renderer.drawStrings(25, 50, 20, "fps " + controller.getFrameRateCounter()
+                .getCurrentTickRate(), "Lives " + lives, "entities " + world.getEntityCount(),
+                "bricks " + brickCount);
     }
 
     @Override
@@ -163,8 +171,8 @@ public class BrickBreaker extends Context {
         double damage = 30;
         Entity a = collision.getA();
         Entity b = collision.getB();
-        boolean isABall = a instanceof CircleEntity;//balls.contains(a);
-        boolean isBBall = b instanceof CircleEntity;//balls.contains(b);
+        boolean isABall = a instanceof CircleEntity;
+        boolean isBBall = b instanceof CircleEntity;
         if (a instanceof Brick && isBBall) {
 //            damage *= b.getMass();
             damageBrick((Brick) a, damage);

@@ -6,6 +6,7 @@ import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
+import gameengine.entities.RegionSensor;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.motion.environmentmotions.WorldEffect;
@@ -87,7 +88,20 @@ public class SpatialTree implements Parent {
 
             Tree aTree = a.getContainingTree();
             Tree bTree = b.getContainingTree();
-            context.handleCollision(collision);
+            boolean isRegion = false;
+            //region sensors could be configured to be aware of other region sensors so they need
+            //to be checked independently and possibly add each other to both
+            if (a instanceof RegionSensor) {
+                ((RegionSensor) a).addEntity(b);
+                isRegion = true;
+            }
+            if (b instanceof RegionSensor) {
+                ((RegionSensor) b).addEntity(a);
+                isRegion = true;
+            }
+            if (!isRegion) {
+                context.handleCollision(collision);
+            }
 
 //            assert ensureNoCollisionAfterHandleCollision(collision);
             assert tree.isEntityCountCorrect();

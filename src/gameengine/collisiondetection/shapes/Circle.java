@@ -7,12 +7,17 @@ package gameengine.collisiondetection.shapes;
 import gameengine.collisiondetection.Collision;
 import gameengine.graphics.Renderer;
 
-public class CircleShape extends Shape {
+public class Circle extends Shape {
     private double radius;
 
-    public CircleShape(double radius) {
+    public Circle(double radius) {
         super(radius, radius);
         this.radius = radius;
+    }
+
+    @Override
+    public String toString() {
+        return "Circle(Radius: " + radius + ")";
     }
 
     public double getRadius() {
@@ -30,17 +35,17 @@ public class CircleShape extends Shape {
     }
 
     @Override
-    public void collideWithCircle(CircleShape circleShape, double maxTime, Collision result) {
+    public void collideWithCircle(Circle circleShape, double maxTime, Collision result) {
         Shape.collideCircleCircle(this, circleShape, maxTime, result);
     }
 
     @Override
-    public void collideWithAABB(AABBShape aabbShape, double maxTime, Collision result) {
-        Shape.collideCircleAABB(this, aabbShape, maxTime, result);
+    public void collideWithRectangle(Rectangle aabbShape, double maxTime, Collision result) {
+        Shape.collideCircleRectangle(this, aabbShape, maxTime, result);
     }
 
     @Override
-    public void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision result) {
+    public void collideWithPolygon(Polygon polygonShape, double maxTime, Collision result) {
         Shape.collideCirclePoly(this, polygonShape, maxTime, result);
     }
 
@@ -50,18 +55,18 @@ public class CircleShape extends Shape {
     }
 
     @Override
-    public boolean isOverlappingPolygon(PolygonShape shape) {
+    public boolean isOverlappingPolygon(Polygon shape) {
         return Shape.isOverlappingPolyCircle(shape, this);
     }
 
     @Override
-    public boolean isOverlappingCircle(CircleShape shape) {
+    public boolean isOverlappingCircle(Circle shape) {
         return Shape.isOverlappingCircleCircle(this, shape);
     }
 
     @Override
-    public boolean isOverlappingAABB(AABBShape shape) {
-        return Shape.isOverlappingCircleAABB(this, shape);
+    public boolean isOverlappingRectangle(Rectangle shape) {
+        return Shape.isOverlappingCircleRectangle(this, shape);
     }
 
     @Override

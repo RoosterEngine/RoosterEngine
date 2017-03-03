@@ -38,8 +38,7 @@ public abstract class Shape {
         a.collideWithShape(b, maxTime, result);
     }
 
-    public static void collidePolyPoly(PolygonShape a, PolygonShape b, double maxTime, Collision
-            result) {
+    public static void collidePolyPoly(Polygon a, Polygon b, double maxTime, Collision result) {
         CollisionData collisionData = result.getCollisionData();
         collisionData.clear();
         getEntryLeaveAndOverlapTime(a, b, collisionData);
@@ -64,7 +63,7 @@ public abstract class Shape {
         result.setNoCollision();
     }
 
-    public static void collideAABBPoly(AABBShape a, PolygonShape b, double maxTime, Collision
+    public static void collideRectanglePoly(Rectangle a, Polygon b, double maxTime, Collision
             result) {
         CollisionData collisionData = result.getCollisionData();
         collisionData.clear();
@@ -122,7 +121,7 @@ public abstract class Shape {
                 collisionData, normal);
     }
 
-    private static void calcCollisionWithBoxNormals(AABBShape a, PolygonShape b, double relVelX,
+    private static void calcCollisionWithBoxNormals(Rectangle a, Polygon b, double relVelX,
                                                     double relVelY, CollisionData collisionData) {
         double bMinX = Double.MAX_VALUE;
         double bMaxX = -Double.MAX_VALUE;
@@ -157,8 +156,7 @@ public abstract class Shape {
         collisionData.updateTempOverlapData(maxY - bMinY, -relVelY, 0, 1);
     }
 
-    public static void collideCirclePoly(CircleShape a, PolygonShape b, double maxTime, Collision
-            result) {
+    public static void collideCirclePoly(Circle a, Polygon b, double maxTime, Collision result) {
         double entryTime = -Double.MAX_VALUE;
         double leaveTime = Double.MAX_VALUE;
         double collisionNormalX = 0, collisionNormalY = 0;
@@ -266,8 +264,7 @@ public abstract class Shape {
         }
     }
 
-    public static void collideCircleCircle(CircleShape a, CircleShape b, double maxTime,
-                                           Collision result) {
+    public static void collideCircleCircle(Circle a, Circle b, double maxTime, Collision result) {
         double combinedVelX = b.getDX() - a.getDX();
         double combinedVelY = b.getDY() - a.getDY();
         if (combinedVelX == 0 && combinedVelY == 0) {
@@ -288,7 +285,8 @@ public abstract class Shape {
             return;
         }
         // using the collision normal as a scratch pad
-        Vector2D velocity = result.getCollisionNormal().set(combinedVelX, combinedVelY);
+        Vector2D velocity = result.getCollisionNormal();
+        velocity.set(combinedVelX, combinedVelY);
         double deltaX = aX - bX;
         double deltaY = aY - bY;
         double distBetween = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -316,7 +314,7 @@ public abstract class Shape {
         // pythagoras
         velocity.scale(centerAProjectedOnVelocity - subLength);
         velocity.add(bX - aX, bY - aY); // this is now the collision normal
-        velocity.divide(radiiSum); // normalizes the vector
+        velocity.scale(1 / radiiSum); // normalizes the vector
         result.set(travelTime, velocity, a.parent, b.parent);
     }
 
@@ -336,7 +334,8 @@ public abstract class Shape {
         return -Double.MAX_VALUE;
     }
 
-    public static void collideAABBAABB(AABBShape a, AABBShape b, double maxTime, Collision result) {
+    public static void collideRectangleRectangle(Rectangle a, Rectangle b, double maxTime,
+                                                 Collision result) {
         double relVelX = a.getDX() - b.getDX(), relVelY = a.getDY() - b.getDY();
 
         // calculating entry time along the x axis
@@ -403,7 +402,7 @@ public abstract class Shape {
         }
     }
 
-    public static void collideCircleAABB(CircleShape a, AABBShape b, double maxTime, Collision
+    public static void collideCircleRectangle(Circle a, Rectangle b, double maxTime, Collision
             result) {
         double aX = a.getX();
         double bX = b.getX();
@@ -613,7 +612,7 @@ public abstract class Shape {
         }
     }
 
-    private static void getEntryLeaveAndOverlapTime(PolygonShape a, PolygonShape b, CollisionData
+    private static void getEntryLeaveAndOverlapTime(Polygon a, Polygon b, CollisionData
             collisionData) {
 //        double tempVelocity = collisionData.getOverlapVelocity(); // TODO why are these here
 //        collisionData.setTempOverlapVelocity(collisionData.getOverlapVelocity());
@@ -679,7 +678,7 @@ public abstract class Shape {
         collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, vel));
     }
 
-    public static boolean isOverlappingPolyPoly(PolygonShape a, PolygonShape b) {
+    public static boolean isOverlappingPolyPoly(Polygon a, Polygon b) {
         final double aX = a.parent.getX(), aY = a.parent.getY();
         final double bX = b.parent.getX(), bY = b.parent.getY();
         final double deltaX = aX - bX;
@@ -741,7 +740,7 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingPolyCircle(PolygonShape a, CircleShape b) {
+    public static boolean isOverlappingPolyCircle(Polygon a, Circle b) {
         final double aX = a.parent.getX(), aY = a.parent.getY();
         final double bX = b.parent.getX(), bY = b.parent.getY();
         double bRadius = b.getRadius();
@@ -804,7 +803,7 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingPolyAABB(PolygonShape a, AABBShape b) {
+    public static boolean isOverlappingPolyRectangle(Polygon a, Rectangle b) {
         final double aX = a.parent.getX(), aY = a.parent.getY();
         final double bX = b.parent.getX(), bY = b.parent.getY();
         double bHalfWidth = b.getHalfWidth();
@@ -896,7 +895,7 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingCircleCircle(CircleShape a, CircleShape b) {
+    public static boolean isOverlappingCircleCircle(Circle a, Circle b) {
         double deltaX = a.getX() - b.getX();
         double deltaY = a.getY() - b.getY();
         double distSquared = deltaX * deltaX + deltaY * deltaY;
@@ -905,7 +904,7 @@ public abstract class Shape {
         return distSquared < radiiSumSquared;
     }
 
-    public static boolean isOverlappingCircleAABB(CircleShape a, AABBShape b) {
+    public static boolean isOverlappingCircleRectangle(Circle a, Rectangle b) {
         final double aX = a.parent.getX(), aY = a.parent.getY();
         final double bX = b.parent.getX(), bY = b.parent.getY();
         double bHalfWidth = b.getHalfWidth();
@@ -979,7 +978,7 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingAABBAABB(AABBShape a, AABBShape b) {
+    public static boolean isOverlappingRectangleRectangle(Rectangle a, Rectangle b) {
         double deltaX = a.getX() - b.getX();
         double deltaY = a.getY() - b.getY();
         double combinedHalfWidth = a.getHalfWidth() + b.getHalfWidth();
@@ -1036,21 +1035,20 @@ public abstract class Shape {
 
     public abstract void collideWithShape(Shape shape, double maxTime, Collision result);
 
-    public abstract void collideWithCircle(CircleShape circleShape, double maxTime, Collision
+    public abstract void collideWithCircle(Circle circleShape, double maxTime, Collision result);
+
+    public abstract void collideWithRectangle(Rectangle aabbShape, double maxTime, Collision
             result);
 
-    public abstract void collideWithAABB(AABBShape aabbShape, double maxTime, Collision result);
-
-    public abstract void collideWithPolygon(PolygonShape polygonShape, double maxTime, Collision
-            result);
+    public abstract void collideWithPolygon(Polygon polygonShape, double maxTime, Collision result);
 
     public abstract boolean isOverlappingShape(Shape shape);
 
-    public abstract boolean isOverlappingPolygon(PolygonShape shape);
+    public abstract boolean isOverlappingPolygon(Polygon shape);
 
-    public abstract boolean isOverlappingCircle(CircleShape shape);
+    public abstract boolean isOverlappingCircle(Circle shape);
 
-    public abstract boolean isOverlappingAABB(AABBShape shape);
+    public abstract boolean isOverlappingRectangle(Rectangle shape);
 
     /**
      * Draws the shape using the current foreground color.

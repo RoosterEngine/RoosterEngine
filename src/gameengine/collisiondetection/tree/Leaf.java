@@ -184,8 +184,7 @@ public class Leaf extends Tree {
 
     @Override
     public void relocateAndCheck(double timeToCheck, Entity entity) {
-        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method " +
-                "" + "" + "" + "is called";
+        assert !isEntityInTree(entity) : "Entity should not be in the this tree ";
         entityCount--;
         Collision collision = node.getCollision();
         if (entity == collision.getA() || entity == collision.getB()) {

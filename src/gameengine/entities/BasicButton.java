@@ -1,7 +1,7 @@
 package gameengine.entities;
 
-import gameengine.collisiondetection.shapes.AABBShape;
-import gameengine.collisiondetection.shapes.CircleShape;
+import gameengine.collisiondetection.shapes.Rectangle;
+import gameengine.collisiondetection.shapes.Circle;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.image.SolidColorGraphic;
@@ -27,7 +27,7 @@ public class BasicButton extends Entity {
 
     public BasicButton(String text, SolidColorGraphic upGraphic, SolidColorGraphic downGraphic,
                        SolidColorGraphic selectedGraphic) {
-        super(0, 0, Material.getDefaultMaterial(), new CircleShape(0));
+        super(0, 0, Material.getDefaultMaterial(), new Circle(0));
         this.text = text;
         this.upGraphic = upGraphic;
         this.pressedGraphic = downGraphic;
@@ -44,7 +44,7 @@ public class BasicButton extends Entity {
         upGraphic.resize((int) width, (int) height);
         pressedGraphic.resize((int) width, (int) height);
         selectedGraphic.resize((int) width, (int) height);
-        setShape(new AABBShape(width, height));
+        setShape(new Rectangle(width, height));
 //        updateMass();
         mass = 1;
     }

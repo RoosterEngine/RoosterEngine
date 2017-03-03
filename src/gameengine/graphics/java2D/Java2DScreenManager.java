@@ -124,11 +124,6 @@ public class Java2DScreenManager implements ScreenManager {
     }
 
     @Override
-    public Graphic createImage(BufferedImage image) {
-        return new Java2DImageGraphic(createCompatibleImage(image));
-    }
-
-    @Override
     public Graphic loadImage(String path) throws IOException {
         BufferedImage im = ImageIO.read(getClass().getResource(path));
         Graphic result = new Java2DImageGraphic(createCompatibleImage(im));

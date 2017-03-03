@@ -1,6 +1,6 @@
 package bricklets;
 
-import gameengine.collisiondetection.shapes.CircleShape;
+import gameengine.collisiondetection.shapes.Circle;
 import gameengine.graphics.Renderer;
 
 public class CircleEntity extends TestingEntity {
@@ -8,8 +8,8 @@ public class CircleEntity extends TestingEntity {
     private double maxSpeed = 2;
 
     public CircleEntity(double x, double y, double radius) {
-        super(x, y, new CircleShape(radius));
-//        super(x, y, PolygonShape.getCircle(radius, 10));
+        super(x, y, new Circle(radius));
+//        super(x, y, Polygon.getCircle(radius, 10));
         this.radius = radius;
     }
 

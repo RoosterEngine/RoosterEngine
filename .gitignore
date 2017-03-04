@@ -1,5 +1,6 @@
 
 # Intellij files
 .idea/
+build/
 out/
 roosterengine.iml

@@ -32,6 +32,8 @@ public class LongQueue {
      * @param initialCapacity The minimum initial capacity
      */
     public LongQueue(int initialCapacity) {
+        assert initialCapacity > 0;
+
         int capacity = Utils.nextPowerOf2(initialCapacity);
         queue = new long[capacity];
         modMask = capacity - 1;

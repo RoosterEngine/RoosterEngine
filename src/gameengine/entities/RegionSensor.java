@@ -15,7 +15,7 @@ public class RegionSensor extends Entity {
     private Consumer<Entity> enteredRegionHandler;
     private Consumer<Entity> exitedRegionHandler;
     private Predicate<Entity> outOfBounds = entity -> {
-        boolean exited = !entity.isInWorld() || !getShape().isOverlappingShape(entity.getShape());
+        boolean exited = !entity.isInWorld() || !getShape().isOverlappingShape(this, entity);
         if (exited && exitedRegionHandler != null) {
             exitedRegionHandler.accept(entity);
         }
@@ -51,7 +51,7 @@ public class RegionSensor extends Entity {
 
     @Override
     public void draw(Renderer renderer) {
-        getShape().draw(renderer);
+        getShape().draw(renderer, getX(), getY());
 
         containedEntities.forEach((entity) -> {
             renderer.drawLine(x, y, entity.x, entity.y);

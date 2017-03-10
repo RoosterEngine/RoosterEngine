@@ -2,7 +2,7 @@ package gameengine.collisiondetection.tree;
 
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
-import gameengine.collisiondetection.shapes.Shape;
+import gameengine.collisiondetection.shapes.CollisionData;
 import gameengine.entities.Entity;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
@@ -254,7 +254,7 @@ public class Leaf extends Tree {
     }
 
     private void calcCollision(double timeToCheck) {
-        assert node.getCollisionTime() == Shape.NO_COLLISION;
+        assert node.getCollisionTime() == CollisionData.NO_COLLISION;
         Collision collision = node.getCollision();
         for (int i = 0; i < entityListPos; i++) {
             Entity a = entities[i];

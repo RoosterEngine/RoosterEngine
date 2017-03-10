@@ -51,7 +51,7 @@ public class Paddle extends TestingEntity {
     @Override
     public void draw(Renderer renderer) {
         renderer.setForegroundColor(color);
-        getShape().draw(renderer);
+        getShape().draw(renderer, getX(), getY());
 
 //        g.setColor(RColor.ORANGE);
 //        double halfHeight = getHalfHeight();

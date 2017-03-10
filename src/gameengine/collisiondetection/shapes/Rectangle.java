@@ -1,17 +1,19 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
+import gameengine.entities.Entity;
 import gameengine.graphics.Renderer;
 
 /**
  * @author david
  */
 public class Rectangle extends Shape {
-    private double width, height;
+    private final double width, height;
 
     public Rectangle(double width, double height) {
         super(width * 0.5, height * 0.5);
-        init(width, height);
+        this.width = width;
+        this.height = height;
     }
 
     @Override
@@ -19,49 +21,47 @@ public class Rectangle extends Shape {
         return width * height;
     }
 
-    private void init(double width, double height) {
-        this.width = width;
-        this.height = height;
+    @Override
+    public void collideWithShape(Entity current, Entity other, double maxTime, Collision result) {
+        other.getShape().collideWithRectangle(other, current, this, maxTime, result);
     }
 
     @Override
-    public void collideWithShape(Shape shape, double maxTime, Collision result) {
-        shape.collideWithRectangle(this, maxTime, result);
+    public void collideWithCircle(Entity current, Entity other, Circle circleShape, double
+            maxTime, Collision result) {
+        Shape.collideCircleRectangle(other, circleShape, current, this, maxTime, result);
     }
 
     @Override
-    public void collideWithCircle(Circle circleShape, double maxTime, Collision result) {
-        Shape.collideCircleRectangle(circleShape, this, maxTime, result);
+    public void collideWithRectangle(Entity current, Entity other, Rectangle aabbShape, double
+            maxTime, Collision result) {
+        Shape.collideRectangleRectangle(other, this, other, aabbShape, maxTime, result);
     }
 
     @Override
-    public void collideWithRectangle(Rectangle aabbShape, double maxTime, Collision result) {
-        Shape.collideRectangleRectangle(this, aabbShape, maxTime, result);
+    public void collideWithPolygon(Entity current, Entity other, Polygon polygonShape, double
+            maxTime, Collision result) {
+        Shape.collideRectanglePoly(current, this, other, polygonShape, maxTime, result);
     }
 
     @Override
-    public void collideWithPolygon(Polygon polygonShape, double maxTime, Collision result) {
-        Shape.collideRectanglePoly(this, polygonShape, maxTime, result);
+    public boolean isOverlappingShape(Entity current, Entity other) {
+        return other.getShape().isOverlappingRectangle(other, current, this);
     }
 
     @Override
-    public boolean isOverlappingShape(Shape shape) {
-        return shape.isOverlappingRectangle(this);
+    public boolean isOverlappingPolygon(Entity current, Entity other, Polygon shape) {
+        return Shape.isOverlappingPolyRectangle(other, shape, current, this);
     }
 
     @Override
-    public boolean isOverlappingPolygon(Polygon shape) {
-        return Shape.isOverlappingPolyRectangle(shape, this);
+    public boolean isOverlappingCircle(Entity current, Entity other, Circle shape) {
+        return Shape.isOverlappingCircleRectangle(other, shape, current, this);
     }
 
     @Override
-    public boolean isOverlappingCircle(Circle shape) {
-        return Shape.isOverlappingCircleRectangle(shape, this);
-    }
-
-    @Override
-    public boolean isOverlappingRectangle(Rectangle shape) {
-        return Shape.isOverlappingRectangleRectangle(shape, this);
+    public boolean isOverlappingRectangle(Entity current, Entity other, Rectangle shape) {
+        return Shape.isOverlappingRectangleRectangle(other, shape, current, this);
     }
 
     public double getWidth() {
@@ -73,7 +73,7 @@ public class Rectangle extends Shape {
     }
 
     @Override
-    public void draw(Renderer renderer) {
-        renderer.drawRect(getX(), getY(), getHalfWidth(), getHalfHeight());
+    public void draw(Renderer renderer, double x, double y) {
+        renderer.drawRect(x, y, getHalfWidth(), getHalfHeight());
     }
 }

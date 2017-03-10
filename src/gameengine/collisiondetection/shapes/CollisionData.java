@@ -6,7 +6,8 @@ import gameengine.geometry.Vector2D;
  * @author david
  */
 public class CollisionData {
-    private static final double NO_COLLISION = Double.MAX_VALUE, DEFAULT_ENTRY = -Double.MAX_VALUE;
+    public static final double NO_COLLISION = Double.MAX_VALUE;
+    private static final double DEFAULT_ENTRY = -Double.MAX_VALUE;
     private Vector2D collisionNormal, overlapNormal, tempOverlapNormal;
     private double entryTime, leaveTime, overlapTime, overlapVelocity, tempOverlapVelocity;
     private double min, max;
@@ -35,7 +36,8 @@ public class CollisionData {
         return overlapVelocity;
     }
 
-    public void updateTempOverlapData(double dist, double velocity, double normalX, double normalY) {
+    public void updateTempOverlapData(double dist, double velocity, double normalX, double
+            normalY) {
         if (dist > 0) {
             double time = dist / Math.abs(velocity);
             if (time < overlapTime) {

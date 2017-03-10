@@ -19,6 +19,6 @@ public class Wall extends Entity {
     @Override
     public void draw(Renderer renderer) {
         renderer.setForegroundColor(RColor.WHITE);
-        shape.draw(renderer);
+        getShape().draw(renderer, getX(), getY());
     }
 }

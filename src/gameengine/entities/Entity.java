@@ -21,7 +21,7 @@ public abstract class Entity {
     private int entityType = EntityType.STANDARD.ordinal();
     private int entityTypeBitMask = 1 << entityType;
     private Motion motion;
-    protected Shape shape;
+    private Shape shape;
     private Tree containingTree;
     private int indexInTree;
 
@@ -47,8 +47,6 @@ public abstract class Entity {
         this.material = material;
         this.shape = shape;
         motion = new NormalMotion();
-        shape.setParent(this);
-        shape.setParentOffset(x - shape.getX(), y - shape.getY());
         setEntityType(entityType);
     }
 
@@ -222,7 +220,6 @@ public abstract class Entity {
 
     public void setShape(Shape shape) {
         this.shape = shape;
-        shape.setParent(this);
     }
 
     public void updateMass() {

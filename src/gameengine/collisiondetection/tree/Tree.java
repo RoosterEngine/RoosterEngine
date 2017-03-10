@@ -142,7 +142,7 @@ public abstract class Tree {
         Collision temp = world.getTempCollision();
         temp.setNoCollision(); // TODO might not need to do this because collideShapes
         // overwrites temp anyway
-        Shape.collideShapes(a.getShape(), b.getShape(), timeToCheck, temp);
+        Shape.collideShapes(a, b, timeToCheck, temp);
         if (temp.getCollisionTime() < result.getCollisionTime() - timeInTree) {
             assert temp.getCollisionTime() <= timeToCheck : "too long" + temp.getCollisionTime()
                     + ", " + timeToCheck;

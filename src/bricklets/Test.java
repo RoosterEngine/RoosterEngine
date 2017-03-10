@@ -122,7 +122,7 @@ public class Test extends Context {
             TestingEntity a = entities.get(i);
             for (int j = i + 1; j < entities.size(); j++) {
                 TestingEntity b = entities.get(j);
-                if (a.getShape().isOverlappingShape(b.getShape())) {
+                if (a.getShape().isOverlappingShape(a, b)) {
                     a.setColor(RColor.RED);
                     b.setColor(RColor.RED);
                 }

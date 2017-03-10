@@ -35,12 +35,13 @@ public class GameUtils {
     public static void createEntityPath(World world, EntityType pathType, double acceleration,
                                         double maxSpeed, double radius, Vector2D... points) {
         assert radius > 0;
+        Shape regionShape = new Circle(radius);
 
         for (int i = 0; i < points.length - 1; i++) {
             Vector2D point = points[i];
             Vector2D destination = points[i + 1];
-            RegionSensor sensor = new RegionSensor(point.getX(), point.getY(), new Circle(radius)
-                    , entity -> {
+            RegionSensor sensor = new RegionSensor(point.getX(), point.getY(), regionShape,
+                    entity -> {
                 Vector2D initialVelocity = new Vector2D(entity.getDX(), entity.getDY());
                 Motion motion = entity.getMotion();
                 if (motion instanceof DestinationMotion) {

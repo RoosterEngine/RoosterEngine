@@ -21,7 +21,7 @@ public abstract class Entity {
     private int entityType = EntityType.STANDARD.ordinal();
     private int entityTypeBitMask = 1 << entityType;
     private Motion motion;
-    private Shape shape;
+    protected Shape shape;
     private Tree containingTree;
     private int indexInTree;
 

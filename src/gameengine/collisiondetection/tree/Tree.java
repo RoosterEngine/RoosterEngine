@@ -198,6 +198,12 @@ public abstract class Tree {
         }
     }
 
+    public void updateEntities(double elapsedTime) {
+        for (int i = 0; i < entityListPos; i++) {
+            entities[i].update(elapsedTime);
+        }
+    }
+
     //------------------------------ testing methods --------------------------------
 
     public boolean areEntityIndexesNull() {

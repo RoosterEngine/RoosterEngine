@@ -12,12 +12,21 @@ import java.util.function.Predicate;
  */
 public class RegionSensor extends Entity {
     private HashSet<Entity> containedEntities = new HashSet<>();
+    private Consumer<Entity> enteredRegionHandler;
+    private Consumer<Entity> exitedRegionHandler;
     private Predicate<Entity> outOfBounds = entity -> {
-        return !entity.isInWorld() || !getShape().isOverlappingShape(entity.getShape());
+        boolean exited = !entity.isInWorld() || !getShape().isOverlappingShape(entity.getShape());
+        if (exited && exitedRegionHandler != null) {
+            exitedRegionHandler.accept(entity);
+        }
+        return exited;
     };
 
-    public RegionSensor(double x, double y, Shape shape) {
+    public RegionSensor(double x, double y, Shape shape, Consumer<Entity> enteredRegionHandler,
+                        Consumer<Entity> exitedRegionHandler) {
         super(x, y, shape);
+        this.enteredRegionHandler = enteredRegionHandler;
+        this.exitedRegionHandler = exitedRegionHandler;
     }
 
     @Override
@@ -27,6 +36,9 @@ public class RegionSensor extends Entity {
 
     public void addEntity(Entity entity) {
         containedEntities.add(entity);
+        if (enteredRegionHandler != null) {
+            enteredRegionHandler.accept(entity);
+        }
     }
 
     public boolean containsEntity(Entity entity) {

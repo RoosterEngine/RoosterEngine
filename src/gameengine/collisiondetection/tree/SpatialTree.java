@@ -59,6 +59,10 @@ public class SpatialTree implements Parent {
         tree.updateMotions(elapsedTime, worldEffects);
     }
 
+    public void updateEntities(double elapsedTime) {
+        tree.updateEntities(elapsedTime);
+    }
+
     public void calcCollision(double elapsedTime, Context context) {
         CollisionList list = world.getCollisionList();
         assert list.doAllNodesHaveNoCollision(-1);

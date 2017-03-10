@@ -109,6 +109,15 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
+    public void updateEntities(double elapsedTime) {
+        super.updateEntities(elapsedTime);
+        topLeft.updateEntities(elapsedTime);
+        topRight.updateEntities(elapsedTime);
+        bottomLeft.updateEntities(elapsedTime);
+        bottomRight.updateEntities(elapsedTime);
+    }
+
+    @Override
     public void ensureEntitiesAreContained(double time) {
         int index = 0;
         while (index < entityListPos) {
@@ -260,8 +269,7 @@ public class Quad extends Tree implements Parent {
 
     @Override
     public void relocateAndCheck(double timeToCheck, Entity entity) {
-        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method " +
-                "" + "is called";
+        assert !isEntityInTree(entity) : "Entity should not be in the this tree";
         entityCount--;
         Collision collision = node.getCollision();
         if (entity == collision.getA() || entity == collision.getB()) {

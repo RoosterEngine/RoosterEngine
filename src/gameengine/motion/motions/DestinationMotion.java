@@ -17,14 +17,14 @@ public class DestinationMotion implements Motion {
     public DestinationMotion(Vector2D initialVelocity, double maxSpeed, double acceleration,
                              Vector2D destination) {
         velocity = initialVelocity;
-        setDestination(destination, maxSpeed, acceleration);
-    }
-
-    public final void setDestination(Vector2D destination, double maxSpeed, double acceleration) {
         this.maxSpeed = maxSpeed;
         maxSpeedSquared = maxSpeed * maxSpeed;
         this.acceleration = acceleration;
-        this.destination = destination;
+        this.destination = new Vector2D(destination);
+    }
+
+    public final void setDestination(Vector2D destination) {
+        this.destination.set(destination);
     }
 
     @Override

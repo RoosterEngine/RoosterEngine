@@ -44,8 +44,7 @@ public class GameUtils {
                 Vector2D initialVelocity = new Vector2D(entity.getDX(), entity.getDY());
                 Motion motion = entity.getMotion();
                 if (motion instanceof DestinationMotion) {
-                    ((DestinationMotion) motion).setDestination(destination, maxSpeed,
-                            acceleration);
+                    ((DestinationMotion) motion).setDestination(destination);
                 } else {
                     entity.setMotion(new DestinationMotion(initialVelocity, maxSpeed,
                             acceleration, destination));
@@ -85,8 +84,7 @@ public class GameUtils {
         yPoints[3] = from.getY() - width.getY() * 0.5;
 
         Shape shape = new Polygon(xPoints, yPoints);
-        Wall wall = new Wall((from.getX() + to.getX()) / 2, (from.getY() + to
-                .getY()) / 2, shape);
+        Wall wall = new Wall((from.getX() + to.getX()) / 2, (from.getY() + to.getY()) / 2, shape);
         world.addEntity(wall);
     }
 }

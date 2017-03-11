@@ -33,13 +33,19 @@ public class GameUtils {
      * @param points       The destination points in order
      */
     public static void createEntityPath(World world, EntityType pathType, double acceleration,
-                                        double maxSpeed, double radius, Vector2D... points) {
+                                        double maxSpeed, double radius, boolean repeat,
+                                        Vector2D... points) {
         assert radius > 0;
         Shape regionShape = new Circle(radius);
 
-        for (int i = 0; i < points.length - 1; i++) {
+        int numDestinations = points.length - 1;
+        if (repeat) {
+            numDestinations++;
+        }
+
+        for (int i = 0; i < numDestinations; i++) {
             Vector2D point = points[i];
-            Vector2D destination = points[i + 1];
+            Vector2D destination = points[(i + 1) % points.length];
             RegionSensor sensor = new RegionSensor(point.getX(), point.getY(), regionShape,
                     entity -> {
                 Vector2D initialVelocity = new Vector2D(entity.getDX(), entity.getDY());
@@ -75,14 +81,14 @@ public class GameUtils {
         width.perpendicular();
         width.scale(thickness / width.length());
 
-        xPoints[0] = from.getX() + width.getX() * 0.5;
-        yPoints[0] = from.getY() + width.getY() * 0.5;
-        xPoints[1] = xPoints[0] + length.getX();
-        yPoints[1] = yPoints[0] + length.getY();
-        xPoints[2] = xPoints[1] - width.getX();
-        yPoints[2] = yPoints[1] - width.getY();
-        xPoints[3] = from.getX() - width.getX() * 0.5;
-        yPoints[3] = from.getY() - width.getY() * 0.5;
+        xPoints[0] = (width.getX() - length.getX()) * 0.5;
+        yPoints[0] = (width.getY() - length.getY()) * 0.5;
+        xPoints[1] = (width.getX() + length.getX()) * 0.5;
+        yPoints[1] = (width.getY() + length.getY()) * 0.5;
+        xPoints[2] = (width.getX() - length.getX()) * -0.5;
+        yPoints[2] = (width.getY() - length.getY()) * -0.5;
+        xPoints[3] = (width.getX() + length.getX()) * -0.5;
+        yPoints[3] = (width.getY() + length.getY()) * -0.5;
 
         Shape shape = new Polygon(xPoints, yPoints);
         Wall wall = new Wall((from.getX() + to.getX()) / 2, (from.getY() + to.getY()) / 2, shape);

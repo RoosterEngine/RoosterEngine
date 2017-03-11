@@ -16,8 +16,7 @@ public class Brick extends BoxEntity {
 
     public Brick(double x, double y, double width, double height) {
         super(x, y, width, height);
-        color = RColor.GREY;
-        color.darken();
+        color = RColor.GREY.darken();
     }
 
     public void doDamage(double amount) {

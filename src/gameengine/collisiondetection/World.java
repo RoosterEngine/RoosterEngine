@@ -67,6 +67,7 @@ public class World {
         tree.updateMotions(elapsedTime, worldEffects);
         tree.ensureEntitiesAreContained(elapsedTime);
         tree.calcCollision(elapsedTime, context);
+        tree.updateEntities(elapsedTime);
     }
 
     public void draw(Context context, Renderer renderer) {

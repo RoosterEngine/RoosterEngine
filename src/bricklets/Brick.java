@@ -32,10 +32,6 @@ public class Brick extends BoxEntity {
     }
 
     @Override
-    public void update(double elapsedTime) {
-    }
-
-    @Override
     public void draw(Renderer renderer) {
         double offset = 0.1;
         float grad = (float) (((1 - health / TOTAL_HEALTH) + offset) / (offset + 1));

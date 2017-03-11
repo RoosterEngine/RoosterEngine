@@ -47,8 +47,6 @@ public abstract class Entity {
         this.material = material;
         this.shape = shape;
         motion = new NormalMotion();
-        shape.setParent(this);
-        shape.setParentOffset(x - shape.getX(), y - shape.getY());
         setEntityType(entityType);
     }
 
@@ -222,7 +220,6 @@ public abstract class Entity {
 
     public void setShape(Shape shape) {
         this.shape = shape;
-        shape.setParent(this);
     }
 
     public void updateMass() {

@@ -9,71 +9,66 @@ import gameengine.graphics.Renderer;
  * @author david
  */
 public abstract class Shape {
-    public static final double NO_COLLISION = Double.MAX_VALUE;
-    protected double parentOffsetX, parentOffsetY;
-    protected double halfWidth, halfHeight, width, height;
-    protected Entity parent = null;
+    protected final double halfWidth, halfHeight, width, height;
 
     public Shape(double halfWidth, double halfHeight) {
         this.halfWidth = halfWidth;
         this.halfHeight = halfHeight;
         width = halfWidth * 2;
         height = halfHeight * 2;
-        parentOffsetX = 0;
-        parentOffsetY = 0;
     }
 
-    public static void collideShapes(Shape a, Shape b, double maxTime, Collision result) {
-        Entity aParent = a.parent;
-        Entity bParent = b.parent;
-        double combinedHalfWidths = aParent.getBBHalfWidth() + bParent.getBBHalfWidth();
-        double combinedHalfHeights = aParent.getBBHalfHeight() + bParent.getBBHalfHeight();
+    public static void collideShapes(Entity a, Entity b, double maxTime, Collision result) {
+        double combinedHalfWidths = a.getBBHalfWidth() + b.getBBHalfWidth();
+        double combinedHalfHeights = a.getBBHalfHeight() + b.getBBHalfHeight();
 
-        if (Math.abs(aParent.getBBCenterX() - bParent.getBBCenterX()) > combinedHalfWidths ||
-                Math.abs(aParent.getBBCenterY() - bParent.getBBCenterY()) > combinedHalfHeights) {
+        if (Math.abs(a.getBBCenterX() - b.getBBCenterX()) > combinedHalfWidths || Math.abs(a
+                .getBBCenterY() - b.getBBCenterY()) > combinedHalfHeights) {
             result.setNoCollision();
             return;
         }
 
-        a.collideWithShape(b, maxTime, result);
+        a.getShape().collideWithShape(a, b, maxTime, result);
     }
 
-    public static void collidePolyPoly(Polygon a, Polygon b, double maxTime, Collision result) {
+    public static void collidePolyPoly(Entity aParent, Polygon a, Entity bParent, Polygon b,
+                                       double maxTime, Collision result) {
         CollisionData collisionData = result.getCollisionData();
         collisionData.clear();
-        getEntryLeaveAndOverlapTime(a, b, collisionData);
+        getEntryLeaveAndOverlapTime(aParent, a, bParent, b, collisionData);
         if (collisionData.isCollisionNotPossible()) {
             result.setNoCollision();
             return;
         }
-        getEntryLeaveAndOverlapTime(b, a, collisionData);
+        getEntryLeaveAndOverlapTime(bParent, b, aParent, a, collisionData);
         if (collisionData.isCollisionNotPossible()) {
             result.setNoCollision();
             return;
         }
         if (collisionData.isIntersectingAndTravellingTowardsEachOther()) {
-            result.set(0, collisionData.getOverlapNormal(), a.parent, b.parent);
+            result.set(0, collisionData.getOverlapNormal(), aParent, bParent);
             return;
         }
         if (collisionData.willCollisionHappen(maxTime)) {
-            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a
-                    .parent, b.parent);
+            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), aParent,
+                    bParent);
             return;
         }
         result.setNoCollision();
     }
 
-    public static void collideRectanglePoly(Rectangle a, Polygon b, double maxTime, Collision
-            result) {
+    public static void collideRectanglePoly(Entity aParent, Rectangle a, Entity bParent, Polygon
+            b, double maxTime, Collision result) {
         CollisionData collisionData = result.getCollisionData();
         collisionData.clear();
-        double relVelX = a.getDX() - b.getDX();
-        double relVelY = a.getDY() - b.getDY();
+        double relVelX = aParent.getDX() - bParent.getDX();
+        double relVelY = aParent.getDY() - bParent.getDY();
 
-        double aX = a.getX();
-        double bX = b.getX();
+        double aX = aParent.getX();
+        double bX = bParent.getX();
         double minX = aX - a.halfWidth - bX, maxX = aX + a.halfWidth - bX;
-        double minY = a.getY() - a.halfHeight - b.getY(), maxY = a.getY() + a.halfHeight - b.getY();
+        double minY = aParent.getY() - a.halfHeight - bParent.getY(), maxY = aParent.getY() + a
+                .halfHeight - bParent.getY();
         for (int i = 0; i < b.getNumPoints(); i++) {
             Vector2D normal = b.getNormals()[i];
             double bMin = b.getNormalMins()[i];
@@ -89,17 +84,17 @@ public abstract class Shape {
             collisionData.updateTempOverlapData(dist, projVel, normal.getX(), normal.getY());
         }
 
-        calcCollisionWithBoxNormals(a, b, relVelX, relVelY, collisionData);
+        calcCollisionWithBoxNormals(aParent, a, bParent, b, relVelX, relVelY, collisionData);
         if (collisionData.isCollisionNotPossible()) {
             result.setNoCollision();
             return;
         }
         collisionData.updateOverlapData();
         if (collisionData.isIntersectingAndTravellingTowardsEachOther()) {
-            result.set(0, collisionData.getOverlapNormal(), a.parent, b.parent);
+            result.set(0, collisionData.getOverlapNormal(), aParent, bParent);
         } else if (collisionData.willCollisionHappen(maxTime)) {
-            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), a
-                    .parent, b.parent);
+            result.set(collisionData.getEntryTime(), collisionData.getCollisionNormal(), aParent,
+                    bParent);
         } else {
             result.setNoCollision();
         }
@@ -121,14 +116,15 @@ public abstract class Shape {
                 collisionData, normal);
     }
 
-    private static void calcCollisionWithBoxNormals(Rectangle a, Polygon b, double relVelX,
-                                                    double relVelY, CollisionData collisionData) {
+    private static void calcCollisionWithBoxNormals(Entity aParent, Rectangle a, Entity bParent,
+                                                    Polygon b, double relVelX, double relVelY,
+                                                    CollisionData collisionData) {
         double bMinX = Double.MAX_VALUE;
         double bMaxX = -Double.MAX_VALUE;
         double bMinY = Double.MAX_VALUE;
         double bMaxY = -Double.MAX_VALUE;
-        double offsetX = b.getX() - a.getX();
-        double offsetY = b.getY() - a.getY();
+        double offsetX = bParent.getX() - aParent.getX();
+        double offsetY = bParent.getY() - aParent.getY();
         for (int i = 0; i < b.getNumPoints(); i++) {
             Vector2D point = b.getPoints()[i];
             double x = point.getX() + offsetX;
@@ -156,7 +152,8 @@ public abstract class Shape {
         collisionData.updateTempOverlapData(maxY - bMinY, -relVelY, 0, 1);
     }
 
-    public static void collideCirclePoly(Circle a, Polygon b, double maxTime, Collision result) {
+    public static void collideCirclePoly(Entity aParent, Circle a, Entity bParent, Polygon b,
+                                         double maxTime, Collision result) {
         double entryTime = -Double.MAX_VALUE;
         double leaveTime = Double.MAX_VALUE;
         double collisionNormalX = 0, collisionNormalY = 0;
@@ -164,9 +161,10 @@ public abstract class Shape {
         double overlapVel = 0;
         double overlapNormalX = 0, overlapNormalY = 0;
 
-        final double relVelX = a.getDX() - b.getDX();
-        final double relVelY = a.getDY() - b.getDY();
-        final double aX = a.getX(), aY = a.getY(), bX = b.getX(), bY = b.getY();
+        final double relVelX = aParent.getDX() - bParent.getDX();
+        final double relVelY = aParent.getDY() - bParent.getDY();
+        final double aX = aParent.getX(), aY = aParent.getY(), bX = bParent.getX(), bY = bParent
+                .getY();
         final double aMax = a.getRadius(), aMin = -aMax;
 
         Vector2D[] normals = b.getNormals();
@@ -183,7 +181,7 @@ public abstract class Shape {
 
             double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normal);
             double normalEntryTime = getEntryTimeAlongAxis(aMin, aMax, bMin, bMax, projVel);
-            if (normalEntryTime == NO_COLLISION) {
+            if (normalEntryTime == CollisionData.NO_COLLISION) {
                 result.setNoCollision();
                 return;
             }
@@ -233,7 +231,7 @@ public abstract class Shape {
 
             double projVel = Vector2D.unitScalarProject(relVelX, relVelY, normalX, normalY);
             double normalEntryTime = getEntryTimeAlongAxis(aMin, aMax, bMin, bMax, projVel);
-            if (normalEntryTime == NO_COLLISION) {
+            if (normalEntryTime == CollisionData.NO_COLLISION) {
                 result.setNoCollision();
                 return;
             }
@@ -249,7 +247,7 @@ public abstract class Shape {
 
         if (entryTime == -Double.MAX_VALUE) {
             if (overlapVel < 0) {
-                result.set(0, overlapNormalX, overlapNormalY, a.parent, b.parent);
+                result.set(0, overlapNormalX, overlapNormalY, aParent, bParent);
                 return;
             } else {
                 result.setNoCollision();
@@ -258,24 +256,25 @@ public abstract class Shape {
         }
 
         if (entryTime <= maxTime && entryTime < leaveTime) {
-            result.set(entryTime, collisionNormalX, collisionNormalY, a.parent, b.parent);
+            result.set(entryTime, collisionNormalX, collisionNormalY, aParent, bParent);
         } else {
             result.setNoCollision();
         }
     }
 
-    public static void collideCircleCircle(Circle a, Circle b, double maxTime, Collision result) {
-        double combinedVelX = b.getDX() - a.getDX();
-        double combinedVelY = b.getDY() - a.getDY();
+    public static void collideCircleCircle(Entity aParent, Circle a, Entity bParent, Circle b,
+                                           double maxTime, Collision result) {
+        double combinedVelX = bParent.getDX() - aParent.getDX();
+        double combinedVelY = bParent.getDY() - aParent.getDY();
         if (combinedVelX == 0 && combinedVelY == 0) {
             result.setNoCollision();
             return;
         }
 
-        double aX = a.getX();
-        double aY = a.getY();
-        double bX = b.getX();
-        double bY = b.getY();
+        double aX = aParent.getX();
+        double aY = aParent.getY();
+        double bX = bParent.getX();
+        double bY = bParent.getY();
         double distToLineSquared = Vector2D.distToLineSquared(aX, aY, bX, bY, bX + combinedVelX,
                 bY + combinedVelY);
         double radiiSum = a.getRadius() + b.getRadius();
@@ -305,7 +304,7 @@ public abstract class Shape {
         if (travelTime < 0) {
             // overlapping
             velocity.set(deltaX / distBetween, deltaY / distBetween);
-            result.set(0, velocity, a.parent, b.parent);
+            result.set(0, velocity, aParent, bParent);
             return;
         }
         velocity.unit();
@@ -315,51 +314,52 @@ public abstract class Shape {
         velocity.scale(centerAProjectedOnVelocity - subLength);
         velocity.add(bX - aX, bY - aY); // this is now the collision normal
         velocity.scale(1 / radiiSum); // normalizes the vector
-        result.set(travelTime, velocity, a.parent, b.parent);
+        result.set(travelTime, velocity, aParent, bParent);
     }
 
     private static double getEntryTimeAlongAxis(double aMin, double aMax, double bMin, double
             bMax, double relVel) {
         if (aMax <= bMin) {
             if (relVel <= 0) {
-                return NO_COLLISION;
+                return CollisionData.NO_COLLISION;
             }
             return (bMin - aMax) / relVel;
         } else if (bMax <= aMin) {
             if (relVel >= 0) {
-                return NO_COLLISION;
+                return CollisionData.NO_COLLISION;
             }
             return (bMax - aMin) / relVel;
         }
         return -Double.MAX_VALUE;
     }
 
-    public static void collideRectangleRectangle(Rectangle a, Rectangle b, double maxTime,
-                                                 Collision result) {
-        double relVelX = a.getDX() - b.getDX(), relVelY = a.getDY() - b.getDY();
+    public static void collideRectangleRectangle(Entity aParent, Rectangle a, Entity bParent,
+                                                 Rectangle b, double maxTime, Collision result) {
+        double relVelX = aParent.getDX() - bParent.getDX(), relVelY = aParent.getDY() - bParent
+                .getDY();
 
         // calculating entry time along the x axis
         double aMaxX = a.halfWidth, aMinX = -a.halfWidth;
-        double aX = a.getX(), bX = b.getX();
+        double aX = aParent.getX(), bX = bParent.getX();
         double bCenter = bX - aX;
         double bMaxX = bCenter + b.halfWidth;
         double bMinX = bCenter - b.halfWidth;
         double entryTime = getEntryTimeAlongAxis(aMinX, aMaxX, bMinX, bMaxX, relVelX);
         assert entryTime == -Double.MAX_VALUE || entryTime >= 0;
-        if (entryTime == NO_COLLISION) {
+        if (entryTime == CollisionData.NO_COLLISION) {
             result.setNoCollision();
             return;
         }
 
         // calculating entry time along the y axis
         double aMaxY = a.halfHeight, aMinY = -a.halfHeight;
-        double aY = a.getY(), bY = b.getY();
+        double aY = aParent.getY(), bY = bParent.getY();
         bCenter = bY - aY;
         double bMaxY = bCenter + b.halfHeight;
         double bMinY = bCenter - b.halfHeight;
 
         double yEntryTime = getEntryTimeAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relVelY);
-        if (yEntryTime == NO_COLLISION) {
+        if (yEntryTime == CollisionData.NO_COLLISION) {
             result.setNoCollision();
             return;
         }
@@ -378,11 +378,11 @@ public abstract class Shape {
 
         if (entryTime == -Double.MAX_VALUE) { // if true than the AABBs are overlapping
             if (relVelX > 0 && aX < bX || relVelX < 0 && bX < aX) {
-                result.set(0, 1, 0, a.parent, b.parent);
+                result.set(0, 1, 0, aParent, bParent);
                 return;
             }
             if (relVelY > 0 && aY < bY || relVelY < 0 && bY < aY) {
-                result.set(0, 0, 1, a.parent, b.parent);
+                result.set(0, 0, 1, aParent, bParent);
                 return;
             }
             result.setNoCollision();
@@ -396,39 +396,39 @@ public abstract class Shape {
                 getLeaveTimeAlongAxis(aMinY, aMaxY, bMinY, bMaxY, relVelY));
 
         if (entryTime <= maxTime && entryTime <= leaveTime) {
-            result.set(entryTime, collisionNormalX, collisionNormalY, a.parent, b.parent);
+            result.set(entryTime, collisionNormalX, collisionNormalY, aParent, bParent);
         } else {
             result.setNoCollision();
         }
     }
 
-    public static void collideCircleRectangle(Circle a, Rectangle b, double maxTime, Collision
-            result) {
-        double aX = a.getX();
-        double bX = b.getX();
+    public static void collideCircleRectangle(Entity aParent, Circle a, Entity bParent, Rectangle
+            b, double maxTime, Collision result) {
+        double aX = aParent.getX();
+        double bX = bParent.getX();
         double bCenterX = bX - aX;
         final double bMaxX = bCenterX + b.halfWidth;
         final double bMinX = bCenterX - b.halfWidth;
-        final double relVelX = a.getDX() - b.getDX();
+        final double relVelX = aParent.getDX() - bParent.getDX();
         final double aMax = a.getRadius();
         final double aMin = -aMax;
         double entryTime = getEntryTimeAlongAxis(aMin, aMax, bMinX, bMaxX, relVelX);
-        if (entryTime == NO_COLLISION) {
+        if (entryTime == CollisionData.NO_COLLISION) {
             result.setNoCollision();
             return;
         }
 
-        double aY = a.getY();
-        double bY = b.getY();
+        double aY = aParent.getY();
+        double bY = bParent.getY();
         double bCenterY = bY - aY;
         final double bMaxY = bCenterY + b.halfHeight;
         final double bMinY = bCenterY - b.halfHeight;
-        final double relVelY = a.getDY() - b.getDY();
+        final double relVelY = aParent.getDY() - bParent.getDY();
         double yEntryTime = getEntryTimeAlongAxis(aMin, aMax, bMinY, bMaxY, relVelY);
         double collisionNormalX;
         double collisionNormalY;
         if (yEntryTime > entryTime) {
-            if (yEntryTime == NO_COLLISION) {
+            if (yEntryTime == CollisionData.NO_COLLISION) {
                 result.setNoCollision();
                 return;
             }
@@ -463,7 +463,7 @@ public abstract class Shape {
 
         double axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result
                 .getTempMax(), projVel);
-        if (axisEntryTime == NO_COLLISION) {
+        if (axisEntryTime == CollisionData.NO_COLLISION) {
             result.setNoCollision();
             return;
         }
@@ -500,7 +500,7 @@ public abstract class Shape {
 
         axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax
                 (), projVel);
-        if (axisEntryTime == NO_COLLISION) {
+        if (axisEntryTime == CollisionData.NO_COLLISION) {
             result.setNoCollision();
             return;
         }
@@ -535,7 +535,7 @@ public abstract class Shape {
 
         axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax
                 (), projVel);
-        if (axisEntryTime == NO_COLLISION) {
+        if (axisEntryTime == CollisionData.NO_COLLISION) {
             result.setNoCollision();
             return;
         }
@@ -570,7 +570,7 @@ public abstract class Shape {
 
         axisEntryTime = getEntryTimeAlongAxis(aMin, aMax, result.getTempMin(), result.getTempMax
                 (), projVel);
-        if (axisEntryTime == NO_COLLISION) {
+        if (axisEntryTime == CollisionData.NO_COLLISION) {
             result.setNoCollision();
             return;
         }
@@ -584,18 +584,18 @@ public abstract class Shape {
 
         if (entryTime == -Double.MAX_VALUE) { // overlapping if true
             if (relVelX > 0 && aX < bX || relVelX < 0 && bX < aX) {
-                result.set(0, 1, 0, a.parent, b.parent);
+                result.set(0, 1, 0, aParent, bParent);
                 return;
             }
             if (relVelY > 0 && aY < bY || relVelY < 0 && bY < aY) {
-                result.set(0, 0, 1, a.parent, b.parent);
+                result.set(0, 0, 1, aParent, bParent);
                 return;
             }
             result.setNoCollision();
             return;
         }
         if (entryTime <= maxTime && entryTime <= leaveTime && entryTime != -Double.MAX_VALUE) {
-            result.set(entryTime, collisionNormalX, collisionNormalY, a.parent, b.parent);
+            result.set(entryTime, collisionNormalX, collisionNormalY, aParent, bParent);
         } else {
             result.setNoCollision();
         }
@@ -612,19 +612,19 @@ public abstract class Shape {
         }
     }
 
-    private static void getEntryLeaveAndOverlapTime(Polygon a, Polygon b, CollisionData
-            collisionData) {
+    private static void getEntryLeaveAndOverlapTime(Entity aParent, Polygon a, Entity bParent,
+                                                    Polygon b, CollisionData collisionData) {
 //        double tempVelocity = collisionData.getOverlapVelocity(); // TODO why are these here
 //        collisionData.setTempOverlapVelocity(collisionData.getOverlapVelocity());
         collisionData.resetOverlapUpdated();
-        double relVelX = a.getDX() - b.getDX();
-        double relVelY = a.getDY() - b.getDY();
+        double relVelX = aParent.getDX() - bParent.getDX();
+        double relVelY = aParent.getDY() - bParent.getDY();
         for (int i = 0; i < a.getNumPoints(); i++) {
             Vector2D normal = a.getNormals()[i];
             collisionData.clearMinMax();
             for (Vector2D point : b.getPoints()) {
-                double dist = Vector2D.unitScalarProject(point.getX() + b.getX() - a.getX(),
-                        point.getY() + b.getY() - a.getY(), normal);
+                double dist = Vector2D.unitScalarProject(point.getX() + bParent.getX() - aParent
+                        .getX(), point.getY() + bParent.getY() - aParent.getY(), normal);
                 collisionData.updateMinMax(dist);
             }
             double aMin = a.getNormalMins()[i];
@@ -678,9 +678,10 @@ public abstract class Shape {
         collisionData.updateLeaveTime(getLeaveTimeAlongAxis(aMin, aMax, bMin, bMax, vel));
     }
 
-    public static boolean isOverlappingPolyPoly(Polygon a, Polygon b) {
-        final double aX = a.parent.getX(), aY = a.parent.getY();
-        final double bX = b.parent.getX(), bY = b.parent.getY();
+    public static boolean isOverlappingPolyPoly(Entity aParent, Polygon a, Entity bParent,
+                                                Polygon b) {
+        final double aX = aParent.getX(), aY = aParent.getY();
+        final double bX = bParent.getX(), bY = bParent.getY();
         final double deltaX = aX - bX;
         final double deltaY = aY - bY;
         Vector2D[] aPoints = a.getPoints();
@@ -740,9 +741,10 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingPolyCircle(Polygon a, Circle b) {
-        final double aX = a.parent.getX(), aY = a.parent.getY();
-        final double bX = b.parent.getX(), bY = b.parent.getY();
+    public static boolean isOverlappingPolyCircle(Entity aParent, Polygon a, Entity bParent,
+                                                  Circle b) {
+        final double aX = aParent.getX(), aY = aParent.getY();
+        final double bX = bParent.getX(), bY = bParent.getY();
         double bRadius = b.getRadius();
 
         final double deltaX = bX - aX;
@@ -803,9 +805,10 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingPolyRectangle(Polygon a, Rectangle b) {
-        final double aX = a.parent.getX(), aY = a.parent.getY();
-        final double bX = b.parent.getX(), bY = b.parent.getY();
+    public static boolean isOverlappingPolyRectangle(Entity aParent, Polygon a, Entity bParent,
+                                                     Rectangle b) {
+        final double aX = aParent.getX(), aY = aParent.getY();
+        final double bX = bParent.getX(), bY = bParent.getY();
         double bHalfWidth = b.getHalfWidth();
         double bHalfHeight = b.getHalfHeight();
         final double deltaX = bX - aX;
@@ -895,18 +898,20 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingCircleCircle(Circle a, Circle b) {
-        double deltaX = a.getX() - b.getX();
-        double deltaY = a.getY() - b.getY();
+    public static boolean isOverlappingCircleCircle(Entity aParent, Circle a, Entity bParent,
+                                                    Circle b) {
+        double deltaX = aParent.getX() - bParent.getX();
+        double deltaY = aParent.getY() - bParent.getY();
         double distSquared = deltaX * deltaX + deltaY * deltaY;
         double radiiSum = a.getRadius() + b.getRadius();
         double radiiSumSquared = radiiSum * radiiSum;
         return distSquared < radiiSumSquared;
     }
 
-    public static boolean isOverlappingCircleRectangle(Circle a, Rectangle b) {
-        final double aX = a.parent.getX(), aY = a.parent.getY();
-        final double bX = b.parent.getX(), bY = b.parent.getY();
+    public static boolean isOverlappingCircleRectangle(Entity aParent, Circle a, Entity bParent,
+                                                       Rectangle b) {
+        final double aX = aParent.getX(), aY = aParent.getY();
+        final double bX = bParent.getX(), bY = bParent.getY();
         double bHalfWidth = b.getHalfWidth();
         double bHalfHeight = b.getHalfHeight();
         final double deltaX = bX - aX;
@@ -978,41 +983,13 @@ public abstract class Shape {
         return true;
     }
 
-    public static boolean isOverlappingRectangleRectangle(Rectangle a, Rectangle b) {
-        double deltaX = a.getX() - b.getX();
-        double deltaY = a.getY() - b.getY();
+    public static boolean isOverlappingRectangleRectangle(Entity aParent, Rectangle a, Entity
+            bParent, Rectangle b) {
+        double deltaX = aParent.getX() - bParent.getX();
+        double deltaY = aParent.getY() - bParent.getY();
         double combinedHalfWidth = a.getHalfWidth() + b.getHalfWidth();
         double combinedHalfHeight = a.getHalfHeight() + b.getHalfHeight();
         return Math.abs(deltaX) <= combinedHalfWidth && Math.abs(deltaY) <= combinedHalfHeight;
-    }
-
-    public void setParent(Entity parent) {
-        this.parent = parent;
-    }
-
-    public Entity getParent() {
-        return parent;
-    }
-
-    public void setParentOffset(double offsetX, double offsetY) {
-        parentOffsetX = offsetX;
-        parentOffsetY = offsetY;
-    }
-
-    public double getX() {
-        return parent.getX() + parentOffsetX;
-    }
-
-    public double getY() {
-        return parent.getY() + parentOffsetY;
-    }
-
-    public double getDX() {
-        return parent.getDX();
-    }
-
-    public double getDY() {
-        return parent.getDY();
     }
 
     public double getWidth() {
@@ -1033,27 +1010,41 @@ public abstract class Shape {
 
     public abstract double getArea();
 
-    public abstract void collideWithShape(Shape shape, double maxTime, Collision result);
-
-    public abstract void collideWithCircle(Circle circleShape, double maxTime, Collision result);
-
-    public abstract void collideWithRectangle(Rectangle aabbShape, double maxTime, Collision
+    public abstract void collideWithShape(Entity current, Entity other, double maxTime, Collision
             result);
 
-    public abstract void collideWithPolygon(Polygon polygonShape, double maxTime, Collision result);
+    public abstract void collideWithCircle(Entity current, Entity other, Circle circleShape,
+                                           double maxTime, Collision result);
 
-    public abstract boolean isOverlappingShape(Shape shape);
+    public abstract void collideWithRectangle(Entity current, Entity other, Rectangle aabbShape,
+                                              double maxTime, Collision result);
 
-    public abstract boolean isOverlappingPolygon(Polygon shape);
+    public abstract void collideWithPolygon(Entity current, Entity other, Polygon polygonShape,
+                                            double maxTime, Collision result);
 
-    public abstract boolean isOverlappingCircle(Circle shape);
+    public abstract boolean isOverlappingShape(Entity current, Entity other);
 
-    public abstract boolean isOverlappingRectangle(Rectangle shape);
+    public abstract boolean isOverlappingPolygon(Entity current, Entity other, Polygon shape);
+
+    public abstract boolean isOverlappingCircle(Entity current, Entity other, Circle shape);
+
+    public abstract boolean isOverlappingRectangle(Entity current, Entity other, Rectangle shape);
 
     /**
-     * Draws the shape using the current foreground color.
+     * Draws the outline of the shape.
      *
      * @param renderer The screen renderer
+     * @param x        The X component of the location
+     * @param y        The Y component of the location
      */
-    public abstract void draw(Renderer renderer);
+    public abstract void draw(Renderer renderer, double x, double y);
+
+    /**
+     * Fills the current shape.
+     *
+     * @param renderer The screen renderer
+     * @param x        The X component of the location
+     * @param y        The Y component of the location
+     */
+    public abstract void fill(Renderer renderer, double x, double y);
 }

@@ -3,7 +3,7 @@ package gameengine.collisiondetection.tree;
 import Utilities.UnorderedArrayList;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
-import gameengine.collisiondetection.shapes.Shape;
+import gameengine.collisiondetection.shapes.CollisionData;
 import gameengine.entities.Entity;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
@@ -109,6 +109,15 @@ public class Quad extends Tree implements Parent {
     }
 
     @Override
+    public void updateEntities(double elapsedTime) {
+        super.updateEntities(elapsedTime);
+        topLeft.updateEntities(elapsedTime);
+        topRight.updateEntities(elapsedTime);
+        bottomLeft.updateEntities(elapsedTime);
+        bottomRight.updateEntities(elapsedTime);
+    }
+
+    @Override
     public void ensureEntitiesAreContained(double time) {
         int index = 0;
         while (index < entityListPos) {
@@ -208,7 +217,7 @@ public class Quad extends Tree implements Parent {
 
     @Override
     public void initCalcCollision(double timeToCheck) {
-        assert node.getCollision().getCollisionTime() == Shape.NO_COLLISION;
+        assert node.getCollision().getCollisionTime() == CollisionData.NO_COLLISION;
         assert getRealEntityCount() == entityCount : getRealEntityCount() + " " + entityCount;
         timeInTree = 0;
 
@@ -260,8 +269,7 @@ public class Quad extends Tree implements Parent {
 
     @Override
     public void relocateAndCheck(double timeToCheck, Entity entity) {
-        assert !isEntityInTree(entity) : "Entity should not be in the this tree when this method " +
-                "" + "is called";
+        assert !isEntityInTree(entity) : "Entity should not be in this tree";
         entityCount--;
         Collision collision = node.getCollision();
         if (entity == collision.getA() || entity == collision.getB()) {

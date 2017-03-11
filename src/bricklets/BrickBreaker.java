@@ -1,12 +1,12 @@
 package bricklets;
 
+import Utilities.GameUtils;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
-import gameengine.collisiondetection.shapes.Circle;
 import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
-import gameengine.entities.RegionSensor;
+import gameengine.geometry.Vector2D;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
@@ -51,7 +51,6 @@ public class BrickBreaker extends Context {
     });
 
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
-    private RegionSensor sensor;
 
     public BrickBreaker(GameController controller) {
         super(controller);
@@ -68,8 +67,9 @@ public class BrickBreaker extends Context {
         rand.setSeed(1);
         world.clear();
         lives = 100;
-        world.setCollisionGroups(EntityType.STANDARD, EntityType.STANDARD, EntityType.PADDLE,
-                EntityType.WALL, EntityType.BALL);
+        world.setCollisionGroups(EntityType.PADDLE, EntityType.BALL);
+        world.setCollisionGroups(EntityType.STANDARD, EntityType.STANDARD, EntityType.WALL,
+                EntityType.BALL);
         world.setCollisionGroups(EntityType.BALL, EntityType.PADDLE, EntityType.BALL, EntityType
                 .WALL);
         world.setCollisionGroups(EntityType.WALL, EntityType.PADDLE);
@@ -80,12 +80,9 @@ public class BrickBreaker extends Context {
 
         double paddleDensity = 0.001;
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, paddleDensity));
-        Entity.setDefaultEntityType(EntityType.STANDARD);
+        Entity.setDefaultEntityType(EntityType.PADDLE);
         paddle = new Paddle(width / 2, initialPaddleY, 300, 50);
         world.addEntity(paddle);
-
-        sensor = new RegionSensor(width / 2, height / 2, new Circle(100));
-        world.addEntity(sensor);
 
         initBricks();
         initBounding();
@@ -134,13 +131,29 @@ public class BrickBreaker extends Context {
                 world.addEntity(brick);
             }
         }
+
+        //path experiment
+        Vector2D[] path = new Vector2D[4];
+        path[0] = new Vector2D(width / 10, height / 2);
+        path[1] = new Vector2D(width / 2, height * 9 / 10);
+        path[2] = new Vector2D(width * 9 / 10, height / 2);
+        path[3] = new Vector2D(width / 2, height / 10);
+
+        GameUtils.createEntityPath(world, EntityType.WALL, 0.01, 0.5, 50, path);
+
+        //some walls
+        Vector2D from = new Vector2D(250, 350);
+        Vector2D to = new Vector2D(200, 200);
+        GameUtils.createWall(world, EntityType.WALL, 10, from, to);
+
+        from = new Vector2D(200, 400);
+        to = new Vector2D(350, 350);
+        GameUtils.createWall(world, EntityType.WALL, 10, from, to);
     }
 
     @Override
     protected void updateContext(long gameTime, double mouseDeltaX, double mouseDeltaY, double
             mouseWheelRotation) {
-        //TODO: Entities should be automatically updated from the world
-        sensor.update(gameTime - currentTime);
         currentTime = gameTime;
         if (brickCount == 0) {
             init();

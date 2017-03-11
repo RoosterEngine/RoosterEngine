@@ -3,6 +3,7 @@ package gameengine.collisiondetection.tree;
 import Utilities.UnorderedArrayList;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.World;
+import gameengine.collisiondetection.shapes.CollisionData;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.context.Context;
 import gameengine.entities.Entity;
@@ -57,6 +58,10 @@ public class SpatialTree implements Parent {
 
     public void updateMotions(double elapsedTime, UnorderedArrayList<WorldEffect> worldEffects) {
         tree.updateMotions(elapsedTime, worldEffects);
+    }
+
+    public void updateEntities(double elapsedTime) {
+        tree.updateEntities(elapsedTime);
     }
 
     public void calcCollision(double elapsedTime, Context context) {
@@ -144,8 +149,8 @@ public class SpatialTree implements Parent {
         tempCollision.set(collision);
         Entity a = tempCollision.getA();
         Entity b = tempCollision.getB();
-        Shape.collideShapes(a.getShape(), b.getShape(), Double.MAX_VALUE, tempCollision);
-        if (tempCollision.getCollisionTime() != Shape.NO_COLLISION) {
+        Shape.collideShapes(a, b, Double.MAX_VALUE, tempCollision);
+        if (tempCollision.getCollisionTime() != CollisionData.NO_COLLISION) {
             throw new AssertionError(tempCollision.getCollisionTime());
         }
         return true;
@@ -187,11 +192,11 @@ public class SpatialTree implements Parent {
         double centerX = tree.getCenterX(), centerY = tree.getCenterY();
         Tree topLeft, topRight, bottomLeft, bottomRight;
 
-        if (shape.getX() < tree.getCenterX()) {
+        if (entity.getX() < tree.getCenterX()) {
             centerX -= tree.getHalfLength();
             topLeft = Leaf.createInstance(world);
             bottomLeft = Leaf.createInstance(world);
-            if (shape.getY() < tree.getCenterY()) {
+            if (entity.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
                 topRight = Leaf.createInstance(world);
                 bottomRight = tree;
@@ -204,7 +209,7 @@ public class SpatialTree implements Parent {
             centerX += tree.getHalfLength();
             topRight = Leaf.createInstance(world);
             bottomRight = Leaf.createInstance(world);
-            if (shape.getY() < tree.getCenterY()) {
+            if (entity.getY() < tree.getCenterY()) {
                 centerY -= tree.getHalfLength();
                 topLeft = Leaf.createInstance(world);
                 bottomLeft = tree;

@@ -1,6 +1,7 @@
 package gameengine.collisiondetection.shapes;
 
 import gameengine.collisiondetection.Collision;
+import gameengine.entities.Entity;
 import gameengine.geometry.Vector2D;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
@@ -9,10 +10,10 @@ import java.util.Random;
 
 public class Polygon extends Shape {
     private static Random rand = new Random(0);
-    private Vector2D[] normals, points; // points are relative to the center
-    private double[] normalMins, normalMaxs;
-    private double width, height, minX, maxX, minY, maxY;
-    private int numPoints;
+    private final Vector2D[] normals, points; // points are relative to the center
+    private final double[] normalMins, normalMaxs;
+    private final double width, height, minX, maxX, minY, maxY;
+    private final int numPoints;
 
     public Polygon(double[] xPoints, double[] yPoints) {
         super(getHalfLength(xPoints), getHalfLength(yPoints));
@@ -22,8 +23,36 @@ public class Polygon extends Shape {
         normalMins = new double[numPoints];
         normalMaxs = new double[numPoints];
         setupPoints(xPoints, yPoints);
-        setupMaxMin();
         setupNormalsAndShadows();
+
+        //setup max / min (moved to constructor to allow declaring immutable
+        double tempMinX = Double.MAX_VALUE;
+        double tempMaxX = -Double.MAX_VALUE;
+        double tempMinY = Double.MAX_VALUE;
+        double tempMaxY = -Double.MAX_VALUE;
+        for (Vector2D point : points) {
+            double x = point.getX();
+            double y = point.getY();
+            if (x < tempMinX) {
+                tempMinX = x;
+            }
+            if (x > tempMaxX) {
+                tempMaxX = x;
+            }
+            if (y < tempMinY) {
+                tempMinY = y;
+            }
+            if (y > tempMaxY) {
+                tempMaxY = y;
+            }
+        }
+        maxX = tempMaxX;
+        maxY = tempMaxY;
+        minX = tempMinX;
+        minY = tempMinY;
+
+        width = maxX - minX;
+        height = maxY - minY;
     }
 
     public static Polygon getCircle(double radius, int points) {
@@ -70,43 +99,46 @@ public class Polygon extends Shape {
     }
 
     @Override
-    public void collideWithShape(Shape shape, double maxTime, Collision result) {
-        shape.collideWithPolygon(this, maxTime, result);
+    public void collideWithShape(Entity current, Entity other, double maxTime, Collision result) {
+        other.getShape().collideWithPolygon(other, current, this, maxTime, result);
     }
 
     @Override
-    public void collideWithCircle(Circle circleShape, double maxTime, Collision result) {
-        Shape.collideCirclePoly(circleShape, this, maxTime, result);
+    public void collideWithCircle(Entity current, Entity other, Circle circleShape, double
+            maxTime, Collision result) {
+        Shape.collideCirclePoly(other, circleShape, current, this, maxTime, result);
     }
 
     @Override
-    public void collideWithRectangle(Rectangle aabbShape, double maxTime, Collision result) {
-        Shape.collideRectanglePoly(aabbShape, this, maxTime, result);
+    public void collideWithRectangle(Entity current, Entity other, Rectangle aabbShape, double
+            maxTime, Collision result) {
+        Shape.collideRectanglePoly(other, aabbShape, current, this, maxTime, result);
     }
 
     @Override
-    public void collideWithPolygon(Polygon polygonShape, double maxTime, Collision result) {
-        Shape.collidePolyPoly(this, polygonShape, maxTime, result);
+    public void collideWithPolygon(Entity current, Entity other, Polygon polygonShape, double
+            maxTime, Collision result) {
+        Shape.collidePolyPoly(current, this, other, polygonShape, maxTime, result);
     }
 
     @Override
-    public boolean isOverlappingShape(Shape shape) {
-        return shape.isOverlappingPolygon(this);
+    public boolean isOverlappingShape(Entity current, Entity other) {
+        return other.getShape().isOverlappingPolygon(other, current, this);
     }
 
     @Override
-    public boolean isOverlappingPolygon(Polygon shape) {
-        return Shape.isOverlappingPolyPoly(this, shape);
+    public boolean isOverlappingPolygon(Entity current, Entity other, Polygon shape) {
+        return Shape.isOverlappingPolyPoly(current, this, other, shape);
     }
 
     @Override
-    public boolean isOverlappingCircle(Circle shape) {
-        return Shape.isOverlappingPolyCircle(this, shape);
+    public boolean isOverlappingCircle(Entity current, Entity other, Circle shape) {
+        return Shape.isOverlappingPolyCircle(current, this, other, shape);
     }
 
     @Override
-    public boolean isOverlappingRectangle(Rectangle shape) {
-        return Shape.isOverlappingPolyRectangle(this, shape);
+    public boolean isOverlappingRectangle(Entity current, Entity other, Rectangle shape) {
+        return Shape.isOverlappingPolyRectangle(current, this, other, shape);
     }
 
     /**
@@ -163,8 +195,13 @@ public class Polygon extends Shape {
     }
 
     @Override
-    public void draw(Renderer renderer) {
-        renderer.fillPolygon(points, getX(), getY());
+    public void draw(Renderer renderer, double x, double y) {
+        renderer.drawPolygon(points, x, y);
+    }
+
+    @Override
+    public void fill(Renderer renderer, double x, double y) {
+        renderer.fillPolygon(points, x, y);
     }
 
     private void drawPoints(Renderer renderer, RColor color) {
@@ -176,11 +213,9 @@ public class Polygon extends Shape {
         }
     }
 
-    private void drawNormals(Renderer renderer, RColor color) {
+    private void drawNormals(Renderer renderer, double x, double y, RColor color) {
         double scale = 100;
         renderer.setForegroundColor(color);
-        double x = getX();
-        double y = getY();
         for (Vector2D normal : normals) {
             renderer.drawLine(x, y, x + normal.getX() * scale, y + normal.getY() * scale);
         }
@@ -192,32 +227,7 @@ public class Polygon extends Shape {
         }
     }
 
-    private void setupMaxMin() {
-        minX = Double.MAX_VALUE;
-        maxX = -Double.MAX_VALUE;
-        minY = Double.MAX_VALUE;
-        maxY = -Double.MAX_VALUE;
-        for (Vector2D point : points) {
-            double x = point.getX();
-            double y = point.getY();
-            if (x < minX) {
-                minX = x;
-            }
-            if (x > maxX) {
-                maxX = x;
-            }
-            if (y < minY) {
-                minY = y;
-            }
-            if (y > maxY) {
-                maxY = y;
-            }
-        }
-        width = maxX - minX;
-        height = maxY - minY;
-    }
-
-    private void setupNormalsAndShadows() {
+    private final void setupNormalsAndShadows() {
         Vector2D point = points[numPoints - 1];
         double lastX = point.getX();
         double lastY = point.getY();

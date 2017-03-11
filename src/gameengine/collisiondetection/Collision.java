@@ -1,7 +1,6 @@
 package gameengine.collisiondetection;
 
 import gameengine.collisiondetection.shapes.CollisionData;
-import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.Entity;
 import gameengine.geometry.Vector2D;
 
@@ -14,7 +13,7 @@ public class Collision {
     private Vector2D collisionNormal = new Vector2D();
     private CollisionData collisionData = new CollisionData();
     private Entity a = null, b = null;
-    private double timeToCollision = Shape.NO_COLLISION;
+    private double timeToCollision = CollisionData.NO_COLLISION;
     private double tempMin, tempMax;
 
     public Collision() {
@@ -49,7 +48,7 @@ public class Collision {
     }
 
     public void setNoCollision() {
-        timeToCollision = Shape.NO_COLLISION;
+        timeToCollision = CollisionData.NO_COLLISION;
         collisionNormal.clear();
         a = null;
         b = null;
@@ -76,7 +75,7 @@ public class Collision {
     }
 
     public boolean assertCollision() {
-        if (timeToCollision != Shape.NO_COLLISION) {
+        if (timeToCollision != CollisionData.NO_COLLISION) {
             assert a != null : timeToCollision;
             assert b != null : timeToCollision;
             assert a.getContainingTree() != null;

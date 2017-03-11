@@ -76,4 +76,9 @@ public class Rectangle extends Shape {
     public void draw(Renderer renderer, double x, double y) {
         renderer.drawRect(x, y, getHalfWidth(), getHalfHeight());
     }
+
+    @Override
+    public void fill(Renderer renderer, double x, double y) {
+        renderer.fillRect(x, y, getHalfWidth(), getHalfHeight());
+    }
 }

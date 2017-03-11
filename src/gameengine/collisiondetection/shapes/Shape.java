@@ -1031,11 +1031,20 @@ public abstract class Shape {
     public abstract boolean isOverlappingRectangle(Entity current, Entity other, Rectangle shape);
 
     /**
-     * Draws the shape using the current foreground color.
+     * Draws the outline of the shape.
      *
      * @param renderer The screen renderer
      * @param x        The X component of the location
      * @param y        The Y component of the location
      */
     public abstract void draw(Renderer renderer, double x, double y);
+
+    /**
+     * Fills the current shape.
+     *
+     * @param renderer The screen renderer
+     * @param x        The X component of the location
+     * @param y        The Y component of the location
+     */
+    public abstract void fill(Renderer renderer, double x, double y);
 }

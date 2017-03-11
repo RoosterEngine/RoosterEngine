@@ -2,7 +2,6 @@ package bricklets;
 
 import gameengine.collisiondetection.shapes.Polygon;
 import gameengine.graphics.RColor;
-import gameengine.graphics.Renderer;
 
 /**
  * The paddle that is used by players to bounce balls.
@@ -10,12 +9,8 @@ import gameengine.graphics.Renderer;
  * User: davidrusu
  */
 public class Paddle extends TestingEntity {
-
     public Paddle(double x, double y, double width, double height) {
         super(x, y, createPaddlePolygon(width, height));
-//        super(x, y, new Circle(Math.max(width, height)));
-//        super(x, y, new Rectangle(width, height));
-//        super(x, y, Polygon.getCircle(Math.max(width, height), 4));
         color = RColor.WHITE;
     }
 
@@ -42,20 +37,5 @@ public class Paddle extends TestingEntity {
         }
 
         return new Polygon(xPoints, yPoints);
-    }
-
-    @Override
-    public void update(double elapsedTime) {
-    }
-
-    @Override
-    public void draw(Renderer renderer) {
-        renderer.setForegroundColor(color);
-        getShape().draw(renderer, getX(), getY());
-
-//        g.setColor(RColor.ORANGE);
-//        double halfHeight = getHalfHeight();
-//        g.drawString("dx: " + dx, (int) (x), (int) (y + halfHeight + 10));
-//        g.drawString("dy: " + dy, (int) (x), (int) (y + halfHeight + 25));
     }
 }

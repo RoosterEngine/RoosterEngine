@@ -196,6 +196,11 @@ public class Polygon extends Shape {
 
     @Override
     public void draw(Renderer renderer, double x, double y) {
+        renderer.drawPolygon(points, x, y);
+    }
+
+    @Override
+    public void fill(Renderer renderer, double x, double y) {
         renderer.fillPolygon(points, x, y);
     }
 

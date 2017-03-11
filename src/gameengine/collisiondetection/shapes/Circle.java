@@ -77,4 +77,9 @@ public class Circle extends Shape {
     public void draw(Renderer renderer, double x, double y) {
         renderer.drawCircle(x, y, radius);
     }
+
+    @Override
+    public void fill(Renderer renderer, double x, double y) {
+        renderer.fillCircle(x, y, radius);
+    }
 }

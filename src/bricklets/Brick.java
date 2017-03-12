@@ -1,5 +1,6 @@
 package bricklets;
 
+import gameengine.collisiondetection.shapes.Rectangle;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 
@@ -10,12 +11,12 @@ import java.awt.*;
  *
  * User: davidrusu
  */
-public class Brick extends BoxEntity {
+public class Brick extends TestingEntity {
     private static final double TOTAL_HEALTH = 100;
     private double health = TOTAL_HEALTH;
 
     public Brick(double x, double y, double width, double height) {
-        super(x, y, width, height);
+        super(x, y, new Rectangle(width, height));
         color = RColor.GREY.darken();
     }
 

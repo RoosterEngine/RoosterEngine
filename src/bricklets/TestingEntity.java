@@ -31,10 +31,6 @@ public class TestingEntity extends Entity {
     }
 
     @Override
-    public void update(double elapsedTime) {
-    }
-
-    @Override
     public void draw(Renderer renderer) {
         renderer.setForegroundColor(color);
         getShape().fill(renderer, x, y);

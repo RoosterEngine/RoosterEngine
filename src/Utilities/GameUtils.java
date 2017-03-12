@@ -1,6 +1,6 @@
 package Utilities;
 
-import bricklets.Wall;
+import bricklets.TestingEntity;
 import gameengine.collisiondetection.EntityType;
 import gameengine.collisiondetection.World;
 import gameengine.collisiondetection.shapes.Circle;
@@ -8,8 +8,10 @@ import gameengine.collisiondetection.shapes.Polygon;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.entities.RegionSensor;
 import gameengine.geometry.Vector2D;
+import gameengine.graphics.RColor;
 import gameengine.motion.motions.DestinationMotion;
 import gameengine.motion.motions.Motion;
+import gameengine.physics.Material;
 
 /**
  * Utilities for making games.
@@ -91,7 +93,9 @@ public class GameUtils {
         yPoints[3] = (width.getY() + length.getY()) * -0.5;
 
         Shape shape = new Polygon(xPoints, yPoints);
-        Wall wall = new Wall((from.getX() + to.getX()) / 2, (from.getY() + to.getY()) / 2, shape);
+        TestingEntity wall = new TestingEntity((from.getX() + to.getX()) / 2, (from.getY() + to
+                .getY()) / 2, shape, Double.POSITIVE_INFINITY, Material.getRubber());
+        wall.setColor(RColor.WHITE);
         world.addEntity(wall);
     }
 }

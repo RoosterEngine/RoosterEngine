@@ -3,6 +3,7 @@ package bricklets;
 import Utilities.GameUtils;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
+import gameengine.collisiondetection.shapes.Circle;
 import gameengine.collisiondetection.shapes.Rectangle;
 import gameengine.context.Context;
 import gameengine.core.GameController;
@@ -186,8 +187,8 @@ public class BrickBreaker extends Context {
         double damage = 30;
         Entity a = collision.getA();
         Entity b = collision.getB();
-        boolean isABall = a instanceof CircleEntity;
-        boolean isBBall = b instanceof CircleEntity;
+        boolean isABall = a.getEntityType() == EntityType.BALL.ordinal();
+        boolean isBBall = b.getEntityType() == EntityType.BALL.ordinal();
         if (a instanceof Brick && isBBall) {
 //            damage *= b.getMass();
             damageBrick((Brick) a, damage);
@@ -215,7 +216,7 @@ public class BrickBreaker extends Context {
     }
 
     private void addBall(double x, double y, double radius, double mass) {
-        CircleEntity entity = new CircleEntity(x, y, radius);
+        TestingEntity entity = new TestingEntity(x, y, new Circle(radius));
         double spread = (Math.sin(currentTime / 1000000) + 1.5) * 2;
         entity.setVelocity((Math.random() - 0.5) * spread, -10);
         entity.setMass(mass);

@@ -10,7 +10,7 @@ import gameengine.physics.Material;
 
 import java.awt.*;
 
-public abstract class Entity {
+public class Entity {
     private static EntityType defaultEntityType = EntityType.STANDARD;
     private static Material defaultMaterial = Material.getDefaultMaterial();
     protected Material material;
@@ -298,7 +298,9 @@ public abstract class Entity {
         this.motion = motion;
     }
 
-    public abstract void update(double elapsedTime);
+    public void update(double elapsedTime) {
+    }
 
-    public abstract void draw(Renderer renderer);
+    public void draw(Renderer renderer) {
+    }
 }

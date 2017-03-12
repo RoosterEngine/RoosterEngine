@@ -1,11 +1,14 @@
 package bricklets;
 
+import Utilities.GameUtils;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
+import gameengine.collisiondetection.shapes.Circle;
 import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
 import gameengine.entities.Pointer;
+import gameengine.geometry.Vector2D;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
 import gameengine.graphics.ScreenManager;
@@ -17,9 +20,10 @@ import gameengine.physics.Physics;
 import java.util.Random;
 
 public class Benchmark extends Context {
-
     private static final String EXIT = "Exit";
     private static final String INCREASE_BALL_COUNT = "Increase Ball Count";
+
+    private static final Circle CIRLCLE = new Circle(2);
 
     private Random rand = new Random(0);
     private Material ballMaterial = Material.createMaterial(0, 1, 1);
@@ -57,15 +61,14 @@ public class Benchmark extends Context {
 
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, Double.POSITIVE_INFINITY));
         Entity.setDefaultEntityType(EntityType.WALL);
-        BoxEntity topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
-        BoxEntity bottomBounds = new BoxEntity(width / 2, height, width, borderThickness);
-        BoxEntity leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
-        BoxEntity rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
 
-        world.addEntity(topBounds);
-        world.addEntity(bottomBounds);
-        world.addEntity(leftBounds);
-        world.addEntity(rightBounds);
+        Vector2D[] points = new Vector2D[5];
+        points[0] = new Vector2D(0, height);
+        points[1] = new Vector2D(0, 0);
+        points[2] = new Vector2D(width, 0);
+        points[3] = new Vector2D(width, height);
+        points[4] = points[0];
+        GameUtils.createWalls(world, EntityType.WALL, borderThickness, points);
     }
 
     @Override
@@ -74,14 +77,13 @@ public class Benchmark extends Context {
         currentTime = gameTime;
         double timeBetweenBalls = 25;
         if (lastTime + timeBetweenBalls <= currentTime && balls < maxBalls) {
-            int ballSize = 2;
             double halfWidth = width * 0.5;
             double halfHeight = height * 0.5;
             double xLength = width - 50;
             double yLength = height - 100;
             for (int i = 0; i < 100; i++) {
                 addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength, halfHeight + (rand
-                        .nextDouble() - 0.5) * yLength, ballSize);
+                        .nextDouble() - 0.5) * yLength);
                 balls++;
             }
             lastTime = currentTime;// - (currentTime - lastTime + timeBetweenBalls);
@@ -115,22 +117,21 @@ public class Benchmark extends Context {
 
         mapActionStartedHandler(EXIT, () -> controller.exitContext());
         mapActionStartedHandler(INCREASE_BALL_COUNT, () -> {
-            int ballSize = 2;
             double halfWidth = width * 0.5;
             double halfHeight = height * 0.5;
             double xLength = width - 50;
             double yLength = height - 100;
             for (int i = 0; i < 200; i++) {
                 addBall(halfWidth + (rand.nextDouble() - 0.5) * xLength, halfHeight + (rand
-                        .nextDouble() - 0.5) * yLength, ballSize);
+                        .nextDouble() - 0.5) * yLength);
                 balls++;
             }
         });
     }
 
-    private void addBall(double x, double y, double radius) {
+    private void addBall(double x, double y) {
         double speed = 0.1;
-        CircleEntity entity = new CircleEntity(x, y, radius);
+        TestingEntity entity = new TestingEntity(x, y, CIRLCLE);
         entity.setMass(1);
         entity.setVelocity((Math.random() - 0.5) * speed, (Math.random() - 0.5) * speed);
         entity.setMaterial(ballMaterial);

@@ -3,14 +3,13 @@ package gameengine.entities;
 import gameengine.collisiondetection.EntityType;
 import gameengine.collisiondetection.shapes.Shape;
 import gameengine.collisiondetection.tree.Tree;
-import gameengine.graphics.Renderer;
 import gameengine.motion.motions.Motion;
 import gameengine.motion.motions.NormalMotion;
 import gameengine.physics.Material;
 
 import java.awt.*;
 
-public class Entity {
+public class Entity implements EntityCapabilities {
     private static EntityType defaultEntityType = EntityType.STANDARD;
     private static Material defaultMaterial = Material.getDefaultMaterial();
     protected Material material;
@@ -58,10 +57,12 @@ public class Entity {
         defaultMaterial = material;
     }
 
+    @Override
     public double getX() {
         return x;
     }
 
+    @Override
     public double getY() {
         return y;
     }
@@ -214,6 +215,7 @@ public class Entity {
         setIndexInTree(indexInTree);
     }
 
+    @Override
     public Shape getShape() {
         return shape;
     }
@@ -296,11 +298,5 @@ public class Entity {
      */
     public void setMotion(Motion motion) {
         this.motion = motion;
-    }
-
-    public void update(double elapsedTime) {
-    }
-
-    public void draw(Renderer renderer) {
     }
 }

@@ -3,6 +3,7 @@ package bricklets;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
 import gameengine.collisiondetection.shapes.Circle;
+import gameengine.collisiondetection.shapes.Polygon;
 import gameengine.collisiondetection.shapes.Rectangle;
 import gameengine.context.Context;
 import gameengine.core.GameController;
@@ -64,7 +65,8 @@ public class Test extends Context {
         currentX += length * 1.5;
         TestingEntity circle = new TestingEntity(currentX, centerY, new Circle(length / 2));
         currentX += length * 1.5;
-        Paddle poly = new Paddle(currentX, centerY, length / 2, length / 2);
+        TestingEntity poly = new TestingEntity(currentX, centerY, Polygon.getRandConvexPolygon
+                (10, 100, 3, 10));
 
         box.setMotion(noMotion);
         circle.setMotion(noMotion);
@@ -81,7 +83,7 @@ public class Test extends Context {
         currentX += length * 1.5;
         circle = new TestingEntity(currentX, centerY, new Circle(length / 2));
         currentX += length * 1.5;
-        poly = new Paddle(currentX, centerY, length / 2, length / 2);
+        poly = new TestingEntity(currentX, centerY, Polygon.getRandConvexPolygon(10, 100, 3, 10));
 
         box.setMotion(noMotion);
         circle.setMotion(noMotion);

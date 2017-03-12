@@ -1,17 +1,17 @@
 package bricklets;
 
 import gameengine.collisiondetection.shapes.Polygon;
-import gameengine.graphics.RColor;
+import gameengine.entities.Entity;
+import gameengine.entities.defaults.rendering.FillShape;
 
 /**
  * The paddle that is used by players to bounce balls.
  *
  * User: davidrusu
  */
-public class Paddle extends TestingEntity {
+public class Paddle extends Entity implements FillShape {
     public Paddle(double x, double y, double width, double height) {
         super(x, y, createPaddlePolygon(width, height));
-        color = RColor.WHITE;
     }
 
     private static Polygon createPaddlePolygon(double width, double height) {

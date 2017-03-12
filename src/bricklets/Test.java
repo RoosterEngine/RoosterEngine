@@ -2,6 +2,9 @@ package bricklets;
 
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
+import gameengine.collisiondetection.shapes.Circle;
+import gameengine.collisiondetection.shapes.Polygon;
+import gameengine.collisiondetection.shapes.Rectangle;
 import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
@@ -58,11 +61,12 @@ public class Test extends Context {
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, 1));
         Entity.setDefaultEntityType(EntityType.STANDARD);
         double currentX = length;
-        BoxEntity box = new BoxEntity(currentX, centerY, length, length);
+        TestingEntity box = new TestingEntity(currentX, centerY, new Rectangle(length, length));
         currentX += length * 1.5;
-        CircleEntity circle = new CircleEntity(currentX, centerY, length / 2);
+        TestingEntity circle = new TestingEntity(currentX, centerY, new Circle(length / 2));
         currentX += length * 1.5;
-        Paddle poly = new Paddle(currentX, centerY, length / 2, length / 2);
+        TestingEntity poly = new TestingEntity(currentX, centerY, Polygon.getRandConvexPolygon
+                (10, 100, 3, 10));
 
         box.setMotion(noMotion);
         circle.setMotion(noMotion);
@@ -75,11 +79,11 @@ public class Test extends Context {
         world.addEntity(poly);
 
         currentX += length * 1.5;
-        box = new BoxEntity(currentX, centerY, length, length / 2);
+        box = new TestingEntity(currentX, centerY, new Rectangle(length, length / 2));
         currentX += length * 1.5;
-        circle = new CircleEntity(currentX, centerY, length / 2);
+        circle = new TestingEntity(currentX, centerY, new Circle(length / 2));
         currentX += length * 1.5;
-        poly = new Paddle(currentX, centerY, length / 2, length / 2);
+        poly = new TestingEntity(currentX, centerY, Polygon.getRandConvexPolygon(10, 100, 3, 10));
 
         box.setMotion(noMotion);
         circle.setMotion(noMotion);
@@ -94,22 +98,6 @@ public class Test extends Context {
         controlledEntity = entities.get(0);
         controlledEntity.setMotion(mouseMotion);
         setupInput();
-    }
-
-    public void initBounding() {
-        double borderThickness = 0.0000001;
-
-        Entity.setDefaultMaterial(Material.createMaterial(0, 1, Double.POSITIVE_INFINITY));
-        Entity.setDefaultEntityType(EntityType.WALL);
-        BoxEntity topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
-        BoxEntity bottomBounds = new BoxEntity(width / 2, height, width, borderThickness);
-        BoxEntity leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
-        BoxEntity rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
-
-        world.addEntity(topBounds);
-        world.addEntity(bottomBounds);
-        world.addEntity(leftBounds);
-        world.addEntity(rightBounds);
     }
 
     @Override

@@ -3,9 +3,12 @@ package bricklets;
 import Utilities.GameUtils;
 import gameengine.collisiondetection.Collision;
 import gameengine.collisiondetection.EntityType;
+import gameengine.collisiondetection.shapes.Circle;
+import gameengine.collisiondetection.shapes.Rectangle;
 import gameengine.context.Context;
 import gameengine.core.GameController;
 import gameengine.entities.Entity;
+import gameengine.entities.RegionSensor;
 import gameengine.geometry.Vector2D;
 import gameengine.graphics.RColor;
 import gameengine.graphics.Renderer;
@@ -31,18 +34,12 @@ public class BrickBreaker extends Context {
     private int width, height;
     private int brickCount = 0;
     private Paddle paddle;
-    private BoxEntity topBounds, rightBounds, leftBounds, bottomBounds;
 
     private Entity controlledEntity;
-    private double thrust = 0.001;
-    private double xThrustMultiplier = 0;
-    private double yThrustMultiplier = 0;
     private Random rand = new Random(1);
     private double initialPaddleY;
     private double ballRadius = 10;
-    private double ballMass = 50;
     private int lives = 100;
-    private RColor bgColor = RColor.BLACK;
     private long currentTime;
 
     private RepeatedAction shootAction = createRepeatedAction(50, () -> {
@@ -95,18 +92,24 @@ public class BrickBreaker extends Context {
     }
 
     public void initBounding() {
-        double borderThickness = 0.0001;
+        double borderThickness = 2;
         Entity.setDefaultEntityType(EntityType.WALL);
         Entity.setDefaultMaterial(Material.createMaterial(0, 1, Double.POSITIVE_INFINITY));
-        topBounds = new BoxEntity(width / 2, 0, width, borderThickness);
-        bottomBounds = new BoxEntity(width / 2, height - 50, width, borderThickness);
-        leftBounds = new BoxEntity(0, height / 2, borderThickness, height);
-        rightBounds = new BoxEntity(width, height / 2, borderThickness, height);
 
-        world.addEntity(topBounds);
-        world.addEntity(bottomBounds);
-        world.addEntity(leftBounds);
-        world.addEntity(rightBounds);
+        Vector2D[] points = new Vector2D[4];
+        points[0] = new Vector2D(0, height);
+        points[1] = new Vector2D(0, 0);
+        points[2] = new Vector2D(width, 0);
+        points[3] = new Vector2D(width, height);
+        GameUtils.createWalls(world, EntityType.WALL, borderThickness, points);
+
+        Entity.setDefaultEntityType(EntityType.STANDARD);
+        RegionSensor bottom = new RegionSensor(width / 2, height - 50, new Rectangle(width,
+                borderThickness), entity -> {
+            lives--;
+            entity.removeFromWorld();
+        }, null);
+        world.addEntity(bottom);
     }
 
     private void initBricks() {
@@ -139,16 +142,16 @@ public class BrickBreaker extends Context {
         path[2] = new Vector2D(width * 9 / 10, height / 2);
         path[3] = new Vector2D(width / 2, height / 10);
 
-        GameUtils.createEntityPath(world, EntityType.WALL, 0.01, 0.5, 50, path);
+        GameUtils.createEntityPath(world, EntityType.WALL, 0.01, 0.5, 50, true, path);
 
         //some walls
-        Vector2D from = new Vector2D(250, 350);
-        Vector2D to = new Vector2D(200, 200);
-        GameUtils.createWall(world, EntityType.WALL, 10, from, to);
+        Vector2D from = new Vector2D(500, 600);
+        Vector2D to = new Vector2D(350, 450);
+        GameUtils.createWall(world, EntityType.WALL, 8, from, to);
 
-        from = new Vector2D(200, 400);
-        to = new Vector2D(350, 350);
-        GameUtils.createWall(world, EntityType.WALL, 10, from, to);
+        from = new Vector2D(350, 700);
+        to = new Vector2D(550, 650);
+        GameUtils.createWall(world, EntityType.WALL, 8, from, to);
     }
 
     @Override
@@ -184,25 +187,14 @@ public class BrickBreaker extends Context {
         double damage = 30;
         Entity a = collision.getA();
         Entity b = collision.getB();
-        boolean isABall = a instanceof CircleEntity;
-        boolean isBBall = b instanceof CircleEntity;
+        boolean isABall = a.getEntityType() == EntityType.BALL.ordinal();
+        boolean isBBall = b.getEntityType() == EntityType.BALL.ordinal();
         if (a instanceof Brick && isBBall) {
 //            damage *= b.getMass();
             damageBrick((Brick) a, damage);
         } else if (b instanceof Brick && isABall) {
 //            damage *= a.getMass();
             damageBrick((Brick) b, damage);
-        } else if (a == bottomBounds && isBBall || isABall && b == bottomBounds) {
-//            if (lives > 0) {
-            lives--;
-            CircleEntity ball;
-            if (isBBall) {
-                ball = (CircleEntity) b;
-            } else {
-                ball = (CircleEntity) a;
-            }
-            ball.removeFromWorld();
-//            }
         }
     }
 
@@ -224,14 +216,10 @@ public class BrickBreaker extends Context {
     }
 
     private void addBall(double x, double y, double radius, double mass) {
-        double speed = 1.5;
-        CircleEntity entity = new CircleEntity(x, y, radius);
-//        entity.setColor(new RColor((float)Math.random(), (float)Math.random(), (float)
-// Math.random()));
-        double spread = (Math.sin(currentTime / 1000) + 1.5) * 2;
+        TestingEntity entity = new TestingEntity(x, y, new Circle(radius));
+        double spread = (Math.sin(currentTime / 1000000) + 1.5) * 2;
         entity.setVelocity((Math.random() - 0.5) * spread, -10);
         entity.setMass(mass);
-//        entity.setVelocity((Math.random() - 0.5) * speed, (Math.random() - 0.5) * speed);
         entity.setMaterial(ballMaterial);
         entity.setEntityType(EntityType.BALL);
         world.addEntity(entity);

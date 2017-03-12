@@ -17,20 +17,14 @@ public class Main implements ButtonHandler {
     private BasicButton exitButton = new BasicButton("Exit");
     private BasicButton optionsButton = new BasicButton("Options");
     private BasicButton controlsButton = new BasicButton("Controls");
-    private BrickBreaker bricks;
     private BasicMenu menu;
-    private Benchmark benchmark;
-    private Test testing;
 
     public Main(GameController controller) {
         this.controller = controller;
         BasicButton[] buttons = {gameButton, benchmarkButton, testButton, exitButton};
-        benchmark = new Benchmark(controller);
-        bricks = new BrickBreaker(controller);
-        testing = new Test(controller);
         ScreenManager screen = controller.getScreenManager();
-        menu = new BasicMenu(controller, buttons, this, new SolidColorGraphic(new RColor
-                (19, 9, 18), screen.getWidth(), screen.getHeight()));
+        menu = new BasicMenu(controller, buttons, this, new SolidColorGraphic(new RColor(19, 9,
+                18), screen.getWidth(), screen.getHeight()));
     }
 
     public static void main(String[] args) {
@@ -46,19 +40,15 @@ public class Main implements ButtonHandler {
     @Override
     public void buttonActivated(BasicButton button) {
         if (button == gameButton) {
-//            testColl.init();
-//            controller.enterContext(testColl);
-            controller.enterContext(bricks);
+            controller.enterContext(new BrickBreaker(controller));
             menu.reset();
         } else if (button == benchmarkButton) {
-            benchmark.init();
-            controller.enterContext(benchmark);
+            controller.enterContext(new Benchmark(controller));
             menu.reset();
         } else if (button == exitButton) {
             controller.exitContext();
         } else if (button == testButton) {
-            testing.init();
-            controller.enterContext(testing);
+            controller.enterContext(new Test(controller));
             menu.reset();
         }
     }
